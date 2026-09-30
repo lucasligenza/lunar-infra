@@ -8,6 +8,7 @@ from backend.app.data.catalog import definitions
 from backend.app.models.atlas import AtlasPoint, CatalogEntry, Quantity
 from backend.app.geospatial.global_terrain import slope_at, SLOPE_METHOD
 from lunaros.dataset import checksum
+from backend.app.services.geology import GeologyGrid
 
 RADIUS = 1737400
 
@@ -49,7 +50,7 @@ class NumericGrid:
 class AtlasStore:
     def __init__(self,directory:Path=OUTPUT,globe=None,polar=None):
         self.directory=directory; self.globe=globe; self.polar=polar
-        self.definitions=definitions(); self.grids={}; self.errors={}
+        self.definitions=definitions(); self.grids={}; self.errors={};self.classifications={}
         if globe is not None: self.grids['lola-global']=NumericGrid(globe.elevation,self.definitions['lola-global'])
         source=self.definitions['gld100']; path=directory/source.id
         try:
@@ -68,20 +69,28 @@ class AtlasStore:
                 if slopes.shape!=values.shape or slopes.dtype!=np.dtype('<f4'):raise ValueError('Invalid slope grid')
             self.grids[source.id]=NumericGrid(values,source,slopes)
         except (OSError,ValueError,KeyError) as error:self.errors[source.id]=str(error)
+        source=self.definitions['usgs-geology']
+        try:self.classifications[source.id]=GeologyGrid(directory/source.id,source)
+        except (OSError,ValueError,KeyError) as error:self.errors[source.id]=str(error)
     def catalog(self):
         result=[]
         for source in self.definitions.values():
-            ready=source.id in self.grids or (source.adapter=='existing_polar' and self.polar is not None)
+            download_bytes=sum(file.bytes for file in source.files.values())
+            if source.adapter=='range_zip_geology':
+                from backend.app.data.geology import archive_definition
+                download_bytes=sum(item['compressed_bytes'] for item in archive_definition()['members'])+2*1024*1024
+            ready=source.id in self.grids or source.id in self.classifications or (source.adapter=='existing_polar' and self.polar is not None)
             downloaded=bool(source.files) and all((RAW/name).exists() for name in source.files)
             result.append(CatalogEntry(**source.model_dump(), acquisition_status='ready' if ready else
                 'downloaded' if downloaded else 'not_acquired' if source.files else 'discovered',
-                numerical_queries=ready,overlay_available=source.id in self.grids,download_bytes=sum(file.bytes for file in source.files.values())))
+                numerical_queries=ready,overlay_available=source.id in self.grids or source.id in self.classifications,download_bytes=download_bytes))
         return result
     def grid(self,identifier='auto'):
         if identifier=='auto':identifier='gld100' if 'gld100' in self.grids else 'lola-global'
         if identifier not in self.grids:raise ValueError('Dataset unavailable for atlas numeric queries; prepare its validated adapter')
         return self.grids[identifier]
     def close(self):
+        for grid in self.classifications.values():grid.values._mmap.close()
         for grid in self.grids.values():
             if isinstance(grid.values,np.memmap): grid.values._mmap.close()
             if isinstance(grid.slopes,np.memmap): grid.slopes._mmap.close()

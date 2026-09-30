@@ -134,3 +134,6 @@
 .atlas-panel > header { position:sticky; top:-20px; margin:-20px -20px 0; padding:16px 20px; z-index:3; background:#111923; }
 .atlas-tabs { position:sticky; top:52px; background:#111923; z-index:2; }
 .elevation-profile svg text { font-size:20px; }
+.geology-legend ul { list-style:none; max-height:240px; overflow:auto; margin-top:12px; }
+.geology-legend li { display:flex; align-items:center; gap:8px; font-size:12px; line-height:1.6; margin:7px 0; }
+.geology-legend i { width:14px; height:14px; flex-shrink:0; border:1px solid #fff3; }

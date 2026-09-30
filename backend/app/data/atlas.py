@@ -19,6 +19,14 @@ DEFAULT_BUDGET = 256 * 1024 * 1024
 
 def acquisition_plan(identifier: str, raw: Path = RAW, budget: int = DEFAULT_BUDGET):
     source = definitions()[identifier]
+    if source.adapter=='range_zip_geology':
+        from backend.app.data.geology import archive_definition
+        archive=archive_definition();size=sum(item['compressed_bytes'] for item in archive['members'])+2*1024*1024
+        disk=sum(item['bytes'] for item in archive['members'])*3
+        if size>budget:raise ValueError('Selected archive members exceed explicit acquisition budget')
+        if shutil.disk_usage(raw if raw.exists() else ROOT).free<disk:raise ValueError('Insufficient disk space for geology source and artifacts')
+        return {'dataset_id':identifier,'download_bytes':size,'disk_budget_bytes':disk,'archive_bytes':archive['archive_bytes'],
+            'subset_method':'Verified byte-range ZIP members only; preserve original polygons and rasterize categorical IDs'}
     size = sum(file.bytes for file in source.files.values())
     if not source.files or source.adapter != 'pds_equirectangular':
         raise ValueError('This source has no validated acquisition adapter')
@@ -64,6 +72,9 @@ def validate_gld(path: Path, source):
 def prepare(identifier: str = 'gld100', raw: Path = RAW, output: Path = OUTPUT, offline=False):
     source = definitions()[identifier]
     plan = acquisition_plan(identifier,raw)
+    if source.adapter=='range_zip_geology':
+        from backend.app.data.geology import prepare_geology
+        return plan|prepare_geology(source,raw,output,offline)
     files = {name: spec.model_dump() for name,spec in source.files.items()}
     if not offline: fetch_files(raw,files)
     for name,spec in files.items(): verify_file(raw/name,spec)
@@ -101,7 +112,7 @@ def prepare(identifier: str = 'gld100', raw: Path = RAW, output: Path = OUTPUT, 
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--dataset',default='gld100',choices=['gld100'])
+    parser.add_argument('--dataset',default='gld100',choices=['gld100','usgs-geology'])
     parser.add_argument('--offline',action='store_true')
     parser.add_argument('--plan',action='store_true')
     args=parser.parse_args()

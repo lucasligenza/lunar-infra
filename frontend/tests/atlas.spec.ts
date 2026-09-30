@@ -127,3 +127,22 @@ test('analysis radius outlines use lunar great-circle geometry across seam and p
       const angle=2*Math.asin(Math.sqrt(Math.sin((lat-start)/2)**2+Math.cos(lat)*Math.cos(start)*Math.sin(delta/2)**2));expect(angle*1737.4).toBeCloseTo(50,7);}
   }
 });
+
+test('USGS geology colors the Moon with original categorical legend and source-linked interpretation',async({page,request})=>{
+  await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
+  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  const point=await (await request.get('/api/atlas/inspect?latitude=.67&longitude=23.47')).json();
+  await expect(page.getByTestId('atlas-geology')).toHaveText(`${point.geology.category.code} / ${point.geology.category.name}`);
+  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('geology');
+  await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
+  await page.getByText('49 geological units / categorical legend',{exact:true}).click();
+  await expect(page.locator('.geology-legend li')).toHaveCount(49);
+  await page.getByRole('button',{name:'Close destinations',exact:true}).click();
+  await page.getByRole('button',{name:'Reset globe',exact:true}).click();
+  await expect.poll(async()=>Number((await page.getByTestId('moon-canvas').getAttribute('data-camera'))!.split(',')[0])).toBeGreaterThan(3);
+  await page.screenshot({path:'../artifacts/phase4-geology-globe.png'});
+  await page.getByRole('button',{name:'Catalog',exact:true}).click();await page.getByRole('searchbox',{name:'Search science datasets'}).fill('geology');
+  await page.getByText('Unified Geologic Map of the Moon',{exact:true}).click();
+  await expect(page.getByRole('complementary',{name:'Lunar atlas'})).toContainText('Numerical source available');
+});

@@ -50,7 +50,7 @@ controls and preserved globe interaction. Typecheck and production build pass.
 Next: cube-sphere sectors, weighted AOI statistics
 and native elevation profiles.
 
-Milestone 3: cube-sphere sector hierarchy, globe highlighting/fly-to and browser
+Milestone 3 e037ff1 pushed, CI passed (run 36787831715): cube-sphere sector hierarchy, globe highlighting/fly-to and browser
 favorites; arbitrary radius or wrapped geographic extent; lunar-area-weighted
 elevation/slope statistics, terrain relief, great-circle elevation profiles and
 source-linked JSON/CSV exports. Regional analysis outside the polar footprint now
@@ -61,6 +61,21 @@ input coordinates after a cell-boundary regression fix. Desktop and mobile
 interactions reviewed; chart labels enlarged and atlas header/tabs made sticky
 after screenshot inspection. Focused browser regression and typecheck pass.
 Production build passes. Next: validated USGS geology integration.
+
+Milestone 4: USGS v2 global geology integration. Eight pinned archive members
+acquired via bounded ranges (83855573 bytes transferred); original 12,247 polygons
+and Moon 2000 projection validated. 49 interpreted classes rasterized at 16 ppd
+with original colors/descriptions, categorical query metadata and a registered 3D
+overlay/legend. Polygon and description codes Iohs/Ios remain explicitly qualified.
+Raw polygons and the 16.6 MB class grid are ignored. Independent point-in-polygon
+checks agree at sampled centers across near/far side and both poles. Range/CRC/
+checksum guards, categorical transparency and numeric-to-color agreement pass.
+Full validation: 86 Python tests plus eight subtests, 23 browser tests, typecheck
+and production build pass; all six atlas tests repeated after the global LOD/limb
+refinement. Actual geology globe screenshot reviewed. NASA PDS collection discovery
+verified; thermal/mineralogical/resource/gravity integration limits recorded in
+docs/dataset-discovery.md. Next: global hypothetical mission placement and final
+atlas usability/performance acceptance.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -213,12 +228,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: c980eb3 (GitHub run 36785755743 succeeded).
-Current milestone: feat: add lunar sectors and regional terrain analysis.
+Latest confirmed published milestone: e037ff1 (GitHub run 36787831715 succeeded).
+Current milestone: feat: integrate global USGS lunar geology.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
 Complete Phase 4 milestones in docs/phase4-plan.md, preserving all earlier science
-and mission workflows. Next slice integrates the acquired USGS geology polygons.
+and mission workflows. Next slice connects global terrain to hypothetical missions.

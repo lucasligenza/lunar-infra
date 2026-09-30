@@ -22,6 +22,10 @@ def tile_bounds(z,x,y):
 
 
 def colors(values,style):
+    if 'categories' in style:
+        palette=np.zeros((50,4),dtype=np.uint8)
+        for item in style['categories']:palette[item['id']]=[int(item['color'][i:i+2],16) for i in (1,3,5)]+[255]
+        return palette[values.astype(np.uint8)]
     valid=np.isfinite(values)
     stops=np.linspace(style['minimum'],style['maximum'],len(style['colors']))
     palette=np.array([[int(color[i:i+2],16) for i in (1,3,5)] for color in style['colors']])
@@ -32,11 +36,18 @@ def colors(values,style):
 
 
 def layers(atlas):
-    return [dict(style,dataset_id=identifier,id=kind,source_id=grid.source.product_id,version=grid.source.version,
+    result=[dict(style,dataset_id=identifier,id=kind,source_id=grid.source.product_id,version=grid.source.version,
         angular_spacing_deg=1/grid.ppd,tile_size=256,max_level=5,
         sampling='Containing native pixel at tile-pixel center; no scientific interpolation; display colors clip to legend',
         url_template=f'/atlas/tiles/{identifier}/{kind}/{{z}}/{{x}}/{{y}}.png')
         for identifier,grid in atlas.grids.items() for kind,style in STYLES.items()]
+    for identifier,grid in atlas.classifications.items():
+        result.append(dict(name='USGS geological units',id='geology',dataset_id=identifier,unit='geological unit',
+            source_id=grid.source.product_id,version=grid.source.version,angular_spacing_deg=1/grid.ppd,
+            categories=grid.categories,minimum=None,maximum=None,colors=[],tile_size=256,max_level=5,
+            sampling='Source polygons rasterized at cell centers; categorical values, no interpolation',
+            url_template=f'/atlas/tiles/{identifier}/geology/{{z}}/{{x}}/{{y}}.png'))
+    return result
 
 
 def tile_values(grid,layer,z,x,y,size=256):
@@ -45,6 +56,7 @@ def tile_values(grid,layer,z,x,y,size=256):
     lon=west+(np.arange(size)+.5)*(east-west)/size
     rows=np.minimum(grid.rows-1,np.floor((90-lat)*grid.ppd).astype(int))
     cols=np.floor((lon%360)*grid.ppd).astype(int)
+    if layer=='geology':return np.asarray(grid.values[np.ix_(rows,cols)])
     if layer=='elevation':
         values=np.asarray(grid.values[np.ix_(rows,cols)],dtype=float)
         values[values<=-32764]=np.nan
@@ -57,13 +69,17 @@ def tile_values(grid,layer,z,x,y,size=256):
 
 def render_tile(atlas,identifier,layer,z,x,y):
     tile_bounds(z,x,y)
-    if layer not in STYLES:raise ValueError('Unknown layer')
-    grid=atlas.grid(identifier)
-    key=sha256(json.dumps({'source':grid.source.model_dump(),'style':STYLES[layer],'method':'native-tile-v1/spherical-slope-v1'},sort_keys=True).encode()).hexdigest()[:16]
+    if layer=='geology':
+        if identifier not in atlas.classifications:raise ValueError('Geological layer is not prepared')
+        grid=atlas.classifications[identifier];style={'categories':grid.categories}
+    else:
+        if layer not in STYLES:raise ValueError('Unknown layer')
+        grid=atlas.grid(identifier);style=STYLES[layer]
+    key=sha256(json.dumps({'source':grid.source.model_dump(),'style':style,'method':'native-tile-v1/spherical-slope-v1'},sort_keys=True).encode()).hexdigest()[:16]
     cache=atlas.directory/'tiles'/key/identifier/layer/str(z)/str(x)
     path=cache/f'{y}.png'
     if path.exists():return path.read_bytes()
-    image=Image.fromarray(colors(tile_values(grid,layer,z,x,y),STYLES[layer]))
+    image=Image.fromarray(colors(tile_values(grid,layer,z,x,y),style))
     output=BytesIO();image.save(output,format='PNG');payload=output.getvalue()
     cache.mkdir(parents=True,exist_ok=True)
     temporary=path.with_suffix(f'.{uuid4().hex}.tmp')

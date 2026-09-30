@@ -58,13 +58,14 @@ export class ScientificOverlay {
     if(!this.view||this.view.layer==='none'||this.disposed)return;
     const key=[...camera.position.toArray(),...camera.quaternion.toArray(),camera.aspect].map(v=>v.toFixed(3)).join(',');
     if(key===this.cameraKey)return;this.cameraKey=key;camera.updateMatrixWorld();
-    const z=Math.min(5,Math.max(0,Math.floor(Math.log2(2.6/Math.max(.06,camera.position.length()-1)))));
+    const z=Math.min(5,Math.max(1,Math.floor(Math.log2(2.6/Math.max(.06,camera.position.length()-1)))));
     const candidates:{key:string;z:number;x:number;y:number;score:number}[]=[];
     if(z>0)for(let y=0;y<2**z;y++)for(let x=0;x<2**(z+1);x++) {
       const b=geographicTile(z,x,y),center=new THREE.Vector3(...lunarVector((b.west+b.east)/2,(b.south+b.north)/2));
       const normal=center.clone();const screen=center.project(camera);
       const padding=1+4/2**z;
-      if(normal.dot(camera.position.clone().normalize())>.05&&Math.abs(screen.x)<padding&&Math.abs(screen.y)<padding&&screen.z<1)
+      const limbPadding=Math.sin(Math.min(Math.PI/2,Math.PI/2**(z+1)*Math.SQRT2));
+      if(normal.dot(camera.position.clone().normalize())>-limbPadding&&Math.abs(screen.x)<padding&&Math.abs(screen.y)<padding&&screen.z<1)
         candidates.push({key:`${z}/${x}/${y}`,z,x,y,score:screen.x**2+screen.y**2});
     }
     const roots=[{key:'0/0/0',z:0,x:0,y:0},{key:'0/1/0',z:0,x:1,y:0}];
@@ -88,11 +89,12 @@ export class ScientificOverlay {
       const tile=this.queue.shift()!;if(this.tiles.has(tile.key)||this.pending.has(tile.key))continue;
       const revision=this.revision,view=this.view!,signal=this.controller.signal;this.active++;
       this.pending.set(tile.key,revision);
-      void fetch(`/api/atlas/tiles/${view.dataset}/${view.layer}/${tile.key}.png`,{signal}).then(async response=>{
+      void fetch(`/api/atlas/tiles/${view.layer==='geology'?'usgs-geology':view.dataset}/${view.layer}/${tile.key}.png`,{signal}).then(async response=>{
         if(!response.ok)throw new Error('Scientific tile unavailable');
         const bitmap=await createImageBitmap(await response.blob(),{imageOrientation:'flipY'});
         if(this.disposed||revision!==this.revision||!this.wanted.has(tile.key)) {bitmap.close();return;}
         const texture=new THREE.Texture(bitmap);texture.colorSpace=THREE.SRGBColorSpace;texture.needsUpdate=true;texture.flipY=false;
+        if(view.layer==='geology'){texture.minFilter=THREE.NearestFilter;texture.magFilter=THREE.NearestFilter;texture.generateMipmaps=false;}
         const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,opacity:this.view!.opacity,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
         const mesh=new THREE.Mesh(tileGeometry(this.base,tile.z,tile.x,tile.y),material);mesh.renderOrder=5;this.group.add(mesh);
         this.tiles.set(tile.key,{...tile,mesh,bitmap});this.visibility();

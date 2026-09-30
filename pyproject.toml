@@ -9,6 +9,7 @@ dependencies = [
     "pillow>=12.3.0",
     "pydantic>=2.13.5",
     "pyproj>=3.8.0",
+    "pyshp==3.1.6",
     "rasterio>=1.5.1",
     "uvicorn>=0.54.0",
 ]

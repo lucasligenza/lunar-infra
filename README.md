@@ -1,5 +1,16 @@
 # LunarOS
 
+The Lunar Atlas adds global GLD100 elevation/slope, georeferenced scientific color
+layers, cube-sphere sectors, arbitrary area statistics, native elevation profiles
+and an optional USGS geological-unit layer. Open **Lunar atlas** on the globe;
+its Layers, Regions, Analysis and Catalog tabs share the selected lunar location.
+The original south-pole 240 m analysis and hypothetical mission simulator remain.
+
+Prepare geology with `uv run python -m backend.app.data.atlas --dataset usgs-geology`.
+Use `--plan` first to inspect the bounded approximately 84 MB selected-member
+acquisition; `--offline` validates existing local sources. See
+[atlas methods and limitations](docs/atlas-data.md).
+
 Explore the entire Moon in 3D with NASA imagery and coarse LOLA relief, then move
 into validated south-pole terrain analysis and hypothetical infrastructure simulation.
 See [PROGRESS.md](PROGRESS.md) for completed milestones and remaining work.

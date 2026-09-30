@@ -24,7 +24,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
       .catch(error=>{if(!abort.signal.aborted){setError(error.message);setLoading(false);}});return ()=>abort.abort();},[location,dataset]);
   const source=catalog.find(value=>value.id===point?.dataset_id);
   const selectedDataset=dataset==='auto'?(catalog.find(value=>value.id==='gld100'&&value.numerical_queries)?.id??'lola-global'):dataset;
-  const layer=layers.find(value=>value.dataset_id===selectedDataset&&value.id===view.layer);
+  const layer=layers.find(value=>(value.dataset_id===selectedDataset||value.id==='geology')&&value.id===view.layer);
   return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>Lunar atlas</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
     <p className="atlas-description">Scientific coverage, native measurements and source provenance.</p>
     <nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>
@@ -37,9 +37,10 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     <div hidden={tab!=='layers'}>
     <section className="atlas-layer-tools" aria-label="Scientific surface layers">
       <label>Scientific overlay<select aria-label="Scientific overlay" value={view.layer} onChange={e=>onView({...view,layer:e.target.value})}><option value="none">Imagery only</option>
-        {layers.filter(value=>value.dataset_id===selectedDataset).map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
+        {layers.filter(value=>value.dataset_id===selectedDataset||value.id==='geology').map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
       {layer&&<><label>Layer opacity {Math.round(view.opacity*100)}%<input aria-label="Scientific layer opacity" type="range" min={0} max={1} step={.05} value={view.opacity} onChange={e=>onView({...view,opacity:Number(e.target.value)})} /></label>
-        <div className="atlas-legend" aria-label={`${layer.name} legend`}><div style={{background:`linear-gradient(90deg,${layer.colors.join(',')})`}}/><p><span>{layer.minimum.toLocaleString()} {layer.unit}</span><span>{layer.maximum.toLocaleString()} {layer.unit}</span></p></div>
+        {layer.categories?<details className="geology-legend"><summary>{layer.categories.length} geological units / categorical legend</summary><ul>{layer.categories.map(unit=><li key={unit.code}><i style={{background:unit.color}}/><span>{unit.code} / {unit.name}</span></li>)}</ul></details>:
+          <div className="atlas-legend" aria-label={`${layer.name} legend`}><div style={{background:`linear-gradient(90deg,${layer.colors.join(',')})`}}/><p><span>{layer.minimum?.toLocaleString()} {layer.unit}</span><span>{layer.maximum?.toLocaleString()} {layer.unit}</span></p></div>}
         <p>{layer.source_id} {layer.version}; native grid {(1/layer.angular_spacing_deg).toFixed(0)} pixels/degree. Visual tiles load progressively; queries use original numeric cells.</p>
         <p role="status" data-testid="atlas-overlay-status">{overlayStatus}</p>
         <label><input type="checkbox" checked={view.compare} onChange={e=>onView({...view,compare:e.target.checked})}/>Compare imagery and science</label>
@@ -54,6 +55,13 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
       <dt>Sampling</dt><dd>{point.elevation.method}</dd><dt>Derived slope</dt><dd data-testid="atlas-slope">{point.slope.value===null?'Missing stencil':`${point.slope.value.toFixed(3)}°`}</dd>
       <dt>Slope support</dt><dd>{point.slope.support_north_m.toFixed(1)} m north / {point.slope.support_east_m.toFixed(1)} m east</dd><dt>Terrain provenance</dt><dd>{point.terrain_source}</dd></dl>
       {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
+      <div className="geologic-inspection" aria-label="Geological interpretation"><h3>Geological interpretation</h3>
+        {point.geology?<><p data-testid="atlas-geology">{point.geology.category?`${point.geology.category.code} / ${point.geology.category.name}`:'Missing mapped class'}</p>
+          <p>{point.geology.source_id} {point.geology.version} / 1:5,000,000 source map; categorical grid 16 ppd.</p>
+          <details><summary>Geology source and interpretation</summary><p>{point.geology.category?.description}</p><p>{point.geology.category?.interpretation}</p>
+            {point.geology.category?.source_note&&<p>{point.geology.category.source_note}</p>}<p>{point.geology.frame_note}</p><p>{point.geology.method}</p><p>Interpretive units do not establish an extractable resource or construction-scale contact.</p></details></>:
+          <p>Geology is not prepared. The catalog provides its verified acquisition source.</p>}
+      </div>
     </section>}
     </div></div>
     <section className="atlas-catalog" hidden={tab!=='catalog'}><h3>Dataset catalog</h3><label>Search science datasets<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Terrain, geology, thermal…" /></label>

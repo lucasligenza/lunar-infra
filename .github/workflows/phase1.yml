@@ -36,6 +36,7 @@ jobs:
           uv run python -m backend.app.data.pipeline
           uv run python -m backend.app.data.globe
           uv run python -m backend.app.data.atlas
+          uv run python -m backend.app.data.atlas --dataset usgs-geology
       - name: Validate science, scenarios and energy conservation
         run: uv run pytest -q
       - name: Install locked frontend dependencies

@@ -64,6 +64,20 @@ class Quantity(BaseModel):
     method: str
 
 
+class GeologyQuantity(BaseModel):
+    status:Literal['ok','nodata']
+    category:dict|None
+    source_id:str
+    version:str
+    pixel_center:list[float]
+    frame_note:str
+    method:str
+    unit:str='geological unit'
+    quantity_kind:str='interpreted_categorical'
+    map_scale:int=5000000
+    pixels_per_degree:int=16
+
+
 class AtlasPoint(BaseModel):
     latitude_deg: float
     longitude_deg: float
@@ -77,3 +91,4 @@ class AtlasPoint(BaseModel):
     reference_radius_m: float = 1737400
     frame_note: str
     terrain_source: str
+    geology:GeologyQuantity|None=None

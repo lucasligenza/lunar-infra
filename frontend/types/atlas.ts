@@ -11,9 +11,11 @@ export type AtlasQuantity = {value:number|null;unit:string;status:string;source_
   spacing_north_m:number;spacing_east_m:number;support_north_m:number;support_east_m:number;method:string;quantity_kind:string};
 export type AtlasPoint = {latitude_deg:number;longitude_deg:number;longitude_defined:boolean;pixel_center:number[];
   sample_row:number;sample_column:number;dataset_id:string;elevation:AtlasQuantity;slope:AtlasQuantity;
-  reference_radius_m:number;frame_note:string;terrain_source:string};
+  reference_radius_m:number;frame_note:string;terrain_source:string;geology:GeologyQuantity|null};
+export type GeologyCategory={id:number;code:string;color:string;name:string;description:string;interpretation:string;description_source_code:string;source_note:string|null};
+export type GeologyQuantity={status:string;category:GeologyCategory|null;source_id:string;version:string;pixel_center:number[];frame_note:string;method:string;map_scale:number;pixels_per_degree:number};
 export type AtlasView = {dataset:string;layer:string;opacity:number;compare:boolean;reveal:number};
-export type AtlasLayer = {id:string;dataset_id:string;name:string;unit:string;minimum:number;maximum:number;colors:string[];source_id:string;version:string;angular_spacing_deg:number;max_level:number;url_template:string};
+export type AtlasLayer = {id:string;dataset_id:string;name:string;unit:string;minimum:number|null;maximum:number|null;colors:string[];categories?:GeologyCategory[];source_id:string;version:string;angular_spacing_deg:number;max_level:number;url_template:string};
 export type AtlasSector={id:string;name:string;face:string;level:number;x:number;y:number;center:{longitude_deg:number;latitude_deg:number};boundary:{longitude_deg:number;latitude_deg:number}[]};
 export type AreaSummary={minimum:number|null;maximum:number|null;mean:number|null;unit:string;valid_cells:number;valid_area_km2:number};
 export type AreaReport={dataset_id:string;source_id:string;version:string;selected_cells:number;selected_area_km2:number;elevation:AreaSummary;slope:AreaSummary;

@@ -65,5 +65,8 @@ def plan(identifier:str):
 def inspect(request:Request,
     latitude:Annotated[float,Query(ge=-90,le=90,allow_inf_nan=False)],
     longitude:Annotated[float,Query(ge=-180,le=360,allow_inf_nan=False)],dataset:str='auto'):
-    try:return request.app.state.atlas.grid(dataset).sample(longitude,latitude)
+    try:
+        atlas=request.app.state.atlas;sample=atlas.grid(dataset).sample(longitude,latitude)
+        if 'usgs-geology' in atlas.classifications:sample.geology=atlas.classifications['usgs-geology'].sample(longitude,latitude)
+        return sample
     except ValueError as error:raise HTTPException(503,detail=str(error))

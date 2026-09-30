@@ -84,3 +84,33 @@ global terrain layer nor geological interpretation supplies temporal sunlight.
 Sources: [GLD100 documentation](https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_GLD100),
 [selected numeric product](https://data.lroc.im-ldi.com/lroc/view_rdr_product/WAC_GLD100_E000N1800_032P),
 [Scholten et al.](https://doi.org/10.1029/2011JE003926).
+
+## USGS geology
+
+`uv run python -m backend.app.data.atlas --dataset usgs-geology --plan` reports
+the selected-member download/disk budget. Preparation downloads only eight pinned
+members from the 224 MB ZIP using verified byte ranges and source ETags. Transfer
+is approximately 84 MB. Unsupported range responses fail before any whole-archive
+fallback. ZIP CRC, extracted size and SHA-256 are checked. Original 12,247 polygons,
+their Moon 2000 sphere/projection and source descriptions/colors remain in raw data.
+
+One polygon's bounding raster window is processed at a time. A 16 ppd categorical
+grid (approximately 1.9 km equatorial spacing) uses cell-center rasterization,
+then a longitude roll to 0–360. Its spacing is a processing choice, not an accuracy
+claim for the interpretive 1:5,000,000 map. Numeric category IDs supply queries;
+the original 49-unit palette supplies PNG tiles. Nearest texture filters avoid
+blending geological categories. Classification and terrain sampling footprints
+are independently reported. The globe's geometry does not change with this layer.
+
+Source polygons/colors identify `Iohs`; the description CSV uses `Ios` for the same
+named Orientale Hevelius secondary-crater facies. The polygon attribute corroborates
+the named join. Both source codes and the discrepancy are retained in metadata.
+No geological class proves an extractable water/resource deposit. Neither map
+scale nor nominal shared sphere establishes surveyed alignment between control
+networks. Tests independently intersect source polygons at registered pixel centers
+across named regions, far side and both poles, and compare query classifications
+with tile colors. The prepared grid has no unclassified cells; its reserved nodata
+class remains transparent for other source products or unavailable coverage.
+
+Sources: [USGS release](https://www.usgs.gov/news/astrogeology-releases-new-map-moon),
+[source GIS archive](https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip).

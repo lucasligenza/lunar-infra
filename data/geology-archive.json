@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+  "archive_bytes": 224413040,
+  "members": [
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Lunar_GIS/Shapefiles/GeoUnits.dbf",
+      "compressed_bytes": 292769,
+      "bytes": 2670072,
+      "crc32": 2069030964,
+      "filename": "GeoUnits.dbf",
+      "sha256": "fd6c74b9545ff62a3d8382ec271825b0a4d5508263372cbe3f4d34d6ab0463c4"
+    },
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Lunar_GIS/Shapefiles/GeoUnits.prj",
+      "compressed_bytes": 236,
+      "bytes": 393,
+      "crc32": 1728086800,
+      "filename": "GeoUnits.prj",
+      "sha256": "4473b61e75ee5e9c120f4c342b4ab85276a0c69090a2c9d7771b4b88ba835fd4"
+    },
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Lunar_GIS/Shapefiles/GeoUnits.shp",
+      "compressed_bytes": 83422101,
+      "bytes": 126176440,
+      "crc32": 1454812840,
+      "filename": "GeoUnits.shp",
+      "sha256": "122559104301f923cb75e48f5fadc87f31c3e1aeb354c499924b256c052770c1"
+    },
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Lunar_GIS/Shapefiles/GeoUnits.shp.xml",
+      "compressed_bytes": 8931,
+      "bytes": 57156,
+      "crc32": 2999592704,
+      "filename": "GeoUnits.shp.xml",
+      "sha256": "5661a20cb4676fd19236a5713f8cd65435f701d13644511143a121b52e1a9219"
+    },
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Lunar_GIS/Shapefiles/GeoUnits.shx",
+      "compressed_bytes": 68094,
+      "bytes": 98076,
+      "crc32": 2225524237,
+      "filename": "GeoUnits.shx",
+      "sha256": "2caa6183448afa001203cd1bfd380f5e10cd018e51d78d1da73d11aec3687832"
+    },
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Lunar_GIS/Symbol_LayerDefinitions/GeologyUnit_colors.csv",
+      "compressed_bytes": 687,
+      "bytes": 1542,
+      "crc32": 986096467,
+      "filename": "GeologyUnit_colors.csv",
+      "sha256": "faf55ff77ae4e6dc885c7b227c272cc03a5be64633c676797320b7d83c312d80"
+    },
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Lunar_GIS/Symbol_LayerDefinitions/Unified_Geologic_Map_of_the_Moon_DOMU_descriptions.csv",
+      "compressed_bytes": 3401,
+      "bytes": 10830,
+      "crc32": 2940542450,
+      "filename": "Unified_Geologic_Map_of_the_Moon_DOMU_descriptions.csv",
+      "sha256": "c6d532ac6c7c8774cc744c5ae4dfa0e43a89d1453f1f54993a211c2d57ca35a5"
+    },
+    {
+      "member": "Unified_Geologic_Map_of_the_Moon_GIS/Unified_Geologic_Map_of_the_Moon_v2_March2020.txt",
+      "compressed_bytes": 2322,
+      "bytes": 5054,
+      "crc32": 1481921385,
+      "filename": "Unified_Geologic_Map_of_the_Moon_v2_March2020.txt",
+      "sha256": "d47f7d22481833224005b269b1d61e748875f49580d3396b54029a797f9b875b"
+    }
+  ]
+}

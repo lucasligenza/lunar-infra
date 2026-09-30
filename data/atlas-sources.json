@@ -40,10 +40,85 @@
       "data_type": "numeric_raster", "adapter": "existing_polar", "cache": "data/processed", "limitations": ["Modeled average, native 60 m area-averaged to 240 m; not current irradiance or a temporal simulation input.", "Prepared mask/footprint matches the local terrain crop."], "files": {}
     },
     {
-      "id": "usgs-geology", "name": "Unified Geologic Map of the Moon", "category": "geology", "mission": "Multi-mission synthesis", "instrument": "Mapped geological interpretation", "organization": "USGS / NASA / LPI",
-      "source_url": "https://astrogeology.usgs.gov/search/map/unified_geologic_map_of_the_moon_1_5m_2020", "citation": "Fortezzo, Spudis and Harrel (2020), 1:5,000,000 unified map", "version": "2020 v2", "product_id": "Unified_Geologic_Map_of_the_Moon_GIS_v2",
-      "period": {"start": null, "stop": null, "created": "2020-03-03"}, "coverage": {"south": -90, "north": 90, "west": 0, "east": 360}, "unit": "geological unit", "crs": "Source shapefile PRJ must be validated before preparation", "longitude_convention": "To be validated from source GIS", "frame_note": "Source map control network; not a surveyed site coordinate transformation",
-      "data_type": "vector", "adapter": "pending", "cache": "data/processed/atlas/usgs-geology", "limitations": ["Interpretive 1:5M map; boundaries are not construction-scale contacts.", "Archive metadata verified; polygons not yet acquired or numerically integrated."], "files": {}
+      "id": "usgs-geology",
+      "name": "Unified Geologic Map of the Moon",
+      "category": "geology",
+      "mission": "Multi-mission synthesis",
+      "instrument": "Mapped geological interpretation",
+      "organization": "USGS / NASA / LPI",
+      "source_url": "https://astrogeology.usgs.gov/search/map/unified_geologic_map_of_the_moon_1_5m_2020",
+      "citation": "Fortezzo, Spudis and Harrel (2020), 1:5,000,000 unified map",
+      "version": "2020 v2",
+      "product_id": "Unified_Geologic_Map_of_the_Moon_GIS_v2",
+      "period": {
+        "start": null,
+        "stop": null,
+        "created": "2020-03-03",
+        "release_date": "2020-03-02"
+      },
+      "coverage": {
+        "south": -90,
+        "north": 90,
+        "west": 0,
+        "east": 360
+      },
+      "unit": "geological unit",
+      "crs": "+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +R=1737400 +units=m +no_defs",
+      "longitude_convention": "Source projected -180\u2013180 east longitude; registered categorical grid normalized to 0\u2013360 east",
+      "frame_note": "Moon 2000 IAU/IAG sphere from source PRJ; no surveyed transformation into ME/PA DE421",
+      "data_type": "vector",
+      "adapter": "range_zip_geology",
+      "cache": "data/processed/atlas/usgs-geology",
+      "limitations": [
+        "Interpretive 1:5,000,000 map; boundaries are not construction-scale contacts.",
+        "Source polygons rasterized at 16 ppd (~1.9 km equatorial spacing) for query/overlay; this spacing does not establish geologic accuracy.",
+        "Unit interpretation is not a measured resource deposit or proof of extractable water.",
+        "Source control network and GLD100/LOLA frames are not tied by a surveyed sub-pixel transformation."
+      ],
+      "files": {
+        "GeoUnits.dbf": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 2670072,
+          "sha256": "fd6c74b9545ff62a3d8382ec271825b0a4d5508263372cbe3f4d34d6ab0463c4"
+        },
+        "GeoUnits.prj": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 393,
+          "sha256": "4473b61e75ee5e9c120f4c342b4ab85276a0c69090a2c9d7771b4b88ba835fd4"
+        },
+        "GeoUnits.shp": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 126176440,
+          "sha256": "122559104301f923cb75e48f5fadc87f31c3e1aeb354c499924b256c052770c1"
+        },
+        "GeoUnits.shp.xml": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 57156,
+          "sha256": "5661a20cb4676fd19236a5713f8cd65435f701d13644511143a121b52e1a9219"
+        },
+        "GeoUnits.shx": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 98076,
+          "sha256": "2caa6183448afa001203cd1bfd380f5e10cd018e51d78d1da73d11aec3687832"
+        },
+        "GeologyUnit_colors.csv": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 1542,
+          "sha256": "faf55ff77ae4e6dc885c7b227c272cc03a5be64633c676797320b7d83c312d80"
+        },
+        "Unified_Geologic_Map_of_the_Moon_DOMU_descriptions.csv": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 10830,
+          "sha256": "c6d532ac6c7c8774cc744c5ae4dfa0e43a89d1453f1f54993a211c2d57ca35a5"
+        },
+        "Unified_Geologic_Map_of_the_Moon_v2_March2020.txt": {
+          "url": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2.zip",
+          "bytes": 5054,
+          "sha256": "d47f7d22481833224005b269b1d61e748875f49580d3396b54029a797f9b875b"
+        }
+      },
+      "pixels_per_degree": 16,
+      "spacing_m_at_equator": 1895.20940150934
     },
     {
       "id": "diviner-temperature", "name": "Diviner thermal products", "category": "thermal", "mission": "LRO", "instrument": "Diviner", "organization": "NASA / UCLA / PDS",
