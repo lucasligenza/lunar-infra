@@ -3,8 +3,9 @@
 ## Current development phase
 
 Phase 2: infrastructure simulation and mission control. Phases 3-4 excluded.
-All local Phase 2 acceptance checks pass; final publication/remote CI confirmation
-is the active handoff task. Real-data temporal illumination is not integrated.
+Phase 2 acceptance checks pass locally and on GitHub with fresh NASA acquisition.
+All seven implementation milestones are committed and pushed. Real-data temporal
+illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 
 ## Completed milestones
 
@@ -28,7 +29,8 @@ Milestone 3 b180a1a pushed: scenario explorer and interactive asset placement.
 Milestone 4 f3a9e76 pushed: deterministic energy engine and numerical tests.
 Milestone 5 084b39c pushed: simulation API and immutable stored runs.
 Milestone 6 21c85e4 pushed: explicit mission inputs, computed telemetry, charts and playback.
-Milestone 7: final regression fixes, responsive navigation and acceptance evidence.
+Milestone 7 f93ba88 pushed, CI passed: final regression fixes, responsive navigation
+and acceptance evidence. Documentation handoff records confirmed remote validation.
 
 ## Validation results
 
@@ -40,7 +42,11 @@ Milestone 7: final regression fixes, responsive navigation and acceptance eviden
   consistent shortage tolerances. Small-screen section navigation is tested.
 - All six preceding Phase 2 commits have successful GitHub validation. Latest
   confirmed [run 36725728488](https://github.com/lucasligenza/lunar-infra/actions/runs/36725728488)
-  passed for 21c85e4. Final regression milestone remote validation is pending push.
+  passed for 21c85e4. Final [run 36729018094](https://github.com/lucasligenza/lunar-infra/actions/runs/36729018094)
+  passed for f93ba88: fresh pinned NASA acquisition, 69 Python tests plus eight
+  subtests, frontend typecheck/build and 10 browser tests. No skips.
+- Final production frontend and same-origin health/scenario endpoints return HTTP
+  200; the API is ready with verified datasets and the real -705 m inspection sample.
 - Playback browser test compares API results to displayed generation/load/SOC and
   shortage telemetry; tests interval scrubbing, speed/play/pause, chart window,
   collapse/expand, stale-result clearing and reopening a current saved run.
@@ -112,12 +118,13 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 21c85e4.
-Current milestone: fix: harden mission workflows and scientific input validation.
+Latest confirmed published implementation milestone: f93ba88 (GitHub CI passed).
+Current documentation handoff: docs: record confirmed Phase 2 acceptance.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Push the final validated milestone, confirm fresh-run GitHub CI and record the
-handoff. No Phase 3 work is authorized by this assignment.
+Phase 2 is complete within the documented scientific limits. Use README.md and
+docs/phase2-acceptance.md to run and review the application. Further phase work
+requires a new assignment; no Phase 3 features have been implemented.

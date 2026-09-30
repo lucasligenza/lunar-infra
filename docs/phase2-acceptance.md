@@ -41,7 +41,13 @@ user-defined hypothetical electrical factors.
 - Simulation API tests cover immutable results after edits, repeated hashes, restart
   persistence, corrupt snapshots, schema migration and cascade deletion.
 - GitHub Actions repeats acquisition of pinned NASA products and all checks on a
-  fresh Linux runner. Final run confirmation is linked in [PROGRESS.md](../PROGRESS.md).
+  fresh Linux runner. [Run 36729018094](https://github.com/lucasligenza/lunar-infra/actions/runs/36729018094)
+  **passed** for `f93ba88`, including fresh NASA acquisition and the full scientific,
+  persistence, energy, build and browser checks. All seven implementation milestones
+  are pushed; the complete milestone history is in [PROGRESS.md](../PROGRESS.md).
+- The final production frontend and API proxy return HTTP 200. Readiness confirms
+  verified scientific data; inspection at -89.5 degrees latitude, 0 degrees longitude
+  returns the real -705 m elevation sample. The scenario endpoint is available.
 
 ## Remaining scientific and operational limits
 
