@@ -1,0 +1,2 @@
+* text=auto
+tests/fixtures/*.lbl text eol=lf

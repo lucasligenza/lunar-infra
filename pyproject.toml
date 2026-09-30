@@ -1,0 +1,9 @@
+[project]
+name = "lunaros"
+version = "0.1.0"
+description = "Reproducible NASA LOLA terrain exploration"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.lunaros]
+runtime = "Python standard library; browser ES modules"
