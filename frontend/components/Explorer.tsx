@@ -12,7 +12,7 @@ import Timeline from "./mission/Timeline";
 import AssetInspector from "./panels/AssetInspector";
 import { ASSET_NAMES, ASSET_SYMBOLS, type AssetKind } from "../types/mission";
 import type { Dataset, LayerId, Region, Site } from "../types/scientific";
-import type { Mode, GlobeLocation, CameraState } from '../types/globe';
+import type { Mode, GlobeLocation, CameraState, GlobeInspection } from '../types/globe';
 const GlobalExplorer = dynamic(()=>import('./globe/GlobalExplorer'), { ssr:false });
 
 // OpenLayers owns browser DOM and canvas; load it only on the client.
@@ -29,6 +29,7 @@ export default function Explorer() {
   const [mode,setMode] = useState<Mode>('global');
   const [location,setLocation] = useState<GlobeLocation|null>(null);
   const [camera,setCamera] = useState<CameraState|null>(null);
+  const [coverage,setCoverage] = useState<GlobeInspection|null>(null);
   const [inspectorOpen,setInspectorOpen] = useState(true);
   useEffect(()=> { const requested = new URLSearchParams(window.location.search).get('mode');
     if(requested==='regional' || requested==='mission') setMode(requested); },[]);
@@ -95,6 +96,7 @@ export default function Explorer() {
       if (!controller.signal.aborted) {
         setSite(result); setInspecting(false);
         setLocation({latitude_deg:result.coordinates.latitude_deg,longitude_deg:result.coordinates.longitude_deg});
+        setCoverage(null);
         setLatitude(result.coordinates.latitude_deg.toFixed(5));
         setLongitude(result.coordinates.longitude_deg.toFixed(5));
       }
@@ -137,18 +139,22 @@ export default function Explorer() {
     const url = new URL(window.location.href); url.searchParams.set('mode',next); window.history.replaceState(null,'',url);
     if(next!=='global' && location) void inspect(location.longitude_deg,location.latitude_deg);
   }
-  function selectGlobal(point:GlobeLocation) { setLocation(point); setSite(null); }
+  function selectGlobal(point:GlobeLocation) { activeInspection.current?.abort(); setLocation(point); setSite(null); setCoverage(null); }
+  const unsupportedSelection = mode!=='global' && Boolean(coverage && !coverage.local_analysis);
   return <main className={`explorer mode-${mode}${inspectorOpen?'':' inspector-collapsed'}`}>
     <header className="app-header"><div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1>
       <span className="header-divider" /><p>{scenario.active?.name ?? 'Lunar exploration'}<small>{mode==='global'?'Global NASA visualization':mode==='regional'?'Scientific regional analysis':'Hypothetical mission design'}</small></p></div>
-      <nav className="mode-navigation" aria-label="Viewing mode">{([['global','Global Explorer'],['regional','Regional Analysis'],['mission','Mission Designer']] as const).map(([value,label])=><button key={value} aria-pressed={mode===value} onClick={()=>switchMode(value)}>{label}</button>)}</nav>
+      <nav className="mode-navigation" aria-label="Viewing mode">{([['global','Global Explorer'],['regional','Regional Analysis'],['mission','Mission Designer']] as const).map(([value,label])=><button key={value} disabled={working} aria-pressed={mode===value} onClick={()=>switchMode(value)}>{label}</button>)}</nav>
       <div className="header-status"><span className={region ? "status-dot ready" : "status-dot"} />
         {scenario.active ? scenario.busy ? "Saving…" : assetDirty ? "Unsaved asset changes" : missionDirty ? "Unsaved simulation inputs" : scenarioName !== scenario.active.name ? "Unsaved name" : `Saved / revision ${scenario.active.revision}` : region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}
         {scenario.active && <button className="primary-button" disabled={working || scenarioName === scenario.active.name || !scenarioName.trim()} onClick={() => void scenario.patch({ name: scenarioName })}>Save scenario</button>}
         <span className="phase-label">South pole / ME-PA DE421</span></div>
     </header>
-    {mode==='global' && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null} />}
-    <div className="local-shell" hidden={mode==='global'}>
+    {mode==='global' && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null} />}
+    {unsupportedSelection && <section className="unsupported-region" aria-label="Local coverage unavailable"><h2>Local analysis unavailable here</h2><p>The selected location remains {location?.latitude_deg.toFixed(5)}° latitude / {location?.longitude_deg.toFixed(5)}° E. Prepared 240 m terrain and infrastructure placement cover the south-pole footprint only.</p>
+      <button onClick={()=>switchMode('global')}>Return to selected global location</button>
+      <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}
+    <div className="local-shell" hidden={mode==='global' || unsupportedSelection}>
     <nav className="mobile-navigation" aria-label="Workspace navigation"><a href="#terrain-workspace">Map</a><a href="#exploration-tools">Tools</a><a href="#context-inspector">Inspector</a>{simulation.run && <a href="#mission-timeline">Timeline</a>}</nav>
     <div className={toolsOpen ? "workspace" : "workspace tools-collapsed"}>
       <aside id="exploration-tools" className="tool-rail" aria-label="Exploration tools">
@@ -228,16 +234,16 @@ export default function Explorer() {
           <span>Moon ME/PA DE421 · polar stereographic</span></footer>
       </section>
       <div id="context-inspector" className="context-rail">
-      {selectedInterval && <Telemetry interval={selectedInterval} asset={selectedAsset} />}
-      {selectedAsset ? <AssetInspector key={`${selectedAsset.id}:${editorEpoch}:${JSON.stringify(selectedAsset)}`} asset={selectedAsset} busy={working}
+      {selectedInterval && <div hidden={mode!=='mission'}><Telemetry interval={selectedInterval} asset={selectedAsset} /></div>}
+      <div hidden={mode!=='mission' || !selectedAsset}>{selectedAsset && <AssetInspector key={`${selectedAsset.id}:${editorEpoch}:${JSON.stringify(selectedAsset)}`} asset={selectedAsset} busy={working}
         onDirty={setAssetDirty}
         onSave={changes => void scenario.editAsset(selectedAsset.id, changes)} onMove={() => setPlacement("move")}
         onRemove={() => { if (window.confirm(`Remove “${selectedAsset.name}”?`)) void scenario.removeAsset(selectedAsset.id); }}
-        onInspect={() => { if (discardAsset()) { setSelectedAssetId(null); void inspect(selectedAsset.location.longitude_deg, selectedAsset.location.latitude_deg); } }} /> :
-        <SiteInspector site={site} loading={inspecting} error={inspectError} datasets={datasets} />}
+        onInspect={() => { if (discardAsset()) { setSelectedAssetId(null); void inspect(selectedAsset.location.longitude_deg, selectedAsset.location.latitude_deg); } }} />}</div>
+      <div hidden={mode==='mission' && Boolean(selectedAsset)}><SiteInspector site={site} loading={inspecting} error={inspectError} datasets={datasets} /></div>
       </div>
     </div>
-    {simulation.run && <Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} />}
+    {simulation.run && <Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='mission'} />}
     </div>
   </main>;
 }

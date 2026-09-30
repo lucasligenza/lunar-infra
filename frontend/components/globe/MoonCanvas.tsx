@@ -69,7 +69,9 @@ export default function MoonCanvas(props: Props) {
     const cancelFlight = () => { flight = null; };
     controls.addEventListener('start', cancelFlight); controls.addEventListener('end', snapshot); controls.addEventListener('change',()=>{dirty=true;});
     const resize = () => { const width = container.clientWidth, height = container.clientHeight; if (!width || !height) return;
-      renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); dirty=true; };
+      renderer.setSize(width, height); camera.aspect = width / height;
+      camera.fov = camera.aspect < 1 ? 2 * Math.atan(Math.tan(21 * Math.PI/180)/camera.aspect) * 180/Math.PI : 42;
+      camera.updateProjectionMatrix(); dirty=true; };
     const observer = new ResizeObserver(resize); observer.observe(container); resize();
     let down: [number, number] | null = null;
     const pointerDown = (event: PointerEvent) => { down = [event.clientX, event.clientY]; };
@@ -142,10 +144,11 @@ export default function MoonCanvas(props: Props) {
       if(dirty) { renderer.render(scene,camera); dirty=false;
         container.dataset.camera = camera.position.toArray().join(',');
         container.dataset.renderCalls = String(renderer.info.render.calls);
+        container.dataset.markers = JSON.stringify(markers.children.map(object=>({position:object.position.toArray(),scale:object.scale.x,pixels:object.userData.pixelRadius})));
       }
       frame = requestAnimationFrame(render);
     }; render();
-    return () => { disposed = true; controller.abort(); cancelAnimationFrame(frame); observer.disconnect(); controls.dispose();
+    return () => { snapshot(); disposed = true; controller.abort(); cancelAnimationFrame(frame); observer.disconnect(); controls.dispose();
       renderer.domElement.removeEventListener('pointerdown',pointerDown); renderer.domElement.removeEventListener('pointerup',select); renderer.domElement.removeEventListener('keydown',keyboard);
       scene.traverse(object => { if(object instanceof THREE.Mesh || object instanceof THREE.Line) { object.geometry.dispose(); const mats = Array.isArray(object.material) ? object.material : [object.material]; mats.forEach(m=>m.dispose()); } });
       textures.forEach(texture=>texture.dispose()); renderer.dispose(); renderer.forceContextLoss(); container.replaceChildren(); runtime.current = null; };

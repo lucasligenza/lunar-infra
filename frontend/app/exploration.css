@@ -9,6 +9,12 @@
 .mode-global .header-status { display:none; }
 .local-shell { flex:1; min-height:0; display:flex; flex-direction:column; }
 .local-shell[hidden] { display:none; }
+.context-rail > div:not([hidden]) { min-height:0; overflow:auto; scrollbar-width:thin; }
+.context-rail > div:not([hidden]):last-child { flex:1; }
+.unsupported-region { margin:auto; padding:32px; max-width:650px; }
+.unsupported-region h2 { font-size:28px; font-weight:500; }
+.unsupported-region p { color:var(--quiet); line-height:1.8; margin:20px 0; }
+.unsupported-region button { background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:12px; margin:6px 10px 6px 0; }
 .global-explorer { flex:1; min-height:0; position:relative; overflow:hidden; background:#080c11; }
 .moon-stage, .moon-canvas { position:absolute; inset:0; }
 .moon-canvas canvas { display:block; width:100%; height:100%; touch-action:none; }

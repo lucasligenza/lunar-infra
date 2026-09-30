@@ -6,9 +6,9 @@ import type { Asset } from '../../types/mission';
 import type { CameraState, Destination, GlobeInspection, GlobeLocation, GlobeMetadata, Mode } from '../../types/globe';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
 
-export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onMode }: {
+export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode }: {
   location: GlobeLocation | null; assets: Asset[]; base: GlobeLocation | null; camera: CameraState | null;
-  onCamera:(state:CameraState)=>void; onSelect:(location:GlobeLocation)=>void; onMode:(mode:Mode)=>void;
+  onCamera:(state:CameraState)=>void; onSelect:(location:GlobeLocation)=>void; onCoverage:(coverage:GlobeInspection)=>void; onMode:(mode:Mode)=>void;
 }) {
   const [metadata,setMetadata] = useState<GlobeMetadata|null>(null), [destinations,setDestinations] = useState<Destination[]>([]);
   const [error,setError] = useState<string|null>(null), [reload,setReload] = useState(0);
@@ -31,10 +31,11 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
     const abort = new AbortController();setInspecting(true);setInspection(null);setInspectionError(null);
     setLat(location.latitude_deg.toFixed(5));setLon(location.longitude_deg.toFixed(5));
     fetchScientific<GlobeInspection>(`/globe/inspect/location?latitude=${location.latitude_deg}&longitude=${location.longitude_deg}`,abort.signal)
-      .then(result=>{if(!abort.signal.aborted) {setInspection(result);setInspecting(false);}})
+      .then(result=>{if(!abort.signal.aborted) {setInspection(result);setInspecting(false);onCoverage(result);}})
       .catch(error=>{if(!abort.signal.aborted) {setInspectionError(error.message);setInspecting(false);}});
     return ()=>abort.abort();
   },[location]);
+  const destination = selected ?? destinations.find(place=>place.coordinates.latitude_deg===location?.latitude_deg && place.coordinates.longitude_deg===location?.longitude_deg) ?? null;
   function choose(point:GlobeLocation, destination:Destination|null=null) {
     onSelect(point);setSelected(destination);setDrawerOpen(true);
     setFlight({coordinates:point,distance:destination?.camera_distance_radii ?? 1.6,serial:++serial.current});
@@ -69,9 +70,9 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
     {location && <>
       <button className="region-drawer-toggle" onClick={()=>setDrawerOpen(value=>!value)} aria-expanded={drawerOpen}>{drawerOpen?'Close region details':'Open region details'}</button>
       {drawerOpen && <aside className="region-drawer" aria-label="Selected lunar region">
-        <div className="drawer-title"><span className="selection-dot"/><h2>{selected?.name ?? 'Selected location'}</h2></div>
+        <div className="drawer-title"><span className="selection-dot"/><h2>{destination?.name ?? 'Selected location'}</h2></div>
         <p className="region-coordinate" data-testid="global-coordinate">{Math.abs(location.latitude_deg).toFixed(5)}° {location.latitude_deg<0?'S':'N'} / {Math.abs(location.latitude_deg)===90?'longitude undefined':`${location.longitude_deg.toFixed(5)}° E`}</p>
-        {selected && <p>{selected.description}</p>}
+        {destination && <p>{destination.description}</p>}
         {inspecting && <p role="status">Checking scientific coverage…</p>}
         {inspectionError && <p role="alert">{inspectionError}</p>}
         {inspection && <><dl><dt>Global elevation</dt><dd data-testid="global-elevation">{inspection.elevation.value===null?'Unavailable':`${inspection.elevation.value.toLocaleString('en-US')} m`}</dd>
@@ -83,7 +84,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
           <p className="temporal-note">Real-data mission playback unavailable. Temporal profiles are hypothetical.</p></>}
         <details><summary>Scientific sources</summary><p>Global imagery is a visualization product, not a measurement. Local and global elevation have different sampling footprints.</p>
           {metadata?.source_urls.map(url=><a key={url} href={url} target="_blank" rel="noreferrer">{url.includes('svs')?'NASA visualization source':'NASA LOLA archive'}</a>)}
-          {selected && <><a href={selected.source_url} target="_blank" rel="noreferrer">Destination coordinate source</a><p>{selected.coordinate_note}</p></>}
+          {destination && <><a href={destination.source_url} target="_blank" rel="noreferrer">Destination coordinate source</a><p>{destination.coordinate_note}</p></>}
         </details>
       </aside>}
     </>}

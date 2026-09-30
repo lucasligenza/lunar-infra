@@ -27,9 +27,10 @@ function Chart({ title, rows, values, unit, color, selected, onSelect, battery =
   </div>;
 }
 
-export default function Timeline({ run, index, onIndex }: { run: SimulationRun; index: number; onIndex: (index: number) => void }) {
+export default function Timeline({ run, index, onIndex, active = true }: { run: SimulationRun; index: number; onIndex: (index: number) => void; active?: boolean }) {
   const [expanded, setExpanded] = useState(true);
   const [playing, setPlaying] = useState(false);
+  useEffect(()=>{if(!active) setPlaying(false);},[active]);
   const [speed, setSpeed] = useState(1);
   const [windowSize, setWindowSize] = useState(0);
   const position = useRef(index); position.current = index;

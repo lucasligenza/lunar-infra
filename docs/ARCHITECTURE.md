@@ -1,7 +1,8 @@
 # LunarOS architecture
 
 Phase 1 provides scientific exploration. Phase 2 adds hypothetical infrastructure,
-scenario persistence and energy simulation. Phases 3-4 remain outside this assignment.
+scenario persistence and energy simulation. The user's Phase 3 adds global 3D lunar
+exploration and connected viewing modes. Optimization and AI remain excluded.
 
 ```text
 NASA PDS / LOLA team (pinned IMG + labels)

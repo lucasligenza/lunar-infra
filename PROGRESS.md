@@ -33,13 +33,20 @@ and source-linked destinations implemented. Global preparation repeats identical
 and retains every native elevation sample. Full suite: 71 tests plus eight subtests
 pass, including two new global scientific/API tests. Native observation periods,
 source hashes, nodata and separate visualization/analysis coverage are recorded.
-Milestone 3: Three.js global lunar terrain, progressive NASA imagery, surface
+Milestone 3 6ae6269 pushed, CI passed: Three.js global lunar terrain, progressive NASA imagery, surface
 picking, source-linked destination search/fly-to, layer/camera controls and shared
 mode shell implemented. Two new browser/coordinate tests pass; rendered initial
 and selected-region screenshots inspected; marker sizing and button contrast fixed
 after visual review. All 12 browser tests and production build pass. Idle rendering now occurs only when
 the view changes; global navigation passes in 19.1 s on software Chromium.
-Next: complete mode/scenario continuity, coverage guards and local camera focus.
+Milestone 4: connected mode/scenario continuity implemented. Global selection
+opens real local inspection; unsupported regions show a coverage state rather
+than an unrelated map. Scenario drafts, assets, camera and selected simulation
+interval survive mode changes; hidden playback pauses. Two added browser tests
+pass, including actual rendered marker-coordinate checks. All 14 browser tests,
+typecheck and production build pass. Regional, mission and
+global-with-assets screenshots captured and visually inspected.
+Next: responsive/failure-state visual review, camera bounds and startup measurements.
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
@@ -136,8 +143,8 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 0a1b6a8.
-Current milestone: feat: render interactive global lunar explorer.
+Latest confirmed published milestone: 6ae6269 (GitHub CI passed).
+Current milestone: feat: connect lunar exploration and mission workflows.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
