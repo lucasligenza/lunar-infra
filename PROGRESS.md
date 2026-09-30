@@ -10,13 +10,15 @@ Phase 1: Lunar Data Explorer, following the user's roadmap. Phases 2-4 excluded.
 - 5933d31 (pushed): scientific monorepo foundation and real south-pole pipeline.
   NASA polar elevation and quantitative modeled illumination; bounded crop,
   CRS validation, nodata masks, local slope and aligned solar visibility.
-- Current milestone: typed scientific inspection service, FastAPI endpoints,
+- ab54689 (pushed): typed scientific inspection service, FastAPI endpoints,
   georeferenced PNG layers, readiness checks and explicit scientific error handling.
+- Current milestone: Next.js/OpenLayers lunar map, scientific layer controls,
+  interactive selection, inspector, provenance, responsive layout and error recovery.
 
 ## Active milestone and features in progress
 
-Scientific processing and FastAPI inspection complete. Next: interactive frontend.
-The interactive Next.js/OpenLayers frontend remains to be implemented.
+Scientific processing, FastAPI inspection and interactive frontend are implemented
+and validated locally. Final acceptance documentation and repeatable CI remain.
 
 ## Validation results
 
@@ -31,6 +33,11 @@ The interactive Next.js/OpenLayers frontend remains to be implemented.
   matches its registered GeoTIFF pixel exactly.
 - Region: 400 x 400 cells; elevation -4242.5 to +1954.5 m; maximum slope 35.1239 deg.
   All 160000 cells are valid in each layer.
+- Six Chromium browser tests pass using actual prepared NASA rasters, including
+  cold startup of both servers, JS/PyProj transform parity, click/form inspection,
+  all layers, pan/zoom, provenance, mobile layout, outside-region and API/raster retry.
+- Frontend TypeScript validation and production build pass. Desktop and mobile
+  screenshots were inspected; controls remain usable without overlap.
 - Rasterio emits affine multiplication deprecation warnings internally. Local code
   uses the supported matrix operator; numerical results are unaffected.
 
@@ -53,13 +60,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone before this commit: 5933d31.
-Current milestone: feat: expose scientific site inspection API.
+Latest confirmed published milestone before this commit: ab54689.
+Current milestone: feat: render interactive lunar data explorer.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement and verify the Next.js/OpenLayers interactive map, site inspector,
-layer controls, navigation, provenance and loading/error states. Complete startup
-docs and end-to-end validation. Commit and push each successful milestone.
+Record the Phase 1 acceptance evidence and add a repeatable GitHub validation
+workflow. No Phase 2 work is authorized during this assignment.
