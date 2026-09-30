@@ -1,7 +1,8 @@
 # LunarOS engineering rules
 
-Implement Phase 2: infrastructure placement, persistence and deterministic energy
-simulation, preserving Phase 1 scientific exploration. Phases 3-4 remain excluded.
+Implement the user's Phase 3: global 3D exploration, destinations, connected viewing
+modes and UI redesign. Preserve Phase 1 science and Phase 2 missions/simulations.
+Optimization and AI are outside this assignment.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.
 

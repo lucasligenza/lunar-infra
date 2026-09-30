@@ -2,7 +2,8 @@
 
 ## Current development phase
 
-Phase 2: infrastructure simulation and mission control. Phases 3-4 excluded.
+Phase 3: global 3D Moon exploration, destinations and connected premium UI.
+AI and optimization remain excluded. See docs/phase3-plan.md.
 Phase 2 acceptance checks pass locally and on GitHub with fresh NASA acquisition.
 All seven implementation milestones are committed and pushed. Real-data temporal
 illumination is not integrated; synthetic/custom hypothetical runs are explicit.
@@ -22,6 +23,12 @@ illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 - Final documentation milestone: record confirmed acceptance and remote validation.
 
 ## Active milestone and features in progress
+
+Phase 3 milestone 1: audit and renderer/data investigation complete. Baseline
+69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
+captured and visually inspected. Cesium ion requires account/token and hosted
+terms; Three.js plus NASA textures/validated global LOLA is the selected fallback.
+Next: reproducible global acquisition, elevation and coverage API.
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
@@ -118,13 +125,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published implementation milestone: f93ba88 (GitHub CI passed).
-Current documentation handoff: docs: record confirmed Phase 2 acceptance.
+Latest confirmed published handoff: 97ce26a.
+Current milestone: chore: audit global lunar explorer integration.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Phase 2 is complete within the documented scientific limits. Use README.md and
-docs/phase2-acceptance.md to run and review the application. Further phase work
-requires a new assignment; no Phase 3 features have been implemented.
+Prepare pinned global NASA visualization products and publish tested global
+inspection/coverage services, preserving all existing scientific and mission APIs.
