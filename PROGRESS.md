@@ -22,10 +22,16 @@ Phase 2: infrastructure simulation and mission control. Phases 3-4 excluded.
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
-Milestone 3: scenario explorer and interactive asset placement/configuration.
+Milestone 3 b180a1a pushed: scenario explorer and interactive asset placement.
+Milestone 4: deterministic energy engine, interval accounting and bound events.
 
 ## Validation results
 
+- Energy engine: 15 numerical tests pass, including 30 seeded randomized balance
+  cases, exact fractional-interval shortage onset, step refinement, stable multiple
+  battery dispatch, efficiencies, all storage limits, inactive assets and invalid
+  input/precision rejection. The preceding full suite passed 60 tests; three new
+  regressions also pass (63 total tests now present).
 - Infrastructure browser integration covers create/place/edit/move, invalid
   placement preserving saved state, reload/reopen, duplicate and confirmed removal.
   Configuration saves show the backend revision; unsaved edits are explicit.
@@ -80,12 +86,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: ff5035b.
-Current milestone: feat: add interactive lunar infrastructure placement.
+Latest confirmed published milestone: b180a1a.
+Current milestone: feat: implement deterministic lunar energy simulation.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement the deterministic Python energy engine and conservation tests before
-adding simulation charts or playback.
+Expose simulation endpoints with immutable scenario/input snapshots and stored
+results, then build charts/playback driven by their actual output.

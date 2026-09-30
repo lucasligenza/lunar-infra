@@ -13,7 +13,7 @@ Efficiency = Annotated[float, Field(gt=0, le=1, allow_inf_nan=False, strict=True
 
 
 class Definition(BaseModel):
-    model_config = ConfigDict(extra="forbid", validate_default=True)
+    model_config = ConfigDict(extra="forbid", validate_default=True, allow_inf_nan=False)
 
 
 class Location(Definition):

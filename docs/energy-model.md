@@ -1,0 +1,54 @@
+# Deterministic energy model energy-1.0
+
+The Python engine consumes typed hypothetical assets and an explicit illumination
+factor for every UTC interval. These factors are assumptions about available
+electrical output: generation = rated_kW * derating * factor for operational arrays.
+They do not convert NASA average visibility into instantaneous sunlight or eclipses.
+All arrays currently share the input factor; spatial shading and orientation are
+not computed. Custom input profiles are also hypothetical until a measured/modeled
+time-dependent source and its geometry have been validated.
+
+Loads: operational habitat and communications continuous kW; a habitat interval
+profile overrides continuous demand. Robot load is duty * active + (1-duty) * idle.
+All assets share an ideal DC bus with no transmission loss or load-shedding priority.
+
+## Units and conservation
+
+Power is kW and elapsed time is hours; their product is energy in kWh.
+Charging from the bus stores P_charge * dt * eta_charge internally. Discharging
+delivers P_discharge * dt to the bus and withdraws that amount / eta_discharge.
+The difference is an explicit battery loss, never silently discarded.
+
+```text
+generation_energy + initial_stored_energy
+ = served_load_energy + curtailed_energy + battery_losses + final_stored_energy
+served_load_energy = demanded_energy - unserved_energy
+```
+
+Every interval and whole-run summary reports the residual of this equation. Float64
+arithmetic with compensated sums is checked against relative 1e-9 energy tolerance.
+Tests also independently verify bus balance, bounds and losses. Dispatch under
+1e-12 kW is treated as zero; shortage event detection uses 1e-9 kW tolerance.
+Configurations beyond supported floating-point precision fail explicitly.
+
+## Storage dispatch and timing
+
+Bus charge/discharge limits, internal capacity and reserve SOC apply to each active
+battery. A battery never charges and discharges simultaneously. Offline batteries
+retain energy but cannot dispatch. Aggregate SOC includes all installed batteries;
+per-battery state is included so inactive storage cannot be mistaken for supply.
+Capacity times minimum_soc is inaccessible reserve; capacity minus reserve is the
+dispatchable window. Initial SOC must be at or above reserve.
+
+Batteries dispatch in sorted UUID order, an explicit deterministic priority rather
+than optimized dispatch. Generation and loads are constant within each input
+interval. When a battery fills or reaches reserve, the engine integrates to that
+instant and redispatches the remaining interval. This records exact shortage onset
+under these assumptions, including fractional intervals. Reported powers are
+interval averages, and SOC/energy are end-of-interval values, with initial values
+also preserved. Coarse intervals still cannot recover variation absent from input.
+
+No random state, Earth daily cycle or automatic location-to-illumination inference
+is used. At most 10000 reporting intervals and 100000 asset-intervals are supported
+to bound local work and output size. Thermal coupling, aging, battery voltage,
+startup transients, mechanical deployment and conversion physics are omitted.
