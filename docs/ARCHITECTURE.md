@@ -81,6 +81,13 @@ See [global data](global-data.md) and [Phase 3 plan](phase3-plan.md).
 
 Implementation references:
 
+The Phase 4 atlas registry and numeric services supplement the legacy polar and
+global stores. File-backed native arrays avoid loading the 32-pixel/degree DEM
+into Python memory. Derived slopes and browser tiles have independent caches;
+numeric queries always use original values. The same Three.js mesh supports
+progressive scientific tiles and a synchronized comparison reveal. See
+[atlas data and rendering](atlas-data.md) for limits and coordinate conventions.
+
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)

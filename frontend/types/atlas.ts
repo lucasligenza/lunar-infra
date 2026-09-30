@@ -12,3 +12,5 @@ export type AtlasQuantity = {value:number|null;unit:string;status:string;source_
 export type AtlasPoint = {latitude_deg:number;longitude_deg:number;longitude_defined:boolean;pixel_center:number[];
   sample_row:number;sample_column:number;dataset_id:string;elevation:AtlasQuantity;slope:AtlasQuantity;
   reference_radius_m:number;frame_note:string;terrain_source:string};
+export type AtlasView = {dataset:string;layer:string;opacity:number;compare:boolean;reveal:number};
+export type AtlasLayer = {id:string;dataset_id:string;name:string;unit:string;minimum:number;maximum:number;colors:string[];source_id:string;version:string;angular_spacing_deg:number;max_level:number;url_template:string};

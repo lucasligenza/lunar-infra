@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { fetchScientific } from '../../lib/api';
 import AtlasPanel from './AtlasPanel';
+import type { AtlasView } from '../../types/atlas';
 import type { Asset } from '../../types/mission';
 import type { CameraState, Destination, GlobeInspection, GlobeLocation, GlobeMetadata, Mode } from '../../types/globe';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
@@ -22,6 +23,8 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const [ready,setReady] = useState<number|null>(null), [lat,setLat] = useState('0'), [lon,setLon] = useState('0');
   const serial = useRef(0);
   const [atlasOpen,setAtlasOpen]=useState(false);
+  const [atlasView,setAtlasView]=useState<AtlasView>({dataset:'auto',layer:'none',opacity:.75,compare:false,reveal:.5});
+  const [atlasStatus,setAtlasStatus]=useState('Scientific overlay hidden');
   useEffect(()=>{
     const abort = new AbortController(); setError(null);setDestinationError(null);setDestinationsLoading(true);
     fetchScientific<GlobeMetadata>('/globe',abort.signal)
@@ -50,7 +53,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const results = destinations.filter(place=>`${place.name} ${place.id}`.toLowerCase().includes(query.toLowerCase()));
   return <section className="global-explorer" aria-label="Global lunar explorer">
     {metadata?.available ? <MoonCanvas metadata={metadata} location={location} flight={flight} assets={assets} base={base}
-      texture={texture} grid={grid} camera={camera} onCamera={onCamera} onReady={setReady}
+      texture={texture} grid={grid} camera={camera} onCamera={onCamera} onReady={setReady} atlas={atlasView} onAtlasStatus={setAtlasStatus}
       onSelect={point=>{onSelect(point);setSelected(null);setDrawerOpen(true);}} /> :
       <div className="globe-loading" role={error || metadata ? 'alert':'status'}><h2>{error || metadata ? 'Global data unavailable':'Preparing the lunar view'}</h2>
         <p>{error ?? (metadata ? 'Prepare the global NASA data and restart the API. The regional scientific map remains available.' : 'Loading verified global data metadata…')}</p>
@@ -75,7 +78,8 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <p>Imagery up to 4096 × 2048; terrain source 0.25°; display mesh 1°. Local analysis: 240 m where prepared.</p>
         {ready!==null && <small data-testid="globe-ready-time">First imagery ready in {(ready/1000).toFixed(2)} s on this browser.</small>}</div>}
     </div>
-    {atlasOpen&&<AtlasPanel location={location} onClose={()=>setAtlasOpen(false)} />}
+    {atlasOpen&&<AtlasPanel location={location} onClose={()=>setAtlasOpen(false)} view={atlasView} onView={setAtlasView} overlayStatus={atlasStatus} />}
+    {atlasView.layer!=='none'&&!atlasOpen&&<button className="atlas-active" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>{atlasView.layer} / {atlasView.dataset==='auto'?'best prepared terrain':atlasView.dataset}</button>}
     {location && !atlasOpen && <>
       <button className="region-drawer-toggle" onClick={()=>setDrawerOpen(value=>!value)} aria-expanded={drawerOpen}>{drawerOpen?'Close region details':'Open region details'}</button>
       {drawerOpen && <aside className="region-drawer" aria-label="Selected lunar region">

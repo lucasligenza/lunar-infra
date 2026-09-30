@@ -50,6 +50,12 @@
 .atlas-panel details { border-top:1px solid var(--border); padding:12px 0; font-size:12px; }
 .atlas-panel summary span, .atlas-panel summary small { display:block; } .atlas-panel summary small { color:var(--quiet); margin-top:5px; }
 .atlas-panel a { color:var(--accent); font-size:12px; }
+.atlas-panel input[type="checkbox"] { width:auto; margin-right:8px; } .atlas-panel input[type="range"] { padding:0; accent-color:var(--accent); }
+.atlas-legend > div { height:10px; border-radius:2px; } .atlas-legend p { display:flex; justify-content:space-between; margin:7px 0; }
+.atlas-layer-tools { border-bottom:1px solid var(--border); padding-bottom:8px; }
+.atlas-reveal { position:absolute; top:0; bottom:0; border-left:1px solid #d3e7f1; pointer-events:none; }
+.atlas-reveal span { position:absolute; top:22px; transform:translateX(-50%); padding:8px 12px; background:#111923e8; white-space:nowrap; color:var(--ink); font-size:11px; }
+.atlas-active { position:absolute; bottom:95px; left:24px; color:var(--accent); }
 .global-explorer :where(button):not(:where(.destination-results button, .search-input-row button)) { border:1px solid var(--border); background:#172330; padding:10px 14px; border-radius:4px; font-size:12px; }
 .global-explorer button.primary-button { background:#a0d3e3; color:#0b1721; }
 .floating-instrument { position:absolute; left:0; bottom:47px; width:290px; padding:18px; border:1px solid var(--border); background:#111923; border-radius:5px; }

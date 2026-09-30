@@ -95,7 +95,10 @@ visual mesh samples containing pixels at its vertices and interpolates triangles
 for rendering; visual mesh heights are never returned as scientific measurements.
 Global inspection samples the original native array. Different footprints and
 observation periods explain differences from the prepared 240 m polar elevation.
-No local slope or solar measurement is inferred outside prepared coverage.
+No solar measurement is inferred outside prepared polar coverage. Phase 4 adds
+native global GLD100/LOLA terrain slopes, with explicit source resolution and
+stencil support; these remain distinct from the finer prepared polar analysis.
+See [atlas derivations](atlas-data.md).
 
 The graphics coordinate axes are +X at 0 degrees east on the equator, +Y north,
 and -Z at 90 degrees east. This is an orthogonal permutation of the same lunar

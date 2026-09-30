@@ -3,12 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { lunarCoordinate, lunarVector, terrainHeight } from '../../lib/globe';
+import { ScientificOverlay } from '../../lib/atlas-render';
+import type { AtlasView } from '../../types/atlas';
 import type { CameraState, GlobeLocation, GlobeMetadata } from '../../types/globe';
 import type { Asset } from '../../types/mission';
 
 type Props = { metadata: GlobeMetadata; location: GlobeLocation | null; flight: { coordinates: GlobeLocation; distance: number; serial: number } | null;
   assets: Asset[]; base: GlobeLocation | null; texture: boolean; grid: boolean; camera: CameraState | null;
-  onCamera: (state: CameraState) => void; onSelect: (location: GlobeLocation) => void; onReady: (milliseconds: number) => void };
+  onCamera: (state: CameraState) => void; onSelect: (location: GlobeLocation) => void; onReady: (milliseconds: number) => void;
+  atlas?:AtlasView; onAtlasStatus?:(value:string)=>void };
 
 export default function MoonCanvas(props: Props) {
   const host = useRef<HTMLDivElement>(null), latest = useRef(props);
@@ -17,6 +20,7 @@ export default function MoonCanvas(props: Props) {
   const [status, setStatus] = useState('Loading NASA imagery…');
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
+  const overlay=useRef<ScientificOverlay|null>(null);
   useEffect(() => {
     if (!host.current) return;
     const started = performance.now(), container = host.current, controller = new AbortController();
@@ -42,6 +46,9 @@ export default function MoonCanvas(props: Props) {
     const geometry = new THREE.SphereGeometry(1, 360, 180);
     const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0 });
     const mesh = new THREE.Mesh(geometry, material); scene.add(mesh);
+    const scientific=new ScientificOverlay(geometry,()=>{dirty=true;},value=>latest.current.onAtlasStatus?.(value));
+    scene.add(scientific.group);overlay.current=scientific;
+    if(latest.current.atlas)scientific.configure(latest.current.atlas);
     // Fixed inspection lighting, NOT a solar model or current lunar illumination.
     scene.add(new THREE.AmbientLight(0xffffff, 1.2));
     const key = new THREE.DirectionalLight(0xffffff, 2); key.position.set(3, 2, 4); scene.add(key);
@@ -112,6 +119,8 @@ export default function MoonCanvas(props: Props) {
         const height = terrainHeight(values,lon,lat); const radius = 1 + (height ?? 0)/props.metadata.reference_radius_m;
         const vector = lunarVector(lon,lat,radius); positions.setXYZ(i,...vector); }
       positions.needsUpdate = true; geometry.computeVertexNormals(); geometry.computeBoundingSphere(); dirty=true;
+      container.dataset.terrain = JSON.stringify([positions.getX(1000),positions.getY(1000),positions.getZ(1000),positions.getX(25000),positions.getY(25000),positions.getZ(25000)]);
+      scientific.rebuild();
       setStatus(material.map ? `${imagerySize} imagery / LOLA terrain ready` : 'LOLA terrain ready · imagery loading');
     }).catch(() => { if (!disposed) setError('Global terrain unavailable. The reference sphere is visual only; retry to load verified LOLA terrain.'); });
     const render = () => {
@@ -129,6 +138,7 @@ export default function MoonCanvas(props: Props) {
       // Bound panning to the planet; distance limits remain relative to its center.
       if (controls.target.length() > .35) controls.target.setLength(.35);
       controls.update();
+      scientific.update(camera);
       if (camera.position.length() < 1.08) {camera.position.setLength(1.08);dirty=true;}
       if (camera.position.length() > 6) {camera.position.setLength(6);dirty=true;}
       if(grid.visible!==latest.current.grid) {grid.visible=latest.current.grid;dirty=true;}
@@ -141,7 +151,15 @@ export default function MoonCanvas(props: Props) {
         const scale = distance * Math.tan(camera.fov * Math.PI/360) * 2 / Math.max(1,container.clientHeight) * object.userData.pixelRadius;
         if(Math.abs(object.scale.x-scale)>1e-8) {object.scale.setScalar(scale);dirty=true;}
       }
-      if(dirty) { renderer.render(scene,camera); dirty=false;
+      if(dirty) {
+        const compare=latest.current.atlas?.compare && latest.current.atlas.layer!=='none';
+        if(compare) {
+          const width=container.clientWidth,height=container.clientHeight,split=width*latest.current.atlas!.reveal;
+          renderer.setScissorTest(true);renderer.setScissor(0,0,split,height);scientific.group.visible=false;renderer.render(scene,camera);
+          renderer.setScissor(split,0,width-split,height);scientific.group.visible=true;renderer.render(scene,camera);renderer.setScissorTest(false);
+        } else renderer.render(scene,camera);
+        dirty=false;
+        container.dataset.overlayTiles=String(scientific.group.children.length);
         container.dataset.draws = String(++draws);
         container.dataset.camera = camera.position.toArray().join(',');
         container.dataset.renderCalls = String(renderer.info.render.calls);
@@ -149,11 +167,12 @@ export default function MoonCanvas(props: Props) {
       }
       frame = requestAnimationFrame(render);
     }; render();
-    return () => { snapshot(); disposed = true; controller.abort(); cancelAnimationFrame(frame); observer.disconnect(); controls.dispose();
+    return () => { snapshot(); disposed = true; controller.abort(); cancelAnimationFrame(frame); observer.disconnect(); controls.dispose();scientific.dispose();overlay.current=null;
       renderer.domElement.removeEventListener('pointerdown',pointerDown); renderer.domElement.removeEventListener('pointerup',select); renderer.domElement.removeEventListener('keydown',keyboard);
       scene.traverse(object => { if(object instanceof THREE.Mesh || object instanceof THREE.Line) { object.geometry.dispose(); const mats = Array.isArray(object.material) ? object.material : [object.material]; mats.forEach(m=>m.dispose()); } });
       textures.forEach(texture=>texture.dispose()); renderer.dispose(); renderer.forceContextLoss(); container.replaceChildren(); runtime.current = null; };
   }, [props.metadata, retry]);
+  useEffect(()=>{if(props.atlas)overlay.current?.configure(props.atlas);},[props.atlas]);
   useEffect(() => { if(props.flight) runtime.current?.animateTo(props.flight.coordinates,props.flight.distance); },[props.flight]);
   useEffect(() => {
     const state = runtime.current; if(!state) return;
@@ -172,6 +191,7 @@ export default function MoonCanvas(props: Props) {
   },[props.location,props.assets,props.base,props.metadata,status]);
   return <div className="moon-stage">
     <div ref={host} className="moon-canvas" data-testid="moon-canvas" />
+    {props.atlas?.compare&&props.atlas.layer!=='none'&&<div className="atlas-reveal" style={{left:`${props.atlas.reveal*100}%`}} aria-hidden="true"><span>Imagery / science</span></div>}
     <div className="globe-render-status" role="status" data-testid="globe-status">{status}</div>
     {error && <div className="globe-render-error" role="alert"><p>{error}</p><button onClick={()=>setRetry(v=>v+1)}>Retry globe</button></div>}
     <div className="camera-controls" aria-label="Globe camera controls">

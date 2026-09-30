@@ -9,6 +9,7 @@ import numpy as np
 import rasterio
 from pyproj import CRS
 from backend.app.data.catalog import definitions
+from backend.app.geospatial.global_terrain import slope_rows, SLOPE_METHOD
 from lunaros.dataset import ROOT, checksum, fetch_files, verify_file
 
 RAW = ROOT / 'data/raw/atlas'
@@ -66,20 +67,34 @@ def prepare(identifier: str = 'gld100', raw: Path = RAW, output: Path = OUTPUT, 
     files = {name: spec.model_dump() for name,spec in source.files.items()}
     if not offline: fetch_files(raw,files)
     for name,spec in files.items(): verify_file(raw/name,spec)
+    directory = output/identifier
+    try:
+        registered=json.loads((directory/'registry.json').read_text(encoding='utf8'))
+        if (registered['source']==source.model_dump() and registered.get('slope_method')==SLOPE_METHOD
+            and set(registered['artifacts'])=={'elevation.npy','slope.npy'}):
+            for name,spec in registered['artifacts'].items():verify_file(directory/name,spec)
+            return plan | {'prepared':str(directory),'artifacts':registered['artifacts']}
+    except (OSError,ValueError,KeyError):pass
     path = raw / next(iter(files))
     label = validate_gld(path,source)
-    directory = output/identifier; directory.mkdir(parents=True,exist_ok=True)
+    directory.mkdir(parents=True,exist_ok=True)
     # Copy native signed values, including every PDS null/saturation code. No resampling.
     native = np.memmap(path,dtype='<i2',offset=23040,mode='r',shape=(5760,11520))
     target = directory/'elevation.npy'
     result = np.lib.format.open_memmap(target,mode='w+',dtype='<i2',shape=native.shape)
     for row in range(0,native.shape[0],128): result[row:row+128] = native[row:row+128]
     result.flush(); del result
+    slope_target=directory/'slope.npy'
+    slopes=np.lib.format.open_memmap(slope_target,mode='w+',dtype='<f4',shape=native.shape)
+    for row in range(0,native.shape[0],64):
+        slopes[row:row+64]=slope_rows(native,32,row,min(row+64,native.shape[0]))
+    slopes.flush();del slopes
     (directory/'source-label.txt').write_text(label.rstrip()+'\n',encoding='ascii')
     registry = {'schema_version':1,'source':source.model_dump(), 'shape':list(native.shape),
         'angular_step_deg':1/32,'reference_radius_m':1737400,'nodata_rule':'DN <= -32764 (five PDS special codes)',
         'processing':'Preserve native signed height in meters relative to lunar reference sphere; no interpolation',
-        'artifacts':{'elevation.npy':{'bytes':target.stat().st_size,'sha256':checksum(target)}}}
+        'slope_method':SLOPE_METHOD,
+        'artifacts':{file.name:{'bytes':file.stat().st_size,'sha256':checksum(file)} for file in [target,slope_target]}}
     (directory/'registry.json').write_text(json.dumps(registry,indent=2)+'\n',encoding='utf8')
     return plan | {'prepared':str(directory), 'artifacts':registry['artifacts']}
 

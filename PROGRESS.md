@@ -27,7 +27,7 @@ illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 
 ## Active milestone and features in progress
 
-Phase 4 milestone 1: real GLD100 native global terrain, typed catalog, bounded
+Phase 4 milestone 1 d1d4dc0 pushed, CI passed: real GLD100 native global terrain, typed catalog, bounded
 acquisition plan, independent atlas API and data-to-UI measurement inspector.
 Baseline verified: 71 Python tests plus eight subtests and 17 browser tests pass;
 initial rendered globe reviewed. GLD100 is pinned at 32 ppd / about 948 m
@@ -37,6 +37,18 @@ Validation passed: 74 Python tests plus eight subtests, all 18 Chromium tests,
 typecheck and production build. Native values match the original PDS array;
 repeat preparation is identical and corrupt caches/missing data are rejected.
 Rendered atlas inspector reviewed. Next: native global slope and 3D layers.
+
+Milestone 2: native global slope and georeferenced 3D elevation/slope layers.
+Central differences use latitude-dependent lunar distances and periodic longitude;
+nodata and polar boundary rows stay missing. 256-pixel tiles load by camera with
+bounded requests/GPU/disk caches, opacity, scientific legends and a synchronized
+imagery/science reveal. Patches retain the existing terrain triangles exactly.
+Validation: 79 Python tests plus eight subtests and all 20 Chromium tests pass;
+independent spherical derivatives, seam/pole clipping and numeric-to-color parity
+are checked. Actual elevation and slope screenshots inspected, with readable
+controls and preserved globe interaction. Typecheck and production build pass.
+Next: cube-sphere sectors, weighted AOI statistics
+and native elevation profiles.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -175,8 +187,9 @@ and acceptance evidence. Documentation handoff records confirmed remote validati
 ## Known scientific limitations and blockers
 
 No current implementation blocker. 240 m slopes cannot resolve landing hazards.
-Global elevation is coarse 0.25-degree data, rendered on a 1-degree mesh with at
-most 4k imagery; no high-resolution global terrain streaming is implemented.
+The visual globe retains its coarse 1-degree LOLA mesh and at most 4k imagery.
+Phase 4 native GLD100 queries/derived slopes use 0.03125-degree cells and progressive
+scientific color tiles; colored overlays do not increase geometric resolution.
 Detailed local analysis and infrastructure placement retain the prepared polar
 footprint. Destination centers are rounded navigation aids, not surveyed sites.
 Illumination is modeled long-term visibility and uses older underlying terrain.
@@ -188,12 +201,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 7c189a2.
-Current milestone: feat: establish global atlas registry and terrain queries.
+Latest confirmed published milestone: d1d4dc0 (GitHub run 36783140969 succeeded).
+Current milestone: feat: add global slope and georeferenced scientific overlays.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
 Complete Phase 4 milestones in docs/phase4-plan.md, preserving all earlier science
-and mission workflows. Next slice adds derived global slope and surface overlays.
+and mission workflows. Next slice adds sectors, regional statistics and profiles.
