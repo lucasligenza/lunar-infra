@@ -13,6 +13,7 @@ import AssetInspector from "./panels/AssetInspector";
 import { ASSET_NAMES, ASSET_SYMBOLS, type AssetKind } from "../types/mission";
 import type { Dataset, LayerId, Region, Site } from "../types/scientific";
 import type { Mode, GlobeLocation, CameraState, GlobeInspection } from '../types/globe';
+import { toPolar } from '../lib/lunar';
 const GlobalExplorer = dynamic(()=>import('./globe/GlobalExplorer'), { ssr:false });
 
 // OpenLayers owns browser DOM and canvas; load it only on the client.
@@ -140,7 +141,10 @@ export default function Explorer() {
     if(next!=='global' && location) void inspect(location.longitude_deg,location.latitude_deg);
   }
   function selectGlobal(point:GlobeLocation) { activeInspection.current?.abort(); setLocation(point); setSite(null); setCoverage(null); }
-  const unsupportedSelection = mode!=='global' && Boolean(coverage && !coverage.local_analysis);
+  const projectedLocation = location && region && location.latitude_deg<=0 ? toPolar(location.longitude_deg,location.latitude_deg,region.reference_radius_m) : null;
+  const outsideFootprint = location && region && (location.latitude_deg>0 || (projectedLocation &&
+    (projectedLocation[0]<region.bounds_m[0] || projectedLocation[0]>=region.bounds_m[2] || projectedLocation[1]<=region.bounds_m[1] || projectedLocation[1]>region.bounds_m[3])));
+  const unsupportedSelection = mode!=='global' && Boolean(outsideFootprint || (coverage && !coverage.local_analysis));
   return <main className={`explorer mode-${mode}${inspectorOpen?'':' inspector-collapsed'}`}>
     <header className="app-header"><div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1>
       <span className="header-divider" /><p>{scenario.active?.name ?? 'Lunar exploration'}<small>{mode==='global'?'Global NASA visualization':mode==='regional'?'Scientific regional analysis':'Hypothetical mission design'}</small></p></div>
@@ -151,7 +155,7 @@ export default function Explorer() {
         <span className="phase-label">South pole / ME-PA DE421</span></div>
     </header>
     {mode==='global' && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null} />}
-    {unsupportedSelection && <section className="unsupported-region" aria-label="Local coverage unavailable"><h2>Local analysis unavailable here</h2><p>The selected location remains {location?.latitude_deg.toFixed(5)}° latitude / {location?.longitude_deg.toFixed(5)}° E. Prepared 240 m terrain and infrastructure placement cover the south-pole footprint only.</p>
+    {unsupportedSelection && <section className="unsupported-region" aria-label="Local coverage unavailable"><h2>Local analysis unavailable here</h2><p>The selected location remains {location?.latitude_deg.toFixed(5)}° latitude / {location?.longitude_deg.toFixed(5)}° E. {coverage?.local_status==='unavailable'?'Prepared polar datasets are not loaded. Run the polar pipeline and restart the API.':coverage?.local_status==='nodata'?'The selected terrain cell has missing elevation. Choose a location with valid data.':'Prepared 240 m terrain and infrastructure placement cover the south-pole footprint only.'}</p>
       <button onClick={()=>switchMode('global')}>Return to selected global location</button>
       <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}
     <div className="local-shell" hidden={mode==='global' || unsupportedSelection}>

@@ -12,7 +12,8 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
 }) {
   const [metadata,setMetadata] = useState<GlobeMetadata|null>(null), [destinations,setDestinations] = useState<Destination[]>([]);
   const [error,setError] = useState<string|null>(null), [reload,setReload] = useState(0);
-  const [query,setQuery] = useState(''), [searchOpen,setSearchOpen] = useState(true), [layersOpen,setLayersOpen] = useState(false);
+  const [destinationError,setDestinationError] = useState<string|null>(null), [destinationsLoading,setDestinationsLoading] = useState(true);
+  const [query,setQuery] = useState(''), [searchOpen,setSearchOpen] = useState(()=>window.innerWidth>=800), [layersOpen,setLayersOpen] = useState(false);
   const [texture,setTexture] = useState(true), [grid,setGrid] = useState(false);
   const [selected,setSelected] = useState<Destination|null>(null), [inspection,setInspection] = useState<GlobeInspection|null>(null), [inspecting,setInspecting] = useState(false);
   const [inspectionError,setInspectionError] = useState<string|null>(null), [drawerOpen,setDrawerOpen] = useState(true);
@@ -20,10 +21,13 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const [ready,setReady] = useState<number|null>(null), [lat,setLat] = useState('0'), [lon,setLon] = useState('0');
   const serial = useRef(0);
   useEffect(()=>{
-    const abort = new AbortController(); setError(null);
-    Promise.all([fetchScientific<GlobeMetadata>('/globe',abort.signal),fetchScientific<Destination[]>('/destinations',abort.signal)])
-      .then(([data,places])=>{ if(!abort.signal.aborted) {setMetadata(data);setDestinations(places);} })
+    const abort = new AbortController(); setError(null);setDestinationError(null);setDestinationsLoading(true);
+    fetchScientific<GlobeMetadata>('/globe',abort.signal)
+      .then(data=>{ if(!abort.signal.aborted) setMetadata(data); })
       .catch(error=>{ if(!abort.signal.aborted) setError(error.message); });
+    fetchScientific<Destination[]>('/destinations',abort.signal)
+      .then(places=>{if(!abort.signal.aborted) {setDestinations(places);setDestinationsLoading(false);}})
+      .catch(()=>{if(!abort.signal.aborted) {setDestinationError('Destination catalog unavailable. Use coordinates or select the globe.');setDestinationsLoading(false);}});
     return ()=>abort.abort();
   },[reload]);
   useEffect(()=>{
@@ -38,6 +42,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const destination = selected ?? destinations.find(place=>place.coordinates.latitude_deg===location?.latitude_deg && place.coordinates.longitude_deg===location?.longitude_deg) ?? null;
   function choose(point:GlobeLocation, destination:Destination|null=null) {
     onSelect(point);setSelected(destination);setDrawerOpen(true);
+    if(window.innerWidth<800) setSearchOpen(false);
     setFlight({coordinates:point,distance:destination?.camera_distance_radii ?? 1.6,serial:++serial.current});
   }
   const results = destinations.filter(place=>`${place.name} ${place.id}`.toLowerCase().includes(query.toLowerCase()));
@@ -54,14 +59,14 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <button onClick={()=>setSearchOpen(value=>!value)} aria-expanded={searchOpen} aria-label={searchOpen?'Close destinations':'Open destinations'}>{searchOpen?'−':'+'}</button></div>
       {searchOpen && <div className="destination-results" aria-label="Lunar destinations">{results.map(place=><button key={place.id} onClick={()=>choose(place.coordinates,place)} aria-pressed={selected?.id===place.id}>
         <span>{place.name}</span><small>{Math.abs(place.coordinates.latitude_deg).toFixed(2)}° {place.coordinates.latitude_deg<0?'S':'N'} / {place.coordinates.longitude_defined===false?'pole':`${place.coordinates.longitude_deg.toFixed(2)}° E`}</small></button>)}
-        {!results.length && <p>No matching destination. Try a crater name or coordinates.</p>}
+        {destinationsLoading ? <p role="status">Loading destinations…</p> : destinationError ? <p role="alert">{destinationError}</p> : !results.length && <p>No matching destination. Try a crater name or coordinates.</p>}
       </div>}
       <details className="global-coordinates"><summary>Go to coordinates</summary><form onSubmit={event=>{event.preventDefault();choose({latitude_deg:Number(lat),longitude_deg:(Number(lon)+360)%360});}}>
         <label>Globe latitude (°)<input required type="number" step="any" min={-90} max={90} value={lat} onChange={e=>setLat(e.target.value)} /></label>
         <label>Globe longitude (° E)<input required type="number" step="any" min={-180} max={360} value={lon} onChange={e=>setLon(e.target.value)} /></label><button type="submit">Fly to coordinates</button></form></details>
     </div>
     {!location && <div className="global-introduction"><h2>Explore the Moon</h2><p>One world. Two hemispheres.<br/>A path from discovery to mission design.</p><span>Drag to orbit · scroll to approach · click to select</span></div>}
-    <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>setLayersOpen(value=>!value)}>Globe layers</button>
+    <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);if(window.innerWidth<800) setDrawerOpen(false);}}>Globe layers</button>
       {layersOpen && <div className="floating-instrument"><label><input type="checkbox" checked={texture} onChange={e=>setTexture(e.target.checked)} />NASA color visualization</label>
         <label><input type="checkbox" checked={grid} onChange={e=>setGrid(e.target.checked)} />Lunar graticule</label><p>True-scale LOLA relief. Display lighting is fixed, not modeled sunlight.</p>
         <p>Imagery up to 4096 × 2048; terrain source 0.25°; display mesh 1°. Local analysis: 240 m where prepared.</p>

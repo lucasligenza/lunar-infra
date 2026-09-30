@@ -64,6 +64,21 @@ Playback selects one Python result interval used by every chart and telemetry pa
 it does not calculate power or battery state in JavaScript. Mobile section links
 retain access to the scientific map, tools, inspector and computed timeline.
 
+Global exploration uses a separate bounded NASA preparation command and service.
+Its coarse native elevation supports global inspection without expanding local
+construction analysis. Three.js loads only in the active global view; 1k imagery
+precedes 4k, and a fixed 1-degree mesh samples the verified 0.25-degree DEM. No
+high-resolution planetary streaming engine or hosted account is required.
+
+The root Explorer owns location, camera, scenario and simulation context. Regional
+and mission controls stay mounted while hidden, preserving drafts; the GPU viewer
+is disposed on exit and reconstructs its saved camera on return. A synchronous
+lunar footprint check prevents rapid switches from showing an unrelated region;
+backend coverage remains authoritative for availability and nodata. At-rest frames
+do not redraw the GPU. Camera/texture changes invalidate the view, and controls,
+geometry, materials, textures, observer and WebGL context are released on cleanup.
+See [global data](global-data.md) and [Phase 3 plan](phase3-plan.md).
+
 Implementation references:
 
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)

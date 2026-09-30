@@ -81,6 +81,8 @@
   .mode-global.explorer { height:100dvh; min-height:600px; }
   .destination-search { top:14px; left:14px; width:245px; } .destination-results { max-height:240px; }
   .global-introduction { left:22px; bottom:140px; max-width:230px; } .global-introduction h2 { font-size:27px; }
+  .global-introduction h2, .global-introduction p { display:none; }
+  .global-introduction span { margin:0; max-width:300px; }
   .globe-render-status { top:auto; left:14px; bottom:85px; transform:none; font-size:10px; }
   .region-drawer-toggle { right:14px; top:auto; bottom:96px; }
   .region-drawer { left:14px; right:14px; top:auto; bottom:145px; width:auto; max-height:45%; padding:18px; }
@@ -88,6 +90,7 @@
   .global-layer-controls { left:14px; bottom:42px; } .global-layer-controls > button { padding:9px!important; }
   .globe-attribution { padding:10px 14px; font-size:9px; gap:10px; }
   .floating-instrument { width:260px; }
+  .global-explorer:has(.floating-instrument) .region-drawer-toggle { display:none; }
   .inspector-collapsed .workspace, .inspector-collapsed .workspace.tools-collapsed { grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto!important; transition:none!important; } }

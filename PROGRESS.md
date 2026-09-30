@@ -5,7 +5,7 @@
 Phase 3: global 3D Moon exploration, destinations and connected premium UI.
 AI and optimization remain excluded. See docs/phase3-plan.md.
 Phase 2 acceptance checks pass locally and on GitHub with fresh NASA acquisition.
-All seven implementation milestones are committed and pushed. Real-data temporal
+All seven Phase 2 implementation milestones are committed and pushed. Real-data temporal
 illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 
 ## Completed milestones
@@ -39,14 +39,21 @@ mode shell implemented. Two new browser/coordinate tests pass; rendered initial
 and selected-region screenshots inspected; marker sizing and button contrast fixed
 after visual review. All 12 browser tests and production build pass. Idle rendering now occurs only when
 the view changes; global navigation passes in 19.1 s on software Chromium.
-Milestone 4: connected mode/scenario continuity implemented. Global selection
+Milestone 4 93f6435 pushed, CI passed: connected mode/scenario continuity implemented. Global selection
 opens real local inspection; unsupported regions show a coverage state rather
 than an unrelated map. Scenario drafts, assets, camera and selected simulation
 interval survive mode changes; hidden playback pauses. Two added browser tests
 pass, including actual rendered marker-coordinate checks. All 14 browser tests,
 typecheck and production build pass. Regional, mission and
 global-with-assets screenshots captured and visually inspected.
-Next: responsive/failure-state visual review, camera bounds and startup measurements.
+Milestone 5: responsive/failure-state review and camera regressions complete locally.
+All 17 browser tests, typecheck and production build pass; the final rapid-switch
+coverage guard also passes its focused regression. Laptop (1280x800), desktop
+(1440x1000) and mobile (390x844) screenshots inspected. Mobile copy/panel overlaps
+were corrected; missing/global-loading states and local panel collapse tested.
+First decoded imagery measured 0.25 s from renderer creation on local Chromium;
+at-rest draw counts remain stable. This is not a universal device benchmark.
+Next: final acceptance documentation and confirmed fresh-run GitHub CI.
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
@@ -143,12 +150,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 6ae6269 (GitHub CI passed).
-Current milestone: feat: connect lunar exploration and mission workflows.
+Latest confirmed published milestone: 93f6435.
+Current milestone: fix: refine responsive lunar navigation and coverage states.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Prepare pinned global NASA visualization products and publish tested global
-inspection/coverage services, preserving all existing scientific and mission APIs.
+Confirm final fresh-data GitHub validation and record Phase 3 acceptance, source
+coverage, visual review and reproducible startup instructions.

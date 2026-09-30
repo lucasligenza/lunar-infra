@@ -20,7 +20,7 @@ export default function MoonCanvas(props: Props) {
   useEffect(() => {
     if (!host.current) return;
     const started = performance.now(), container = host.current, controller = new AbortController();
-    let disposed = false, frame = 0, dirty = true, renderer: THREE.WebGLRenderer;
+    let disposed = false, frame = 0, draws = 0, dirty = true, imagerySize = 'none', renderer: THREE.WebGLRenderer;
     const textures: THREE.Texture[] = [];
     try { renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' }); }
     catch { setError('3D rendering is unavailable. Enable WebGL or use Regional Analysis for the scientific map.'); return; }
@@ -95,8 +95,8 @@ export default function MoonCanvas(props: Props) {
     const applyTexture = (texture: THREE.Texture) => { if (disposed) { texture.dispose(); return; } textures.push(texture);
       texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = Math.min(4,renderer.capabilities.getMaxAnisotropy()); material.map = texture; material.needsUpdate = true; dirty=true; };
     void loadTexture(props.metadata.texture_urls[0]).then(texture => {
-      if (disposed) { texture.dispose(); return; } applyTexture(texture); setStatus('Global imagery ready · loading terrain'); latest.current.onReady(performance.now()-started);
-      return loadTexture(props.metadata.texture_urls[1]).then(texture => { applyTexture(texture); if (!disposed) setStatus(runtime.current?.heights ? '4k imagery / LOLA terrain ready' : '4k imagery / terrain loading'); })
+      if (disposed) { texture.dispose(); return; } imagerySize = '1k'; applyTexture(texture); setStatus('1k imagery ready · loading terrain'); latest.current.onReady(performance.now()-started);
+      return loadTexture(props.metadata.texture_urls[1]).then(texture => { imagerySize = '4k'; applyTexture(texture); if (!disposed) setStatus(runtime.current?.heights ? '4k imagery / LOLA terrain ready' : '4k imagery / terrain loading'); })
         .catch(() => { if (!disposed) setStatus('1k imagery ready; finer imagery unavailable'); });
     }).catch(() => { if (!disposed) setError('NASA imagery could not load. Check prepared global data and retry.'); });
     void fetch(`/api${props.metadata.terrain_url}`,{ signal:controller.signal }).then(async response => {
@@ -112,7 +112,7 @@ export default function MoonCanvas(props: Props) {
         const height = terrainHeight(values,lon,lat); const radius = 1 + (height ?? 0)/props.metadata.reference_radius_m;
         const vector = lunarVector(lon,lat,radius); positions.setXYZ(i,...vector); }
       positions.needsUpdate = true; geometry.computeVertexNormals(); geometry.computeBoundingSphere(); dirty=true;
-      setStatus(material.map ? 'NASA imagery / LOLA terrain ready' : 'LOLA terrain ready · imagery loading');
+      setStatus(material.map ? `${imagerySize} imagery / LOLA terrain ready` : 'LOLA terrain ready · imagery loading');
     }).catch(() => { if (!disposed) setError('Global terrain unavailable. The reference sphere is visual only; retry to load verified LOLA terrain.'); });
     const render = () => {
       if (flight) {
@@ -142,6 +142,7 @@ export default function MoonCanvas(props: Props) {
         if(Math.abs(object.scale.x-scale)>1e-8) {object.scale.setScalar(scale);dirty=true;}
       }
       if(dirty) { renderer.render(scene,camera); dirty=false;
+        container.dataset.draws = String(++draws);
         container.dataset.camera = camera.position.toArray().join(',');
         container.dataset.renderCalls = String(renderer.info.render.calls);
         container.dataset.markers = JSON.stringify(markers.children.map(object=>({position:object.position.toArray(),scale:object.scale.x,pixels:object.userData.pixelRadius})));

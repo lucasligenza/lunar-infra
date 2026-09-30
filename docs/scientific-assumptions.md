@@ -88,6 +88,29 @@ charts use steps; SOC lines connect reported endpoints for visual guidance, with
 asserting additional samples. These results are engineering calculations under
 explicit assumptions, not measurements of deployed infrastructure.
 
+## Global exploration (Phase 3)
+
+LDEM_4 V3.0 supplies native 0.25-degree global gridded altimetry. The 1-degree
+visual mesh samples containing pixels at its vertices and interpolates triangles
+for rendering; visual mesh heights are never returned as scientific measurements.
+Global inspection samples the original native array. Different footprints and
+observation periods explain differences from the prepared 240 m polar elevation.
+No local slope or solar measurement is inferred outside prepared coverage.
+
+The graphics coordinate axes are +X at 0 degrees east on the equator, +Y north,
+and -Z at 90 degrees east. This is an orthogonal permutation of the same lunar
+spherical frame. Radius is 1737400 m; relief is at true scale. Source texture
+longitude runs -180 to +180 with north at the top. NASA's visualization texture
+includes adjusted color, polar albedo fill and inpainting; it cannot establish
+reflectance, illumination or terrain safety. Display lighting is fixed for
+inspection, unrelated to mission sunlight.
+
+Destination coordinates are source-linked, rounded atlas navigation centers.
+Gazetteer control networks are not transformed into surveyed DE421 coordinates;
+on the spherical reference, geographic/centric latitude coincide. The SPA overview
+uses a published projection center, not a precisely surveyed basin center. Sources
+and precision notes stay visible in the destination inspector.
+
 ## Source references
 
 - [Original LOLA products and labels](https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/)

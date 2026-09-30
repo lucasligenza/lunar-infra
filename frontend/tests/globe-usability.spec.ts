@@ -1,0 +1,75 @@
+import {test,expect} from '@playwright/test';
+
+test('orbital drag, pan, keyboard selection, zoom bounds and idle rendering work',async({page})=>{
+  await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('4k imagery / LOLA terrain ready');
+  await page.getByRole('button',{name:'Close destinations',exact:true}).click();
+  const host=page.getByTestId('moon-canvas'), canvas=page.getByLabel('Interactive 3D Moon',{exact:true});
+  const before=await host.getAttribute('data-camera');const box=(await canvas.boundingBox())!;
+  await page.mouse.move(box.x+box.width*.55,box.y+box.height*.55);await page.mouse.down();
+  await page.mouse.move(box.x+box.width*.67,box.y+box.height*.63,{steps:10});await page.mouse.up();
+  await expect(host).not.toHaveAttribute('data-camera',before!);
+  await canvas.focus();await canvas.press('Enter');
+  await expect(page.getByTestId('global-elevation')).not.toHaveText('Unavailable');
+  await page.getByRole('button',{name:'Close region details',exact:true}).click();
+  await page.mouse.move(box.x+box.width*.5,box.y+box.height*.6);await page.mouse.down({button:'right'});
+  await page.mouse.move(box.x+box.width*.52,box.y+box.height*.61,{steps:5});await page.mouse.up({button:'right'});
+  for(let i=0;i<12;i++) await page.getByRole('button',{name:'Zoom globe in',exact:true}).click();
+  await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeGreaterThanOrEqual(1.08-1e-8);
+  for(let i=0;i<15;i++) await page.getByRole('button',{name:'Zoom globe out',exact:true}).click();
+  await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeLessThanOrEqual(6+1e-8);
+  await page.getByRole('button',{name:'Reset globe',exact:true}).click();
+  await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeCloseTo(3.4,2);
+  await expect.poll(async()=>{const draws=await host.getAttribute('data-draws');await page.waitForTimeout(200);return (await host.getAttribute('data-draws'))===draws;}).toBe(true);
+});
+
+test('loading, missing global data and failed terrain are explicit and recoverable',async({page,request})=>{
+  let release!:()=>void;const held=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/api/globe',async route=>{await held;await route.continue();});
+  await page.goto('/');await expect(page.getByText('Preparing the lunar view',{exact:true})).toBeVisible();
+  await page.screenshot({path:'../artifacts/phase3-loading.png'});
+  release();await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await page.unroute('**/api/globe');
+  const metadata=await (await request.get('/api/globe')).json();
+  await page.route('**/api/globe',route=>route.fulfill({json:{...metadata,available:false}}));
+  await page.reload();await expect(page.getByRole('heading',{name:'Global data unavailable',exact:true})).toBeVisible();
+  await page.screenshot({path:'../artifacts/phase3-missing-global.png'});
+  await page.getByRole('button',{name:'Regional Analysis',exact:true}).click();
+  await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
+  const width=(await page.getByTestId('terrain-map').boundingBox())!.width;
+  await page.getByRole('button',{name:'Hide inspector',exact:true}).click();
+  await expect.poll(async()=>(await page.getByTestId('terrain-map').boundingBox())!.width).toBeGreaterThan(width);
+  await page.getByRole('button',{name:'Collapse tools',exact:true}).click();
+  await page.screenshot({path:'../artifacts/phase3-regional-panels-closed.png'});
+  await page.getByRole('button',{name:'Expand tools',exact:true}).click();
+  await page.getByRole('button',{name:'Show inspector',exact:true}).click();
+  await page.getByRole('button',{name:'Global Explorer',exact:true}).click();
+  await page.unroute('**/api/globe');
+  await page.route('**/api/globe/elevation.bin',route=>route.fulfill({status:503,body:'Unavailable'}));
+  await page.getByRole('button',{name:'Retry global data',exact:true}).click();
+  await expect(page.getByRole('alert').filter({hasText:'Global terrain unavailable'})).toBeVisible();
+  await page.unroute('**/api/globe/elevation.bin');await page.getByRole('button',{name:'Retry globe',exact:true}).click();
+  await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+});
+
+test('global panels stay usable on laptop and mobile viewports',async({page})=>{
+  await page.setViewportSize({width:1280,height:800});await page.goto('/');
+  await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await page.screenshot({path:'../artifacts/phase3-laptop.png'});
+  await page.setViewportSize({width:390,height:844});await page.reload();
+  await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await expect(page.getByRole('button',{name:'Open destinations',exact:true})).toBeVisible();
+  await page.screenshot({path:'../artifacts/phase3-mobile-globe.png'});
+  await page.getByRole('button',{name:'Open destinations',exact:true}).click();
+  await page.getByRole('button',{name:/^Shackleton crater/}).click();
+  await expect(page.getByTestId('local-coverage')).toHaveText('240 m south-pole grid');
+  const search=(await page.locator('.destination-search').boundingBox())!, drawer=(await page.getByRole('complementary',{name:'Selected lunar region'}).boundingBox())!;
+  expect(search.y+search.height).toBeLessThan(drawer.y);
+  const dimensions=await page.evaluate(()=>({viewport:window.innerWidth,width:document.documentElement.scrollWidth}));
+  expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
+  await page.screenshot({path:'../artifacts/phase3-mobile-selected.png'});
+  await page.getByRole('button',{name:'Close region details',exact:true}).click();
+  await page.getByRole('button',{name:'Globe layers',exact:true}).click();
+  await expect(page.getByRole('checkbox',{name:'Lunar graticule',exact:true})).toBeInViewport();
+  console.log(await page.getByTestId('globe-ready-time').textContent());
+  await page.screenshot({path:'../artifacts/phase3-mobile-layers.png'});
+});

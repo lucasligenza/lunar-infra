@@ -1,10 +1,10 @@
 # LunarOS
 
-Lunar terrain exploration using actual NASA LOLA elevation and modeled solar
-visibility, with hypothetical infrastructure planning and deterministic energy simulation.
+Explore the entire Moon in 3D with NASA imagery and coarse LOLA relief, then move
+into validated south-pole terrain analysis and hypothetical infrastructure simulation.
 See [PROGRESS.md](PROGRESS.md) for completed milestones and remaining work.
-See [Phase 2 acceptance evidence](docs/phase2-acceptance.md), the
-[implementation plan](docs/phase2-plan.md) and [mission API](docs/mission-api.md).
+See the [Phase 3 plan](docs/phase3-plan.md), [global data](docs/global-data.md),
+[Phase 2 acceptance evidence](docs/phase2-acceptance.md) and [mission API](docs/mission-api.md).
 
 Requires Python 3.12+, [uv](https://docs.astral.sh/uv/getting-started/installation/),
 and Node.js 24 with npm. Dependencies are locked for reproducible installation.
@@ -45,13 +45,25 @@ cd frontend
 npm run dev
 ```
 
-Open **http://127.0.0.1:3000**. Drag or scroll the map, switch elevation/slope/solar
+Open **http://127.0.0.1:3000** for **Global Explorer**. Drag to orbit, right-drag or
+use arrow keys to pan, scroll to zoom, and click the Moon to select a location.
+Focus the globe and press Enter to select the center of the view. Search seven
+destinations, fly to coordinates, reset the camera, or toggle imagery/graticule.
+The source drawer identifies coarse elevation and supported local coverage.
+Use **Analyze this region** or **Design a mission here** at the prepared south pole.
+Elsewhere, local analysis is explicitly unavailable; no local values are fabricated.
+The top mode controls preserve location, camera, active scenario, drafts and the
+selected simulation interval. Hidden playback pauses. On phones, destination and
+region panels can be closed so they do not obstruct navigation.
+
+In **Regional Analysis**, drag or scroll the map, switch elevation/slope/solar
 visibility layers, and click a location to inspect it. The coordinate form also
 accepts planetocentric latitude and east-positive longitude. Source labels, units,
 methods and sampling footprints are available in the inspector. At latitude
 `-89.5`, longitude `0`, the prepared raster reports -705 m elevation.
 
-Select terrain, enter a scenario name and choose **Create scenario at selected site**.
+In **Mission Designer**, select terrain, enter a scenario name and choose
+**Create scenario at selected site**.
 Choose an asset from the infrastructure catalog, then click valid terrain to place it.
 Click its symbol or list entry to configure it. **Save asset** persists parameters;
 **Move on map** relocates it. Reopen, duplicate or delete scenarios from the left
@@ -105,6 +117,10 @@ runner. See [Phase 1](docs/phase1-acceptance.md) and
 [Phase 2](docs/phase2-acceptance.md) acceptance evidence for test coverage.
 
 The 240 m terrain grid supports regional exploration, not landing-hazard analysis.
+The global 0.25° elevation source is approximately 7.58 km per pixel at the equator;
+its display mesh uses 1° spacing and the visualization texture reaches 4096 × 2048.
+Higher global detail is not streamed by this implementation. Global visual selection
+is suitable for navigation; construction-scale conclusions need finer verified data.
 Solar visibility is a modeled long-term frequency over approximately 18.6 years,
 not current sunlight or electrical power. See the scientific limitations below.
 

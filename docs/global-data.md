@@ -45,3 +45,9 @@ coincide; no unverified control-network transformation is applied.
 Sources: [NASA CGI Moon Kit](https://svs.gsfc.nasa.gov/4720/),
 [PDS global manifest](../data/ldem_4.json), [texture manifest](../data/globe-sources.json),
 [destination sources and coordinate notes](../data/destinations.json).
+
+Three.js and OrbitControls use the MIT license (copyright 2010-2026 three.js authors;
+see the installed package LICENSE and [upstream license](https://github.com/mrdoob/three.js/blob/dev/LICENSE)).
+NASA imagery is credited in the viewer and source metadata; use is educational
+and informational, without implying NASA endorsement. See [NASA media guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/).
+Hosted Cesium content was evaluated but is not included or dependent on any token.
