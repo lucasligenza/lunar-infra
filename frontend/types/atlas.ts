@@ -14,3 +14,13 @@ export type AtlasPoint = {latitude_deg:number;longitude_deg:number;longitude_def
   reference_radius_m:number;frame_note:string;terrain_source:string};
 export type AtlasView = {dataset:string;layer:string;opacity:number;compare:boolean;reveal:number};
 export type AtlasLayer = {id:string;dataset_id:string;name:string;unit:string;minimum:number;maximum:number;colors:string[];source_id:string;version:string;angular_spacing_deg:number;max_level:number;url_template:string};
+export type AtlasSector={id:string;name:string;face:string;level:number;x:number;y:number;center:{longitude_deg:number;latitude_deg:number};boundary:{longitude_deg:number;latitude_deg:number}[]};
+export type AreaSummary={minimum:number|null;maximum:number|null;mean:number|null;unit:string;valid_cells:number;valid_area_km2:number};
+export type AreaReport={dataset_id:string;source_id:string;version:string;selected_cells:number;selected_area_km2:number;elevation:AreaSummary;slope:AreaSummary;
+  area:{kind:string;latitude_deg?:number;longitude_deg?:number;radius_km?:number;south?:number;north?:number;west?:number;east?:number};
+  terrain_relief_m:number|null;
+  slope_distribution:{minimum_deg:number;maximum_deg:number;area_km2:number;fraction_of_valid_slope_area:number|null}[];weighting_method:string;warnings:string[];
+  frame_note:string;resolution:{pixels_per_degree:number;north_south_spacing_m:number;slope_support_pixels:number}};
+export type ProfileReport={dataset_id:string;source_id:string;version:string;distance_km:number;sample_spacing_km:number;
+  samples:{distance_km:number;longitude_deg:number;latitude_deg:number;elevation_m:number|null;status:string}[];method:string;warnings:string[]};
+export type AtlasAnalysisState={radius:string;kind:'circle'|'box';bounds:{south:string;north:string;west:string;east:string};endpoint:{latitude:string;longitude:string};report:AreaReport|null;profile:ProfileReport|null};

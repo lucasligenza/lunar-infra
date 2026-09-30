@@ -38,7 +38,7 @@ typecheck and production build. Native values match the original PDS array;
 repeat preparation is identical and corrupt caches/missing data are rejected.
 Rendered atlas inspector reviewed. Next: native global slope and 3D layers.
 
-Milestone 2: native global slope and georeferenced 3D elevation/slope layers.
+Milestone 2 c980eb3 pushed, CI passed (run 36785755743): native global slope and georeferenced 3D elevation/slope layers.
 Central differences use latitude-dependent lunar distances and periodic longitude;
 nodata and polar boundary rows stay missing. 256-pixel tiles load by camera with
 bounded requests/GPU/disk caches, opacity, scientific legends and a synchronized
@@ -49,6 +49,18 @@ are checked. Actual elevation and slope screenshots inspected, with readable
 controls and preserved globe interaction. Typecheck and production build pass.
 Next: cube-sphere sectors, weighted AOI statistics
 and native elevation profiles.
+
+Milestone 3: cube-sphere sector hierarchy, globe highlighting/fly-to and browser
+favorites; arbitrary radius or wrapped geographic extent; lunar-area-weighted
+elevation/slope statistics, terrain relief, great-circle elevation profiles and
+source-linked JSON/CSV exports. Regional analysis outside the polar footprint now
+uses the 3D atlas; the original polar map and mission drafts remain intact. Atlas
+source/layer/sector/results survive mode transitions. Validation: 83 Python tests
+plus eight subtests and 22 browser tests pass. Profile endpoints retain exact
+input coordinates after a cell-boundary regression fix. Desktop and mobile
+interactions reviewed; chart labels enlarged and atlas header/tabs made sticky
+after screenshot inspection. Focused browser regression and typecheck pass.
+Production build passes. Next: validated USGS geology integration.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -201,12 +213,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: d1d4dc0 (GitHub run 36783140969 succeeded).
-Current milestone: feat: add global slope and georeferenced scientific overlays.
+Latest confirmed published milestone: c980eb3 (GitHub run 36785755743 succeeded).
+Current milestone: feat: add lunar sectors and regional terrain analysis.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
 Complete Phase 4 milestones in docs/phase4-plan.md, preserving all earlier science
-and mission workflows. Next slice adds sectors, regional statistics and profiles.
+and mission workflows. Next slice integrates the acquired USGS geology polygons.

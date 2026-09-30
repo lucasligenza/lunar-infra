@@ -11,7 +11,7 @@ import type { Asset } from '../../types/mission';
 type Props = { metadata: GlobeMetadata; location: GlobeLocation | null; flight: { coordinates: GlobeLocation; distance: number; serial: number } | null;
   assets: Asset[]; base: GlobeLocation | null; texture: boolean; grid: boolean; camera: CameraState | null;
   onCamera: (state: CameraState) => void; onSelect: (location: GlobeLocation) => void; onReady: (milliseconds: number) => void;
-  atlas?:AtlasView; onAtlasStatus?:(value:string)=>void };
+  atlas?:AtlasView; onAtlasStatus?:(value:string)=>void;boundaries?:GlobeLocation[][] };
 
 export default function MoonCanvas(props: Props) {
   const host = useRef<HTMLDivElement>(null), latest = useRef(props);
@@ -21,6 +21,7 @@ export default function MoonCanvas(props: Props) {
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   const overlay=useRef<ScientificOverlay|null>(null);
+  const boundaryGroup=useRef<THREE.Group|null>(null);
   useEffect(() => {
     if (!host.current) return;
     const started = performance.now(), container = host.current, controller = new AbortController();
@@ -53,6 +54,7 @@ export default function MoonCanvas(props: Props) {
     scene.add(new THREE.AmbientLight(0xffffff, 1.2));
     const key = new THREE.DirectionalLight(0xffffff, 2); key.position.set(3, 2, 4); scene.add(key);
     const markers = new THREE.Group(), grid = new THREE.Group(); scene.add(markers, grid);
+    const boundaries=new THREE.Group();scene.add(boundaries);boundaryGroup.current=boundaries;
     const gridMaterial = new THREE.LineBasicMaterial({ color: 0x8ecfe4, transparent: true, opacity: .22 });
     for (let latitude = -60; latitude <= 60; latitude += 30) {
       const points = Array.from({ length: 181 }, (_, i) => new THREE.Vector3(...lunarVector(i * 2, latitude, 1.012)));
@@ -170,9 +172,17 @@ export default function MoonCanvas(props: Props) {
     return () => { snapshot(); disposed = true; controller.abort(); cancelAnimationFrame(frame); observer.disconnect(); controls.dispose();scientific.dispose();overlay.current=null;
       renderer.domElement.removeEventListener('pointerdown',pointerDown); renderer.domElement.removeEventListener('pointerup',select); renderer.domElement.removeEventListener('keydown',keyboard);
       scene.traverse(object => { if(object instanceof THREE.Mesh || object instanceof THREE.Line) { object.geometry.dispose(); const mats = Array.isArray(object.material) ? object.material : [object.material]; mats.forEach(m=>m.dispose()); } });
-      textures.forEach(texture=>texture.dispose()); renderer.dispose(); renderer.forceContextLoss(); container.replaceChildren(); runtime.current = null; };
+      textures.forEach(texture=>texture.dispose()); renderer.dispose(); renderer.forceContextLoss(); container.replaceChildren(); runtime.current = null;boundaryGroup.current=null; };
   }, [props.metadata, retry]);
   useEffect(()=>{if(props.atlas)overlay.current?.configure(props.atlas);},[props.atlas]);
+  useEffect(()=>{
+    const group=boundaryGroup.current;if(!group)return;
+    for(const child of [...group.children]){group.remove(child);if(child instanceof THREE.Line){child.geometry.dispose();(child.material as THREE.Material).dispose();}}
+    for(const boundary of props.boundaries??[]) {
+      const points=boundary.map(point=>new THREE.Vector3(...lunarVector(point.longitude_deg,point.latitude_deg,1.008)));
+      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xe7b879,transparent:true,opacity:.85})));
+    }runtime.current?.invalidate();if(host.current)host.current.dataset.sectorBoundaries=String(group.children.length);
+  },[props.boundaries,props.metadata,status]);
   useEffect(() => { if(props.flight) runtime.current?.animateTo(props.flight.coordinates,props.flight.distance); },[props.flight]);
   useEffect(() => {
     const state = runtime.current; if(!state) return;

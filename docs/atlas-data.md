@@ -52,6 +52,35 @@ Source definitions live in `data/atlas-sources.json`. Discovery entries do not
 become queryable or renderable merely by appearing in the catalog. Dataset periods,
 unknown frames, pending integrations and scientific limitations remain explicit.
 
+## Sectors and regional analysis
+
+Cube-sphere navigation sectors have six dominant Cartesian faces and UV quadtree
+subdivisions. Stable tie ordering and longitude wrapping work at the seam and both
+poles. This index does not replace the renderer's geographic tile hierarchy.
+Sector boundary lines and analysis outlines are navigation guides, not terrain
+measurements. Personal favorite coordinates are saved in versioned browser storage.
+
+`POST /atlas/analysis` accepts an arbitrary circular radius or a geographic extent.
+West-to-east extents may cross 0 degrees. Extent edge fractions use exact spherical
+cell areas R² Δlongitude (sin(north) − sin(south)); means and slope distributions
+are area weighted, not pixel averages. Circular boundaries use cell-center inclusion
+with the stated approximation at boundary cells. Areas omit relief surface area.
+Missing cells are excluded and their coverage is reported. Requests are bounded
+to two million native candidate cells; choose a smaller area or the coarser LOLA
+source when necessary. Min/max relief is a derived difference in meters.
+
+`POST /atlas/profile` follows the shortest spherical great circle and samples
+containing native cells. Antipodal endpoints are rejected because the shortest
+route is not unique. Endpoint coordinates are preserved exactly to avoid floating
+point shifts across cell boundaries. Oversampling is labeled and missing samples
+remain gaps. The chart joins reported samples only for visual guidance. Distance
+omits relief correction. JSON/CSV exports retain the source, units and methods.
+
+The root UI retains atlas dataset, layer, sector, analysis parameters and computed
+results across mode changes. Areas outside the prepared polar footprint use the
+3D atlas analysis; the original 240 m polar 2D map remains available. Neither the
+global terrain layer nor geological interpretation supplies temporal sunlight.
+
 Sources: [GLD100 documentation](https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_GLD100),
 [selected numeric product](https://data.lroc.im-ldi.com/lroc/view_rdr_product/WAC_GLD100_E000N1800_032P),
 [Scholten et al.](https://doi.org/10.1029/2011JE003926).

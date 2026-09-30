@@ -14,6 +14,7 @@ import { ASSET_NAMES, ASSET_SYMBOLS, type AssetKind } from "../types/mission";
 import type { Dataset, LayerId, Region, Site } from "../types/scientific";
 import type { Mode, GlobeLocation, CameraState, GlobeInspection } from '../types/globe';
 import { toPolar } from '../lib/lunar';
+import type {AtlasView,AtlasSector,AtlasAnalysisState} from '../types/atlas';
 const GlobalExplorer = dynamic(()=>import('./globe/GlobalExplorer'), { ssr:false });
 
 // OpenLayers owns browser DOM and canvas; load it only on the client.
@@ -31,6 +32,9 @@ export default function Explorer() {
   const [location,setLocation] = useState<GlobeLocation|null>(null);
   const [camera,setCamera] = useState<CameraState|null>(null);
   const [coverage,setCoverage] = useState<GlobeInspection|null>(null);
+  const [atlasView,setAtlasView]=useState<AtlasView>({dataset:'auto',layer:'none',opacity:.75,compare:false,reveal:.5});
+  const [atlasSector,setAtlasSector]=useState<AtlasSector|null>(null),[atlasRegional,setAtlasRegional]=useState(false);
+  const [atlasAnalysis,setAtlasAnalysis]=useState<AtlasAnalysisState>({radius:'25',kind:'circle',bounds:{south:'-5',north:'5',west:'350',east:'10'},endpoint:{latitude:'0',longitude:'24'},report:null,profile:null});
   const [inspectorOpen,setInspectorOpen] = useState(true);
   useEffect(()=> { const requested = new URLSearchParams(window.location.search).get('mode');
     if(requested==='regional' || requested==='mission') setMode(requested); },[]);
@@ -138,14 +142,15 @@ export default function Explorer() {
 
   function switchMode(next:Mode) { setMode(next); setPlacement(null);
     const url = new URL(window.location.href); url.searchParams.set('mode',next); window.history.replaceState(null,'',url);
-    if(next!=='global' && location) void inspect(location.longitude_deg,location.latitude_deg);
+    if(next!=='global' && location && !outsideFootprint) void inspect(location.longitude_deg,location.latitude_deg);
   }
   function selectGlobal(point:GlobeLocation) { activeInspection.current?.abort(); setLocation(point); setSite(null); setCoverage(null); }
   const projectedLocation = location && region && location.latitude_deg<=0 ? toPolar(location.longitude_deg,location.latitude_deg,region.reference_radius_m) : null;
   const outsideFootprint = location && region && (location.latitude_deg>0 || (projectedLocation &&
     (projectedLocation[0]<region.bounds_m[0] || projectedLocation[0]>=region.bounds_m[2] || projectedLocation[1]<=region.bounds_m[1] || projectedLocation[1]>region.bounds_m[3])));
-  const unsupportedSelection = mode!=='global' && Boolean(outsideFootprint || (coverage && !coverage.local_analysis));
-  return <main className={`explorer mode-${mode}${inspectorOpen?'':' inspector-collapsed'}`}>
+  const atlasRegionalView=mode==='regional'&&Boolean(atlasRegional||outsideFootprint);
+  const unsupportedSelection = mode==='mission' && Boolean(outsideFootprint || (coverage && !coverage.local_analysis));
+  return <main className={`explorer mode-${mode}${atlasRegionalView?' atlas-workspace':''}${inspectorOpen?'':' inspector-collapsed'}`}>
     <header className="app-header"><div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1>
       <span className="header-divider" /><p>{scenario.active?.name ?? 'Lunar exploration'}<small>{mode==='global'?'Global NASA visualization':mode==='regional'?'Scientific regional analysis':'Hypothetical mission design'}</small></p></div>
       <nav className="mode-navigation" aria-label="Viewing mode">{([['global','Global Explorer'],['regional','Regional Analysis'],['mission','Mission Designer']] as const).map(([value,label])=><button key={value} disabled={working} aria-pressed={mode===value} onClick={()=>switchMode(value)}>{label}</button>)}</nav>
@@ -154,11 +159,13 @@ export default function Explorer() {
         {scenario.active && <button className="primary-button" disabled={working || scenarioName === scenario.active.name || !scenarioName.trim()} onClick={() => void scenario.patch({ name: scenarioName })}>Save scenario</button>}
         <span className="phase-label">South pole / ME-PA DE421</span></div>
     </header>
-    {mode==='global' && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null} />}
+    {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
+      atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
+      onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
     {unsupportedSelection && <section className="unsupported-region" aria-label="Local coverage unavailable"><h2>Local analysis unavailable here</h2><p>The selected location remains {location?.latitude_deg.toFixed(5)}° latitude / {location?.longitude_deg.toFixed(5)}° E. {coverage?.local_status==='unavailable'?'Prepared polar datasets are not loaded. Run the polar pipeline and restart the API.':coverage?.local_status==='nodata'?'The selected terrain cell has missing elevation. Choose a location with valid data.':'Prepared 240 m terrain and infrastructure placement cover the south-pole footprint only.'}</p>
       <button onClick={()=>switchMode('global')}>Return to selected global location</button>
       <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}
-    <div className="local-shell" hidden={mode==='global' || unsupportedSelection}>
+    <div className="local-shell" hidden={mode==='global' || atlasRegionalView || unsupportedSelection}>
     <nav className="mobile-navigation" aria-label="Workspace navigation"><a href="#terrain-workspace">Map</a><a href="#exploration-tools">Tools</a><a href="#context-inspector">Inspector</a>{simulation.run && <a href="#mission-timeline">Timeline</a>}</nav>
     <div className={toolsOpen ? "workspace" : "workspace tools-collapsed"}>
       <aside id="exploration-tools" className="tool-rail" aria-label="Exploration tools">
@@ -216,6 +223,7 @@ export default function Explorer() {
       </aside>
       <section id="terrain-workspace" className="map-workspace" aria-label="Terrain exploration">
         <button className="inspector-toggle" aria-expanded={inspectorOpen} onClick={()=>setInspectorOpen(value=>!value)}>{inspectorOpen?'Hide inspector':'Show inspector'}</button>
+        {mode==='regional'&&<button className="atlas-local-toggle" onClick={()=>{if(!location)setLocation({latitude_deg:-89.5,longitude_deg:0});setAtlasRegional(true);}}>3D atlas analysis</button>}
         {region && layer && <TerrainMap region={region} layer={layer} site={site} grid={grid}
           onSelect={(lon, lat) => void mapSelect(lon, lat)} onPointer={setPointer}
           assets={scenario.active?.assets} baseSite={scenario.active?.site} selectedAssetId={selectedAssetId}

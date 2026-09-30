@@ -12,3 +12,11 @@ export async function fetchScientific<T>(path: string, signal?: AbortSignal): Pr
   }
   return response.json() as Promise<T>;
 }
+
+export async function calculateScientific<T>(path:string,body:unknown,signal?:AbortSignal):Promise<T> {
+  const response=await fetch(`/api${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),
+    signal:signal?AbortSignal.any([signal,AbortSignal.timeout(30000)]):AbortSignal.timeout(30000)});
+  const result=await response.json();
+  if(!response.ok)throw new Error(typeof result.detail==='string'?result.detail:'Check the analysis coordinates, extent and available dataset.');
+  return result as T;
+}

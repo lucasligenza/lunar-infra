@@ -4,8 +4,39 @@ from fastapi.responses import Response
 from backend.app.services.atlas_tiles import layers, render_tile
 from backend.app.models.atlas import AtlasPoint, CatalogEntry
 from backend.app.data.atlas import acquisition_plan
+from backend.app.models.analysis import AnalysisRequest,ProfileRequest,RegionalAnalysis,ElevationProfile
+from backend.app.services.regional_analysis import analyze,profile
+from backend.app.geospatial.sectors import sectors,lookup
 
 router=APIRouter(prefix='/atlas',tags=['Lunar atlas'])
+
+
+@router.get('/sectors')
+def geographic_sectors(level:Annotated[int,Query(ge=0,le=3)]=0,face:str|None=None):
+    try:return sectors(level,face)
+    except ValueError as error:raise HTTPException(422,detail=str(error))
+
+
+@router.get('/sectors/lookup')
+def containing_sector(latitude:Annotated[float,Query(ge=-90,le=90,allow_inf_nan=False)],
+    longitude:Annotated[float,Query(ge=-180,le=360,allow_inf_nan=False)],level:Annotated[int,Query(ge=0,le=3)]=1):
+    return lookup(longitude,latitude,level)
+
+
+@router.post('/analysis',response_model=RegionalAnalysis)
+def regional_analysis(body:AnalysisRequest,request:Request):
+    try:grid=request.app.state.atlas.grid(body.dataset)
+    except ValueError as error:raise HTTPException(503,detail=str(error))
+    try:return analyze(grid,body)
+    except ValueError as error:raise HTTPException(422,detail=str(error))
+
+
+@router.post('/profile',response_model=ElevationProfile)
+def elevation_profile(body:ProfileRequest,request:Request):
+    try:grid=request.app.state.atlas.grid(body.dataset)
+    except ValueError as error:raise HTTPException(503,detail=str(error))
+    try:return profile(grid,body)
+    except ValueError as error:raise HTTPException(422,detail=str(error))
 
 
 @router.get('/layers')

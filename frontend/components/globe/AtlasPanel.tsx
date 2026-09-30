@@ -1,14 +1,19 @@
 "use client";
 import {useEffect,useState} from 'react';
 import {fetchScientific} from '../../lib/api';
-import type {AtlasDataset,AtlasPoint,AtlasView,AtlasLayer} from '../../types/atlas';
+import type {AtlasDataset,AtlasPoint,AtlasView,AtlasLayer,AtlasSector,AtlasAnalysisState} from '../../types/atlas';
 import type {GlobeLocation} from '../../types/globe';
+import AtlasRegions from './AtlasRegions';
+import AtlasAnalysis from './AtlasAnalysis';
 
-export default function AtlasPanel({location,onClose,view,onView,overlayStatus}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string}) {
+export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
+  sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;onSelect:(location:GlobeLocation,distance?:number)=>void;analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean}) {
   const [catalog,setCatalog]=useState<AtlasDataset[]>([]),[layers,setLayers]=useState<AtlasLayer[]>([]);
   const dataset=view.dataset;
   const [point,setPoint]=useState<AtlasPoint|null>(null),[error,setError]=useState<string|null>(null),[loading,setLoading]=useState(false);
   const [query,setQuery]=useState('');
+  const [tab,setTab]=useState(analysisMode?'analysis':'layers');
+  useEffect(()=>{if(analysisMode)setTab('analysis');},[analysisMode]);
   useEffect(()=>{const abort=new AbortController();
     fetchScientific<AtlasDataset[]>('/atlas/datasets',abort.signal).then(setCatalog).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
     fetchScientific<AtlasLayer[]>('/atlas/layers',abort.signal).then(setLayers).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
@@ -22,9 +27,14 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus}:
   const layer=layers.find(value=>value.dataset_id===selectedDataset&&value.id===view.layer);
   return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>Lunar atlas</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
     <p className="atlas-description">Scientific coverage, native measurements and source provenance.</p>
+    <nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>
+    {tab==='regions'&&<AtlasRegions location={location} sector={sector} onSector={onSector} onSelect={onSelect}/>}
+    <div hidden={tab==='regions'||tab==='catalog'}>
     <label>Terrain dataset<select aria-label="Atlas terrain dataset" value={dataset} onChange={e=>onView({...view,dataset:e.target.value})}>
       <option value="auto">Best prepared global terrain</option>{catalog.filter(value=>value.category==='terrain'&&value.pixels_per_degree&&value.numerical_queries).map(value=><option key={value.id} value={value.id}>{value.name}</option>)}
     </select></label>
+    {tab==='analysis'&&<AtlasAnalysis location={location} dataset={dataset} state={analysis} onState={onAnalysis}/>}
+    <div hidden={tab!=='layers'}>
     <section className="atlas-layer-tools" aria-label="Scientific surface layers">
       <label>Scientific overlay<select aria-label="Scientific overlay" value={view.layer} onChange={e=>onView({...view,layer:e.target.value})}><option value="none">Imagery only</option>
         {layers.filter(value=>value.dataset_id===selectedDataset).map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
@@ -45,7 +55,8 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus}:
       <dt>Slope support</dt><dd>{point.slope.support_north_m.toFixed(1)} m north / {point.slope.support_east_m.toFixed(1)} m east</dd><dt>Terrain provenance</dt><dd>{point.terrain_source}</dd></dl>
       {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
     </section>}
-    <section className="atlas-catalog"><h3>Dataset catalog</h3><label>Search science datasets<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Terrain, geology, thermal…" /></label>
+    </div></div>
+    <section className="atlas-catalog" hidden={tab!=='catalog'}><h3>Dataset catalog</h3><label>Search science datasets<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Terrain, geology, thermal…" /></label>
       {catalog.filter(value=>`${value.name} ${value.category} ${value.instrument}`.toLowerCase().includes(query.toLowerCase())).map(value=><details key={value.id}><summary><span>{value.name}</span><small>{value.category} / {value.acquisition_status.replaceAll('_',' ')}</small></summary>
         <p>{value.organization} / {value.version}</p><p>{value.numerical_queries?'Numerical source available':'Numerical queries unavailable'}; {value.overlay_available?'3D overlay available':'3D overlay unavailable'}</p>
         <p>{value.coverage?`${value.coverage.south}° to ${value.coverage.north}° latitude; ${value.coverage.west}° to ${value.coverage.east}° E`:'Specific coverage not yet validated'}</p>

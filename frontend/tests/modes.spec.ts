@@ -65,18 +65,20 @@ test('global selection connects to local science and preserves mission drafts, a
   }
 });
 
-test('unsupported global selection never displays another region as its analysis',async({page})=>{
+test('north-pole selection opens global atlas analysis without an unrelated polar map',async({page})=>{
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   // Hold coverage to verify a quick mode switch cannot paint an unrelated map.
   let release!:()=>void;const held=new Promise<void>(resolve=>{release=resolve;});
   await page.route('**/api/globe/inspect/location*',async route=>{await held;await route.continue();});
   await page.getByRole('button',{name:/^Lunar north pole/}).click();
   await page.getByRole('button',{name:'Regional Analysis',exact:true}).click();
-  await expect(page.getByRole('region',{name:'Local coverage unavailable'})).toBeVisible();
+  await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toBeVisible();
+  await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toContainText('90.00000°');
   await expect(page.getByTestId('terrain-map')).toBeHidden();
   await expect(page.getByTestId('elevation-value')).toHaveCount(0);
   release();await page.unrouteAll({behavior:'wait'});
-  await page.getByRole('button',{name:'Return to selected global location',exact:true}).click();
+  await page.getByRole('button',{name:'Global Explorer',exact:true}).click();
+  await page.getByRole('button',{name:'Close atlas',exact:true}).click();
   await expect(page.getByTestId('global-coordinate')).toContainText('90.00000° N');
   await expect(page.getByRole('heading',{name:'Lunar north pole',exact:true})).toBeVisible();
 });
