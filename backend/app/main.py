@@ -1,19 +1,24 @@
 from contextlib import asynccontextmanager
 import logging
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
 import rasterio
 
 from backend.app.api.routes import router
+from backend.app.api.missions import router as mission_router
+from backend.app.services.scenarios import ScenarioRepository
+from lunaros.dataset import ROOT
 from backend.app.data.pipeline import PROCESSED
 from backend.app.services.inspection import TerrainStore
 
 
-def create_app(data_dir: Path = PROCESSED) -> FastAPI:
+def create_app(data_dir: Path = PROCESSED, db_path: Path | None = None) -> FastAPI:
     # https://fastapi.tiangolo.com/advanced/events/
     @asynccontextmanager
     async def lifespan(application: FastAPI):
+        application.state.scenarios = ScenarioRepository(db_path or Path(os.environ.get("LUNAROS_DB_PATH", ROOT / "data/local/missions.sqlite")))
         try:
             application.state.store = TerrainStore(data_dir)
             application.state.data_error = None
@@ -28,6 +33,7 @@ def create_app(data_dir: Path = PROCESSED) -> FastAPI:
                           description="NASA LOLA south-pole terrain and modeled solar visibility. ME/PA DE421 frame.",
                           lifespan=lifespan)
     application.include_router(router)
+    application.include_router(mission_router)
     return application
 
 

@@ -45,6 +45,12 @@ the real data-to-UI flow, navigation and failure recovery. Pure numerical functi
 remain usable outside the web application for future scientific tools.
 
 Implementation references:
+
+Mission definitions use discriminated Pydantic asset schemas. SQLite stores each
+scenario as a validated versioned JSON aggregate; edits hold an immediate transaction
+and compare revisions before replacing it. This keeps simultaneous browser edits
+from silently overwriting one another. Definitions and local database files stay
+separate from immutable scientific rasters. No extra database server is required.
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)

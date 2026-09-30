@@ -20,12 +20,14 @@ Phase 2: infrastructure simulation and mission control. Phases 3-4 excluded.
 
 ## Active milestone and features in progress
 
-Phase 2 milestone 1: audited functional Phase 1 and redesigned the workspace with
-a dedicated collapsible tool rail and an unobstructed scientific map. Plan and
-scientific time-series limitation are recorded in docs/phase2-plan.md.
+Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
+Milestone 2: typed hypothetical assets, SQLite scenarios and validated CRUD API.
 
 ## Validation results
 
+- Scenario milestone: 48 Python tests plus eight subtests pass, covering restart
+  persistence, all asset types, duplication, deletion, invalid/nodata locations,
+  invalid batteries/time axes and simultaneous revision conflicts/rollback.
 - Phase 2 audit/layout: 33 Python tests plus eight subtests, six browser tests,
   typecheck and production build pass. Added tool-collapse coverage passes.
   Desktop screenshot reviewed; map remains unobstructed and controls functional.
@@ -72,12 +74,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 1930dee (Phase 1 completion record).
-Current milestone: style: redesign LunarOS mission control layout.
+Latest confirmed published milestone: b033422.
+Current milestone: feat: persist lunar infrastructure scenarios.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement typed hypothetical assets and SQLite-backed scenarios with validated
-locations, revision checks and scenario/asset API operations.
+Implement scenario and asset workflows in the UI: create/reopen/save, valid map
+placement, selection, parameter editing, movement, removal and duplication.

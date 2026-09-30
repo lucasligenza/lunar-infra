@@ -22,3 +22,7 @@ build/
 test-results/
 playwright-report/
 artifacts/
+data/local/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

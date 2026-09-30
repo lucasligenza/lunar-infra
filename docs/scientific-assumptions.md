@@ -64,7 +64,20 @@ aligns illumination to the exact terrain grid. A cell is missing if any contribu
 area is missing; zero remains permanent shadow. Resampled values represent a
 240 m footprint average, rather than native 60 m point resolution.
 
-## References
+## Hypothetical infrastructure (Phase 2)
+
+All asset defaults are illustrative, editable assumptions, not NASA hardware.
+Solar arrays specify rated electrical power and a user derating factor. Batteries
+specify internal usable-window capacity, a reserve fraction, efficiencies and
+bus-side charge/discharge limits. Habitat and communications demand is continuous;
+robot duty cycle represents interval-averaged active/idle demand. No deployed
+assets, thermal coupling, degradation, cabling losses or detailed mechanical
+orientation models are implied. Asset/site locations must have valid NASA elevation.
+
+The integrated illumination raster cannot supply time-dependent solar input.
+Hypothetical explicit interval inputs are separate from the map's long-term average.
+
+## Source references
 
 - [Original LOLA products and labels](https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/)
 - [NASA polar illumination documentation](https://pgda.gsfc.nasa.gov/products/69)
