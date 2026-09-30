@@ -12,7 +12,7 @@ test("simulation inputs playback charts telemetry stale state and saved result r
   const scenario = await creation.json();
   const errors: string[] = []; page.on("pageerror", error => errors.push(error.message));
   try {
-    await page.goto("/");
+    await page.goto("/?mode=mission");
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
     await expect(page.getByText("Real-data playback unavailable.", { exact: false })).toBeVisible();
     await page.getByRole("button", { name: "Run simulation", exact: true }).click();

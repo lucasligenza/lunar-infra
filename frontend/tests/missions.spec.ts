@@ -4,7 +4,7 @@ test("scenario placement editing movement persistence duplication and deletion",
   const name = `Browser outpost ${Date.now()}`;
   const created: string[] = [];
   try {
-    await page.goto("/");
+    await page.goto("/?mode=mission");
     await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
     await page.getByRole("button", { name: "Inspect location" }).click();
     await expect(page.getByTestId("elevation-value")).toBeVisible();

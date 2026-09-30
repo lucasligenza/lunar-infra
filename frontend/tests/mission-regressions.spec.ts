@@ -6,7 +6,7 @@ test("independent drafts survive saves and stale revisions cannot overwrite serv
   const scenario = await (await request.post("/api/scenarios", { data: { name, site: location,
     assets: [{ kind: "habitat", name: "Habitat", location }] } })).json();
   try {
-    await page.goto("/");
+    await page.goto("/?mode=mission");
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
     await page.getByRole("button", { name: "Select asset: Habitat", exact: true }).click();
     await page.getByLabel("Continuous demand (kW)", { exact: true }).fill("12");
@@ -46,7 +46,7 @@ test("custom mission parameters reject missing illumination and preserve explici
     { kind: "solar_array", name: "Array", location, rated_power_kw: 10, derating: 1 },
   ] } })).json();
   try {
-    await page.goto("/");
+    await page.goto("/?mode=mission");
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
     await page.getByLabel("Mission end (UTC)", { exact: true }).fill("2027-01-01T02:00");
     await page.getByLabel("Time step (seconds)", { exact: true }).fill("1800");

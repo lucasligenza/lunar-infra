@@ -28,12 +28,18 @@ Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation comple
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
 captured and visually inspected. Cesium ion requires account/token and hosted
 terms; Three.js plus NASA textures/validated global LOLA is the selected fallback.
-Milestone 2: reproducible global NASA acquisition, coarse elevation/coverage API
+Milestone 2 0a1b6a8 pushed: reproducible global NASA acquisition, coarse elevation/coverage API
 and source-linked destinations implemented. Global preparation repeats identically
 and retains every native elevation sample. Full suite: 71 tests plus eight subtests
 pass, including two new global scientific/API tests. Native observation periods,
 source hashes, nodata and separate visualization/analysis coverage are recorded.
-Next: global 3D renderer and redesigned application shell.
+Milestone 3: Three.js global lunar terrain, progressive NASA imagery, surface
+picking, source-linked destination search/fly-to, layer/camera controls and shared
+mode shell implemented. Two new browser/coordinate tests pass; rendered initial
+and selected-region screenshots inspected; marker sizing and button contrast fixed
+after visual review. All 12 browser tests and production build pass. Idle rendering now occurs only when
+the view changes; global navigation passes in 19.1 s on software Chromium.
+Next: complete mode/scenario continuity, coverage guards and local camera focus.
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
@@ -130,8 +136,8 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: a07b772.
-Current milestone: feat: prepare global NASA lunar visualization data.
+Latest confirmed published milestone: 0a1b6a8.
+Current milestone: feat: render interactive global lunar explorer.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 

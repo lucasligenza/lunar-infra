@@ -1,0 +1,87 @@
+/* Shared instrument surfaces; the planetary viewport carries the visual identity. */
+:root { --base:#080c11; --panel:#111923; --border:#273440; --ink:#edf2f5; --quiet:#afbec9; --accent:#8ecfe4; }
+.app-header { height:70px; background:#0c121a; padding:0 24px; gap:20px; }
+.brand h1 { font-size:24px; }
+.brand p { font-size:13px; max-width:210px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mode-navigation { display:flex; gap:4px; border:1px solid var(--border); padding:4px; border-radius:6px; }
+.mode-navigation button { border:0; background:transparent; color:var(--quiet); padding:9px 12px; font-size:12px; border-radius:3px; white-space:nowrap; }
+.mode-navigation button[aria-pressed="true"] { background:#243441; color:var(--ink); }
+.mode-global .header-status { display:none; }
+.local-shell { flex:1; min-height:0; display:flex; flex-direction:column; }
+.local-shell[hidden] { display:none; }
+.global-explorer { flex:1; min-height:0; position:relative; overflow:hidden; background:#080c11; }
+.moon-stage, .moon-canvas { position:absolute; inset:0; }
+.moon-canvas canvas { display:block; width:100%; height:100%; touch-action:none; }
+.destination-search { position:absolute; top:24px; left:24px; width:290px; border:1px solid var(--border); border-radius:6px; background:#111923f5; box-shadow:0 12px 30px #0004; }
+.destination-search > label { display:block; padding:16px 16px 0; font-size:12px; color:var(--quiet); }
+.search-input-row { display:flex; align-items:center; gap:7px; padding:0 12px 12px; }
+.search-input-row input { border:0!important; background:transparent!important; padding:10px 4px!important; }
+.search-input-row button { width:28px; height:28px; border:1px solid var(--border); background:#1b2936; border-radius:3px; }
+.destination-results { border-top:1px solid var(--border); max-height:325px; overflow:auto; scrollbar-width:thin; }
+.destination-results button { display:block; width:100%; padding:11px 16px; background:transparent; border:0; text-align:left; }
+.destination-results button:hover { background:#1c2936; }
+.destination-results button span { display:block; font-size:13px; }
+.destination-results button small { display:block; color:var(--quiet); font-size:11px; margin-top:3px; }
+.destination-results p { padding:16px; font-size:13px; }
+.global-coordinates { border-top:1px solid var(--border); font-size:12px; }
+.global-coordinates summary { padding:12px 16px; }
+.global-coordinates form { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px 16px; }
+.global-coordinates form button { grid-column:1/-1; }
+.global-introduction { position:absolute; bottom:95px; left:36px; pointer-events:none; max-width:330px; }
+.global-introduction h2 { font-size:36px; font-weight:500; letter-spacing:-1px; margin-bottom:12px; }
+.global-introduction p { color:var(--quiet); line-height:1.7; font-size:15px; }
+.global-introduction span { display:block; color:#8596a5; font-size:12px; margin-top:20px; }
+.global-layer-controls { position:absolute; left:24px; bottom:48px; z-index:3; }
+.global-explorer :where(button):not(:where(.destination-results button, .search-input-row button)) { border:1px solid var(--border); background:#172330; padding:10px 14px; border-radius:4px; font-size:12px; }
+.global-explorer button.primary-button { background:#a0d3e3; color:#0b1721; }
+.floating-instrument { position:absolute; left:0; bottom:47px; width:290px; padding:18px; border:1px solid var(--border); background:#111923; border-radius:5px; }
+.floating-instrument label { display:flex; gap:9px; margin-bottom:14px; font-size:13px; }
+.floating-instrument p { color:var(--quiet); font-size:12px; line-height:1.6; margin-top:12px; }
+.floating-instrument small { display:block; color:var(--quiet); margin-top:12px; }
+.camera-controls { position:absolute; right:24px; bottom:48px; display:flex; gap:5px; }
+.region-drawer-toggle { position:absolute; right:24px; top:24px; z-index:3; }
+.region-drawer { position:absolute; top:76px; bottom:110px; right:24px; width:305px; padding:22px; overflow:auto; scrollbar-width:thin; background:#111923f5; border:1px solid var(--border); border-radius:6px; box-shadow:0 12px 30px #0004; }
+.drawer-title { display:flex; align-items:center; gap:10px; margin-bottom:13px; }
+.drawer-title h2 { font-size:21px; font-weight:500; }
+.selection-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.region-drawer p { color:var(--quiet); font-size:13px; line-height:1.65; margin:12px 0; }
+.region-drawer .region-coordinate { color:var(--accent); font-variant-numeric:tabular-nums; font-size:13px; }
+.region-drawer dl { border-block:1px solid var(--border); padding:16px 0; margin:18px 0; display:grid; gap:6px; }
+.region-drawer dt { color:var(--quiet); font-size:11px; }
+.region-drawer dd { margin:0 0 7px; font-size:14px; }
+.region-drawer button { display:block; width:100%; margin-top:10px; }
+.region-drawer .temporal-note { color:var(--warning); font-size:12px; }
+.region-drawer details { margin-top:20px; font-size:13px; }
+.region-drawer a { display:block; margin:10px 0; font-size:12px; }
+.globe-attribution { position:absolute; bottom:0; left:0; right:0; display:flex; justify-content:space-between; padding:12px 24px; font-size:11px; color:var(--quiet); pointer-events:none; }
+.globe-attribution a { pointer-events:auto; }
+.globe-render-status { position:absolute; top:25px; left:50%; transform:translateX(-50%); color:var(--quiet); font-size:12px; padding:8px 12px; background:#0c121ad9; border-radius:4px; }
+.globe-loading, .globe-render-error { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); max-width:420px; padding:24px; background:#111923; border:1px solid var(--border); border-radius:6px; z-index:5; }
+.globe-loading h2 { font-size:21px; margin-bottom:12px; }
+.globe-loading p, .globe-render-error p { color:var(--quiet); line-height:1.7; margin-bottom:16px; }
+.inspector-toggle { position:absolute; bottom:52px; right:20px; z-index:2; border:1px solid var(--border); background:#111923; padding:8px 12px; border-radius:4px; font-size:12px; }
+.inspector-collapsed .workspace { grid-template-columns:250px minmax(0,1fr); }
+.inspector-collapsed .workspace.tools-collapsed { grid-template-columns:48px minmax(0,1fr); }
+.inspector-collapsed .context-rail { display:none; }
+.mode-regional .scenario-controls, .mode-regional .asset-catalog, .mode-regional .mission-inputs, .mode-regional .mission-timeline { display:none; }
+.tool-section > summary { font-size:13px; }
+.input-limit p, .map-legend p, .coordinate-panel p { font-size:12px; }
+.map-heading h2 { font-size:24px; font-weight:500; }
+.map-heading p { font-size:13px; }
+@media (max-width:1200px) { .brand p, .header-divider, .phase-label { display:none; } .header-status { font-size:11px; } .app-header { padding:0 16px; } }
+@media (max-width:800px) {
+  .app-header { height:auto; min-height:98px; flex-wrap:wrap; padding:12px 14px; gap:10px; }
+  .brand h1 { font-size:22px; } .mode-navigation { order:3; width:100%; justify-content:center; } .mode-navigation button { flex:1; padding:8px 4px; font-size:11px; }
+  .mode-global.explorer { height:100dvh; min-height:600px; }
+  .destination-search { top:14px; left:14px; width:245px; } .destination-results { max-height:240px; }
+  .global-introduction { left:22px; bottom:140px; max-width:230px; } .global-introduction h2 { font-size:27px; }
+  .globe-render-status { top:auto; left:14px; bottom:85px; transform:none; font-size:10px; }
+  .region-drawer-toggle { right:14px; top:auto; bottom:96px; }
+  .region-drawer { left:14px; right:14px; top:auto; bottom:145px; width:auto; max-height:45%; padding:18px; }
+  .camera-controls { right:14px; bottom:42px; } .camera-controls button { padding:9px!important; }
+  .global-layer-controls { left:14px; bottom:42px; } .global-layer-controls > button { padding:9px!important; }
+  .globe-attribution { padding:10px 14px; font-size:9px; gap:10px; }
+  .floating-instrument { width:260px; }
+  .inspector-collapsed .workspace, .inspector-collapsed .workspace.tools-collapsed { grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto!important; transition:none!important; } }

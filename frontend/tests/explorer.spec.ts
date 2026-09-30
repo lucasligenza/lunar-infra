@@ -25,7 +25,7 @@ test("browser coordinate math matches PyProj API transforms", async ({ request }
 test("real NASA map selection, inspector, layers and navigation work", async ({ page, request }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
-  await page.goto("/");
+  await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
   await expect(page.getByText("Select a location", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Collapse tools" }).click();
@@ -70,7 +70,7 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
 });
 
 test("outside-region queries clear stale measurements", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
   await page.getByRole("button", { name: "Inspect location" }).click();
   await expect(page.getByTestId("elevation-value")).toBeVisible();
@@ -82,7 +82,7 @@ test("outside-region queries clear stale measurements", async ({ page }) => {
 
 test("unavailable API shows an actionable error and retry works", async ({ page }) => {
   await page.route("**/api/health", route => route.fulfill({ status: 503, contentType: "application/json", body: "{}" }));
-  await page.goto("/");
+  await page.goto("/?mode=regional");
   await expect(page.getByRole("alert").filter({ hasText: "Scientific data unavailable" })).toContainText("Prepare the NASA datasets");
   await expect(page.getByTestId("elevation-value")).toHaveCount(0);
   await page.unroute("**/api/health");
@@ -92,7 +92,7 @@ test("unavailable API shows an actionable error and retry works", async ({ page 
 
 test("mobile map and coordinate form remain usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
   await page.getByRole("button", { name: "Inspect location" }).click();
   await expect(page.getByTestId("elevation-value")).toBeVisible();
@@ -106,7 +106,7 @@ test("mobile map and coordinate form remain usable", async ({ page }) => {
 
 test("failed raster loads show an error and can be retried", async ({ page }) => {
   await page.route("**/api/regions/south-pole/layers/elevation.png*", route => route.fulfill({ status: 503, body: "Unavailable" }));
-  await page.goto("/");
+  await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toContainText("Layer unavailable");
   await page.unroute("**/api/regions/south-pole/layers/elevation.png*");
   await page.getByRole("button", { name: "Retry layer" }).click();

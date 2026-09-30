@@ -12,6 +12,8 @@ import Timeline from "./mission/Timeline";
 import AssetInspector from "./panels/AssetInspector";
 import { ASSET_NAMES, ASSET_SYMBOLS, type AssetKind } from "../types/mission";
 import type { Dataset, LayerId, Region, Site } from "../types/scientific";
+import type { Mode, GlobeLocation, CameraState } from '../types/globe';
+const GlobalExplorer = dynamic(()=>import('./globe/GlobalExplorer'), { ssr:false });
 
 // OpenLayers owns browser DOM and canvas; load it only on the client.
 // https://nextjs.org/docs/app/guides/lazy-loading#skipping-ssr
@@ -24,6 +26,12 @@ function errorText(error: unknown): string {
 }
 
 export default function Explorer() {
+  const [mode,setMode] = useState<Mode>('global');
+  const [location,setLocation] = useState<GlobeLocation|null>(null);
+  const [camera,setCamera] = useState<CameraState|null>(null);
+  const [inspectorOpen,setInspectorOpen] = useState(true);
+  useEffect(()=> { const requested = new URLSearchParams(window.location.search).get('mode');
+    if(requested==='regional' || requested==='mission') setMode(requested); },[]);
   const [region, setRegion] = useState<Region | null>(null);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -86,6 +94,7 @@ export default function Explorer() {
       const result = await fetchScientific<Site>(`/sites/inspect?latitude=${lat}&longitude=${lon}`, controller.signal);
       if (!controller.signal.aborted) {
         setSite(result); setInspecting(false);
+        setLocation({latitude_deg:result.coordinates.latitude_deg,longitude_deg:result.coordinates.longitude_deg});
         setLatitude(result.coordinates.latitude_deg.toFixed(5));
         setLongitude(result.coordinates.longitude_deg.toFixed(5));
       }
@@ -124,14 +133,22 @@ export default function Explorer() {
   const legendValue = (value: number) => layer?.unit === "fraction" ? `${(value * 100).toFixed(0)}%` :
     `${value.toLocaleString("en-US")}${layer?.unit === "deg" ? "°" : " m"}`;
 
-  return <main className="explorer">
+  function switchMode(next:Mode) { setMode(next); setPlacement(null);
+    const url = new URL(window.location.href); url.searchParams.set('mode',next); window.history.replaceState(null,'',url);
+    if(next!=='global' && location) void inspect(location.longitude_deg,location.latitude_deg);
+  }
+  function selectGlobal(point:GlobeLocation) { setLocation(point); setSite(null); }
+  return <main className={`explorer mode-${mode}${inspectorOpen?'':' inspector-collapsed'}`}>
     <header className="app-header"><div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1>
-      <span className="header-divider" /><p>{scenario.active?.name ?? "Mission control"}<small>{scenario.active ? "Hypothetical infrastructure / south pole" : "Terrain workspace"}</small></p></div>
+      <span className="header-divider" /><p>{scenario.active?.name ?? 'Lunar exploration'}<small>{mode==='global'?'Global NASA visualization':mode==='regional'?'Scientific regional analysis':'Hypothetical mission design'}</small></p></div>
+      <nav className="mode-navigation" aria-label="Viewing mode">{([['global','Global Explorer'],['regional','Regional Analysis'],['mission','Mission Designer']] as const).map(([value,label])=><button key={value} aria-pressed={mode===value} onClick={()=>switchMode(value)}>{label}</button>)}</nav>
       <div className="header-status"><span className={region ? "status-dot ready" : "status-dot"} />
         {scenario.active ? scenario.busy ? "Saving…" : assetDirty ? "Unsaved asset changes" : missionDirty ? "Unsaved simulation inputs" : scenarioName !== scenario.active.name ? "Unsaved name" : `Saved / revision ${scenario.active.revision}` : region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}
         {scenario.active && <button className="primary-button" disabled={working || scenarioName === scenario.active.name || !scenarioName.trim()} onClick={() => void scenario.patch({ name: scenarioName })}>Save scenario</button>}
         <span className="phase-label">South pole / ME-PA DE421</span></div>
     </header>
+    {mode==='global' && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null} />}
+    <div className="local-shell" hidden={mode==='global'}>
     <nav className="mobile-navigation" aria-label="Workspace navigation"><a href="#terrain-workspace">Map</a><a href="#exploration-tools">Tools</a><a href="#context-inspector">Inspector</a>{simulation.run && <a href="#mission-timeline">Timeline</a>}</nav>
     <div className={toolsOpen ? "workspace" : "workspace tools-collapsed"}>
       <aside id="exploration-tools" className="tool-rail" aria-label="Exploration tools">
@@ -188,6 +205,7 @@ export default function Explorer() {
         </div>}
       </aside>
       <section id="terrain-workspace" className="map-workspace" aria-label="Terrain exploration">
+        <button className="inspector-toggle" aria-expanded={inspectorOpen} onClick={()=>setInspectorOpen(value=>!value)}>{inspectorOpen?'Hide inspector':'Show inspector'}</button>
         {region && layer && <TerrainMap region={region} layer={layer} site={site} grid={grid}
           onSelect={(lon, lat) => void mapSelect(lon, lat)} onPointer={setPointer}
           assets={scenario.active?.assets} baseSite={scenario.active?.site} selectedAssetId={selectedAssetId}
@@ -220,5 +238,6 @@ export default function Explorer() {
       </div>
     </div>
     {simulation.run && <Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} />}
+    </div>
   </main>;
 }
