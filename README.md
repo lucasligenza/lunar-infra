@@ -14,6 +14,7 @@ Run from the repository root:
 uv sync --locked
 uv run python -m backend.app.data.pipeline
 uv run python -m backend.app.data.globe
+uv run python -m backend.app.data.atlas
 uv run pytest
 ```
 
@@ -24,6 +25,12 @@ No synthetic data is substituted if acquisition fails.
 The global pipeline additionally prepares compact NASA visualization textures and
 the native 0.25 degree LOLA overview. See [global data](docs/global-data.md) for
 source integrity, coverage and the distinction between visualization and analysis.
+The atlas additionally obtains the pinned 133 MB GLD100 global 32 ppd product,
+preserving native values and PDS special codes. `--plan` reports acquisition/disk
+requirements, and `--offline` reuses verified source files. Open **Lunar atlas**
+on the globe to inspect terrain from selectable registered global sources and
+search the scientific catalog. Discovered products are labeled separately from
+prepared numerical sources. See [Phase 4 plan](docs/phase4-plan.md).
 
 Install the frontend from the repository root:
 

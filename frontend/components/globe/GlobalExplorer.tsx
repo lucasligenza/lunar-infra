@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { fetchScientific } from '../../lib/api';
+import AtlasPanel from './AtlasPanel';
 import type { Asset } from '../../types/mission';
 import type { CameraState, Destination, GlobeInspection, GlobeLocation, GlobeMetadata, Mode } from '../../types/globe';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
@@ -20,6 +21,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const [flight,setFlight] = useState<{coordinates:GlobeLocation;distance:number;serial:number}|null>(null);
   const [ready,setReady] = useState<number|null>(null), [lat,setLat] = useState('0'), [lon,setLon] = useState('0');
   const serial = useRef(0);
+  const [atlasOpen,setAtlasOpen]=useState(false);
   useEffect(()=>{
     const abort = new AbortController(); setError(null);setDestinationError(null);setDestinationsLoading(true);
     fetchScientific<GlobeMetadata>('/globe',abort.signal)
@@ -67,12 +69,14 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
     </div>
     {!location && <div className="global-introduction"><h2>Explore the Moon</h2><p>One world. Two hemispheres.<br/>A path from discovery to mission design.</p><span>Drag to orbit · scroll to approach · click to select</span></div>}
     <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);if(window.innerWidth<800) setDrawerOpen(false);}}>Globe layers</button>
+      <button aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);}}>Lunar atlas</button>
       {layersOpen && <div className="floating-instrument"><label><input type="checkbox" checked={texture} onChange={e=>setTexture(e.target.checked)} />NASA color visualization</label>
         <label><input type="checkbox" checked={grid} onChange={e=>setGrid(e.target.checked)} />Lunar graticule</label><p>True-scale LOLA relief. Display lighting is fixed, not modeled sunlight.</p>
         <p>Imagery up to 4096 × 2048; terrain source 0.25°; display mesh 1°. Local analysis: 240 m where prepared.</p>
         {ready!==null && <small data-testid="globe-ready-time">First imagery ready in {(ready/1000).toFixed(2)} s on this browser.</small>}</div>}
     </div>
-    {location && <>
+    {atlasOpen&&<AtlasPanel location={location} onClose={()=>setAtlasOpen(false)} />}
+    {location && !atlasOpen && <>
       <button className="region-drawer-toggle" onClick={()=>setDrawerOpen(value=>!value)} aria-expanded={drawerOpen}>{drawerOpen?'Close region details':'Open region details'}</button>
       {drawerOpen && <aside className="region-drawer" aria-label="Selected lunar region">
         <div className="drawer-title"><span className="selection-dot"/><h2>{destination?.name ?? 'Selected location'}</h2></div>

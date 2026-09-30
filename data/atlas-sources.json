@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "datasets": [
+    {
+      "id": "gld100", "name": "LROC GLD100 global terrain", "category": "terrain",
+      "mission": "LRO", "instrument": "LROC WAC / LOLA polar fill", "organization": "NASA / ASU / DLR",
+      "source_url": "https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_GLD100",
+      "citation": "Scholten et al. (2012), doi:10.1029/2011JE003926; Smith et al. (2010), doi:10.1029/2010GL043751 for polar fill",
+      "version": "v1.4", "product_id": "WAC_GLD100_E000N1800_032P",
+      "period": {"start": null, "stop": null, "created": "2020-09-01T17:41:13"},
+      "coverage": {"south": -90, "north": 90, "west": 0, "east": 360},
+      "pixels_per_degree": 32, "spacing_m_at_equator": 947.60470075467, "unit": "m",
+      "crs": "+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +R=1737400 +units=m +no_defs",
+      "longitude_convention": "Planetocentric, east-positive, 0..360",
+      "frame_note": "Lunar body-fixed map; control network not explicitly named in product label. No surveyed inter-frame transformation asserted.",
+      "data_type": "numeric_raster", "adapter": "pds_equirectangular", "cache": "data/processed/atlas/gld100",
+      "limitations": ["Native source: 100 m spacing, approximately 300 m effective detail; this downsampled product is about 948 m spacing at the equator.", "Poleward of 79 degrees uses LOLA fill; source observation dates are unspecified.", "Height relative to 1737.4 km sphere; cannot establish construction or landing safety."],
+      "files": {"WAC_GLD100_E000N1800_032P.IMG": {"url": "https://pds.lroc.im-ldi.com/data/LRO-L-LROC-5-RDR-V1.0/LROLRC_2001/DATA/SDP/WAC_GLD100/WAC_GLD100_E000N1800_032P.IMG", "bytes": 132733440, "sha256": "07b24d5878ac75a4b5e5154c237f29037667c7be0cf26196290f913885fc8d45"}}
+    },
+    {
+      "id": "lola-global", "name": "LOLA global overview", "category": "terrain", "mission": "LRO", "instrument": "LOLA", "organization": "NASA / PDS Geosciences",
+      "source_url": "https://pds-geosciences.wustl.edu/missions/lro/lola.htm", "citation": "LOLA GDR, doi:10.17189/1520642", "version": "V3.0", "product_id": "LDEM_4",
+      "period": {"start": "2009-07-13T17:33:17", "stop": "2016-11-29T05:48:19", "created": "2017-09-15"},
+      "coverage": {"south": -90, "north": 90, "west": 0, "east": 360}, "pixels_per_degree": 4, "spacing_m_at_equator": 7580.837606, "unit": "m",
+      "crs": "+proj=eqc +R=1737400 +units=m", "longitude_convention": "Planetocentric, east-positive, 0..360", "frame_note": "MEAN EARTH/POLAR AXIS OF DE421",
+      "data_type": "numeric_raster", "adapter": "existing_globe", "cache": "data/processed/globe", "limitations": ["0.25 degree gridded altimetry; containing-cell queries, not individual laser shots."], "files": {}
+    },
+    {
+      "id": "lola-south", "name": "LOLA south-pole terrain", "category": "terrain", "mission": "LRO", "instrument": "LOLA", "organization": "NASA / PDS Geosciences",
+      "source_url": "https://pds-geosciences.wustl.edu/missions/lro/lola.htm", "citation": "LOLA GDR, doi:10.17189/1520642", "version": "V2.0", "product_id": "LDEM_75S_240M",
+      "period": {"start": "2009-07-13", "stop": "2017-02-02", "created": null}, "coverage": {"south": -90, "north": -87.7, "west": 0, "east": 360}, "spacing_m_at_equator": 240, "unit": "m",
+      "crs": "+proj=stere +lat_0=-90 +lon_0=0 +k=1 +R=1737400 +units=m", "longitude_convention": "Planetocentric, east-positive", "frame_note": "MEAN EARTH/POLAR AXIS OF DE421",
+      "data_type": "numeric_raster", "adapter": "existing_polar", "cache": "data/processed", "limitations": ["Prepared coverage is a 96 km projected square; the bounding geographic envelope is not an exact coverage mask.", "240 m cells cannot resolve landing hazards."], "files": {}
+    },
+    {
+      "id": "solar-visibility", "name": "South-pole average solar visibility", "category": "illumination", "mission": "LRO", "instrument": "LOLA-based horizon model", "organization": "NASA GSFC",
+      "source_url": "https://pgda.gsfc.nasa.gov/products/69", "citation": "Mazarico et al. (2011), doi:10.1016/j.icarus.2010.10.030", "version": "V1.05", "product_id": "AVGVISIB_85S_060M_201608",
+      "period": {"start": null, "stop": null, "created": "2016-08", "model_duration_years": 18.6}, "coverage": {"south": -90, "north": -87.7, "west": 0, "east": 360}, "spacing_m_at_equator": 240, "unit": "fraction",
+      "crs": "+proj=stere +lat_0=-90 +R=1737400 +units=m", "longitude_convention": "Planetocentric, east-positive", "frame_note": "MEAN EARTH/POLAR AXIS OF DE421",
+      "data_type": "numeric_raster", "adapter": "existing_polar", "cache": "data/processed", "limitations": ["Modeled average, native 60 m area-averaged to 240 m; not current irradiance or a temporal simulation input.", "Prepared mask/footprint matches the local terrain crop."], "files": {}
+    },
+    {
+      "id": "usgs-geology", "name": "Unified Geologic Map of the Moon", "category": "geology", "mission": "Multi-mission synthesis", "instrument": "Mapped geological interpretation", "organization": "USGS / NASA / LPI",
+      "source_url": "https://astrogeology.usgs.gov/search/map/unified_geologic_map_of_the_moon_1_5m_2020", "citation": "Fortezzo, Spudis and Harrel (2020), 1:5,000,000 unified map", "version": "2020 v2", "product_id": "Unified_Geologic_Map_of_the_Moon_GIS_v2",
+      "period": {"start": null, "stop": null, "created": "2020-03-03"}, "coverage": {"south": -90, "north": 90, "west": 0, "east": 360}, "unit": "geological unit", "crs": "Source shapefile PRJ must be validated before preparation", "longitude_convention": "To be validated from source GIS", "frame_note": "Source map control network; not a surveyed site coordinate transformation",
+      "data_type": "vector", "adapter": "pending", "cache": "data/processed/atlas/usgs-geology", "limitations": ["Interpretive 1:5M map; boundaries are not construction-scale contacts.", "Archive metadata verified; polygons not yet acquired or numerically integrated."], "files": {}
+    },
+    {
+      "id": "diviner-temperature", "name": "Diviner thermal products", "category": "thermal", "mission": "LRO", "instrument": "Diviner", "organization": "NASA / UCLA / PDS",
+      "source_url": "https://pds-geosciences.wustl.edu/missions/lro/diviner.htm", "citation": "Williams et al. (2017), Icarus 283; Diviner PDS GDR documentation", "version": "Product selection pending", "product_id": "DIVINER-GDR",
+      "period": {"start": null, "stop": null, "created": null}, "coverage": {"south": -90, "north": 90, "west": 0, "east": 360}, "unit": "K", "crs": "Product selection pending", "longitude_convention": "Product selection pending", "frame_note": "Validate selected label before registration",
+      "data_type": "numeric_raster", "adapter": "pending", "cache": null, "limitations": ["Provider archive verified; specific numeric map not yet integrated.", "Linked UCLA global-map service rejects current TLS settings; PDS alternatives under investigation."], "files": {}
+    },
+    {
+      "id": "m3", "name": "Moon Mineralogy Mapper observations", "category": "mineralogy", "mission": "Chandrayaan-1", "instrument": "M3", "organization": "NASA / PDS Imaging",
+      "source_url": "https://pds-imaging.jpl.nasa.gov/volumes/m3.html", "citation": "M3 PDS spectral archive", "version": "Product selection pending", "product_id": "M3",
+      "period": {"start": null, "stop": null, "created": null}, "coverage": null, "unit": "spectral reflectance", "crs": "Product selection pending", "longitude_convention": "Product selection pending", "frame_note": "Validate selected observation geometry",
+      "data_type": "numeric_raster", "adapter": "pending", "cache": null, "limitations": ["Archive page currently returns 403; no spectrum or mineral map integrated.", "Spectral indicators do not establish extractable water or ore."], "files": {}
+    },
+    {
+      "id": "lp-hydrogen", "name": "Lunar Prospector resource indicators", "category": "resources", "mission": "Lunar Prospector", "instrument": "Neutron / gamma-ray spectrometers", "organization": "NASA / PDS Geosciences",
+      "source_url": "https://pds-geosciences.wustl.edu/missions/lunarp/reduced_special.html", "citation": "Lunar Prospector reduced special products", "version": "Product selection pending", "product_id": "LP-SPECIAL",
+      "period": {"start": null, "stop": null, "created": null}, "coverage": null, "unit": "Product selection pending", "crs": "Product selection pending", "longitude_convention": "Product selection pending", "frame_note": "Validate selected label",
+      "data_type": "numeric_raster", "adapter": "pending", "cache": null, "limitations": ["Provider products verified; no hydrogen map integrated.", "Hydrogen enrichment is not proof of accessible water ice."], "files": {}
+    },
+    {
+      "id": "grail-gravity", "name": "GRAIL gravity models", "category": "gravity", "mission": "GRAIL", "instrument": "Lunar Gravity Ranging System", "organization": "NASA / PDS Geosciences",
+      "source_url": "https://pds-geosciences.wustl.edu/missions/grail/", "citation": "GRAIL PDS archive", "version": "Product selection pending", "product_id": "GRAIL",
+      "period": {"start": null, "stop": null, "created": null}, "coverage": null, "unit": "Product selection pending", "crs": "Spherical-harmonic model selection pending", "longitude_convention": "Product selection pending", "frame_note": "Validate selected model",
+      "data_type": "model", "adapter": "pending", "cache": null, "limitations": ["Provider archive verified; gravity evaluation not implemented."], "files": {}
+    },
+    {
+      "id": "lroc-wac", "name": "LROC WAC global morphology imagery", "category": "imagery", "mission": "LRO", "instrument": "LROC WAC", "organization": "NASA / ASU",
+      "source_url": "https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_GLOBAL", "citation": "Speyerer et al. (2011), LPSC 2387; 2014 mosaic update", "version": "Product selection pending", "product_id": "WAC_GLOBAL",
+      "period": {"start": "2009-11", "stop": "2011-02", "created": null}, "coverage": {"south": -90, "north": 90, "west": 0, "east": 360}, "unit": "image DN", "crs": "Product selection pending", "longitude_convention": "Planetocentric, east-positive", "frame_note": "Source LROC mosaic network",
+      "data_type": "imagery", "adapter": "pending", "cache": null, "limitations": ["Verified low-resolution full products available; current globe uses separately identified NASA SVS imagery.", "Photometrically normalized mosaic is not current sunlight."], "files": {}
+    }
+  ]
+}

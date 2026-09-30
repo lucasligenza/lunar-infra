@@ -35,6 +35,7 @@ jobs:
         run: |
           uv run python -m backend.app.data.pipeline
           uv run python -m backend.app.data.globe
+          uv run python -m backend.app.data.atlas
       - name: Validate science, scenarios and energy conservation
         run: uv run pytest -q
       - name: Install locked frontend dependencies

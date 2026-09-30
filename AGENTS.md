@@ -1,7 +1,8 @@
 # LunarOS engineering rules
 
-Implement the user's Phase 3: global 3D exploration, destinations, connected viewing
-modes and UI redesign. Preserve Phase 1 science and Phase 2 missions/simulations.
+Implement the user's Phase 4 lunar atlas: registered scientific datasets, global
+numeric analysis, georeferenced 3D layers, sectors and regional profiles/statistics.
+Preserve Phase 1 science, Phase 2 missions/simulations and Phase 3 navigation.
 Optimization and AI are outside this assignment.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.

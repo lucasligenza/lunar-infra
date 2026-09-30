@@ -38,6 +38,18 @@
 .global-introduction p { color:var(--quiet); line-height:1.7; font-size:15px; }
 .global-introduction span { display:block; color:#8596a5; font-size:12px; margin-top:20px; }
 .global-layer-controls { position:absolute; left:24px; bottom:48px; z-index:3; }
+.global-layer-controls > button + button { margin-left:6px; }
+.atlas-panel { position:absolute; top:24px; right:24px; bottom:110px; width:340px; background:#111923fa; border:1px solid var(--border); border-radius:6px; padding:20px; overflow:auto; scrollbar-width:thin; }
+.atlas-panel header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.atlas-panel h2 { font-size:22px; font-weight:500; } .atlas-panel h3 { font-size:16px; margin:20px 0 12px; }
+.atlas-panel p { font-size:12px; color:var(--quiet); line-height:1.6; margin:12px 0; }
+.atlas-panel label { display:block; font-size:12px; color:var(--quiet); margin:14px 0; }
+.atlas-panel select, .atlas-panel input { width:100%; margin-top:7px; padding:9px; background:#122230; color:var(--ink); border:1px solid var(--border); border-radius:3px; }
+.atlas-panel dl { display:grid; gap:6px; margin:14px 0; padding:14px 0; border-block:1px solid var(--border); }
+.atlas-panel dt { font-size:11px; color:var(--quiet); } .atlas-panel dd { font-size:14px; margin-bottom:7px; overflow-wrap:anywhere; }
+.atlas-panel details { border-top:1px solid var(--border); padding:12px 0; font-size:12px; }
+.atlas-panel summary span, .atlas-panel summary small { display:block; } .atlas-panel summary small { color:var(--quiet); margin-top:5px; }
+.atlas-panel a { color:var(--accent); font-size:12px; }
 .global-explorer :where(button):not(:where(.destination-results button, .search-input-row button)) { border:1px solid var(--border); background:#172330; padding:10px 14px; border-radius:4px; font-size:12px; }
 .global-explorer button.primary-button { background:#a0d3e3; color:#0b1721; }
 .floating-instrument { position:absolute; left:0; bottom:47px; width:290px; padding:18px; border:1px solid var(--border); background:#111923; border-radius:5px; }
@@ -90,6 +102,7 @@
   .global-layer-controls { left:14px; bottom:42px; } .global-layer-controls > button { padding:9px!important; }
   .globe-attribution { padding:10px 14px; font-size:9px; gap:10px; }
   .floating-instrument { width:260px; }
+  .atlas-panel { top:14px; left:14px; right:14px; bottom:132px; width:auto; z-index:4; }
   .global-explorer:has(.floating-instrument) .region-drawer-toggle { display:none; }
   .inspector-collapsed .workspace, .inspector-collapsed .workspace.tools-collapsed { grid-template-columns:1fr; }
 }

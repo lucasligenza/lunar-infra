@@ -2,7 +2,8 @@
 
 ## Current development phase
 
-Phase 3: global 3D Moon exploration, destinations and connected premium UI.
+Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
+Scope and baseline are documented in docs/phase4-plan.md. No AI is included.
 AI and optimization remain excluded. See docs/phase3-plan.md.
 Phase 3 acceptance is verified locally and on GitHub, including actual rendered
 review and the production build. See docs/phase3-acceptance.md for coverage limits.
@@ -25,6 +26,17 @@ illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 - Final documentation milestone: record confirmed acceptance and remote validation.
 
 ## Active milestone and features in progress
+
+Phase 4 milestone 1: real GLD100 native global terrain, typed catalog, bounded
+acquisition plan, independent atlas API and data-to-UI measurement inspector.
+Baseline verified: 71 Python tests plus eight subtests and 17 browser tests pass;
+initial rendered globe reviewed. GLD100 is pinned at 32 ppd / about 948 m
+equatorial spacing; polar LOLA fill, null/saturation codes, source label and
+unknown observation dates preserved. Raw download 132733440 bytes; outputs ignored.
+Validation passed: 74 Python tests plus eight subtests, all 18 Chromium tests,
+typecheck and production build. Native values match the original PDS array;
+repeat preparation is identical and corrupt caches/missing data are rejected.
+Rendered atlas inspector reviewed. Next: native global slope and 3D layers.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -176,13 +188,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 5c53d23.
-Current milestone: docs: record global explorer acceptance and coverage.
+Latest confirmed published milestone: 7c189a2.
+Current milestone: feat: establish global atlas registry and terrain queries.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Phase 3 is complete within documented data/resolution coverage. Await the next
-user-approved roadmap; no AI, optimization or new hosted service is authorized.
-For a new session, follow README startup and read docs/phase3-acceptance.md.
+Complete Phase 4 milestones in docs/phase4-plan.md, preserving all earlier science
+and mission workflows. Next slice adds derived global slope and surface overlays.
