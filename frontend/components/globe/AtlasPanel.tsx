@@ -1,15 +1,18 @@
 "use client";
 import {useEffect,useState} from 'react';
 import {fetchScientific} from '../../lib/api';
-import type {AtlasDataset,AtlasPoint,AtlasView,AtlasLayer,AtlasSector,AtlasAnalysisState} from '../../types/atlas';
+import type {AtlasDataset,AtlasPoint,AtlasView,AtlasLayer,AtlasSector,AtlasAnalysisState,DiscoveryProvider} from '../../types/atlas';
 import type {GlobeLocation} from '../../types/globe';
 import AtlasRegions from './AtlasRegions';
 import AtlasAnalysis from './AtlasAnalysis';
 import AtlasLegend from './AtlasLegend';
+import DatasetDiscovery from './DatasetDiscovery';
+import DatasetAcquisition from './DatasetAcquisition';
 
 export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
   sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;onSelect:(location:GlobeLocation,distance?:number)=>void;analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean}) {
   const [catalog,setCatalog]=useState<AtlasDataset[]>([]),[layers,setLayers]=useState<AtlasLayer[]>([]);
+  const [providers,setProviders]=useState<DiscoveryProvider[]>([]),[providerError,setProviderError]=useState<string|null>(null);
   const dataset=view.dataset;
   const [point,setPoint]=useState<AtlasPoint|null>(null),[error,setError]=useState<string|null>(null),[loading,setLoading]=useState(false);
   const [query,setQuery]=useState('');
@@ -18,6 +21,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   useEffect(()=>{const abort=new AbortController();
     fetchScientific<AtlasDataset[]>('/atlas/datasets',abort.signal).then(setCatalog).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
     fetchScientific<AtlasLayer[]>('/atlas/layers',abort.signal).then(setLayers).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
+    fetchScientific<DiscoveryProvider[]>('/atlas/providers',abort.signal).then(setProviders).catch(()=>{if(!abort.signal.aborted)setProviderError('Discovery provider registry unavailable. Reopen the atlas to retry.');});
     return ()=>abort.abort();},[]);
   useEffect(()=>{if(!location)return;const abort=new AbortController();setLoading(true);setPoint(null);setError(null);
     fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${location.latitude_deg}&longitude=${location.longitude_deg}&dataset=${dataset}`,abort.signal)
@@ -64,11 +68,16 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     </section>}
     </div></div>
     <section className="atlas-catalog" hidden={tab!=='catalog'}><h3>Dataset catalog</h3><label>Search science datasets<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Terrain, geology, thermal…" /></label>
+      {providerError&&<p role="alert">{providerError}</p>}
       {catalog.filter(value=>`${value.name} ${value.category} ${value.instrument}`.toLowerCase().includes(query.toLowerCase())).map(value=><details key={value.id}><summary><span>{value.name}</span><small>{value.category} / {value.acquisition_status.replaceAll('_',' ')}</small></summary>
         <p>{value.organization} / {value.version}</p><p>{value.numerical_queries?'Numerical source available':'Numerical queries unavailable'}; {value.overlay_available?'3D overlay available':'3D overlay unavailable'}</p>
         <p>{value.coverage?`${value.coverage.south}° to ${value.coverage.north}° latitude; ${value.coverage.west}° to ${value.coverage.east}° E`:'Specific coverage not yet validated'}</p>
         <p>{value.spacing_m_at_equator?`${value.spacing_m_at_equator.toFixed(1)} m spacing (equatorial for cylindrical data)`:'Resolution requires product selection'}</p>
+        <p>Units: {value.unit}. {value.longitude_convention}.</p><p>{value.crs}</p><p>{value.frame_note}</p>
+        <p>Source period: {value.period.start??'unspecified'} through {value.period.stop??'unspecified'}.</p>
         <p>{value.citation}</p>{value.limitations.map(note=><p key={note}>{note}</p>)}<a href={value.source_url} target="_blank" rel="noreferrer">Source / discovery</a>
+        {['pds_equirectangular','range_zip_geology'].includes(value.adapter)&&<DatasetAcquisition dataset={value.id}/>}
+        {providers.filter(provider=>provider.dataset_id===value.id).map(provider=><DatasetDiscovery key={provider.id} provider={provider}/>)}
       </details>)}
     </section>
   </aside>;

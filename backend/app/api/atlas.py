@@ -7,8 +7,24 @@ from backend.app.data.atlas import acquisition_plan
 from backend.app.models.analysis import AnalysisRequest,ProfileRequest,RegionalAnalysis,ElevationProfile
 from backend.app.services.regional_analysis import analyze,profile
 from backend.app.geospatial.sectors import sectors,lookup
+from backend.app.data import discovery
+from backend.app.models.discovery import DiscoveryProvider,DiscoverySnapshot
+from urllib.error import URLError
 
 router=APIRouter(prefix='/atlas',tags=['Lunar atlas'])
+
+
+@router.get('/providers',response_model=list[DiscoveryProvider])
+def discovery_providers():return list(discovery.providers().values())
+
+
+@router.get('/discovery/{provider_id}',response_model=DiscoverySnapshot)
+def collection_discovery(provider_id:str,limit:Annotated[int,Query(ge=1,le=20)]=10,refresh:bool=False):
+    provider=discovery.providers().get(provider_id)
+    if provider is None:raise HTTPException(404,detail='Unknown registered discovery provider')
+    try:return discovery.discover(provider.collection_id,limit,cache_dir=discovery.CACHE,refresh=refresh)
+    except (OSError,URLError,ValueError,KeyError,TypeError) as error:
+        raise HTTPException(503,detail='PDS collection metadata unavailable or invalid. Retry source discovery; no numerical data was substituted.') from error
 
 
 @router.get('/sectors')

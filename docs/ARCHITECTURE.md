@@ -103,6 +103,13 @@ selection, tooltips and map movement. Their position samples the coarse visual
 LOLA mesh, while placement validity and the inspector use native numeric data.
 They describe neither hardware footprints nor validated terrain clearances.
 
+Discovery providers register exact verified PDS collection identifiers separately
+from numerical dataset definitions. Bounded member requests produce integrity-
+checked metadata snapshots without acquiring or auto-registering scientific values.
+The catalog can preview acquisition budgets and browse original labels/files.
+This separates discovery from calibration, processing and ready-state registration;
+provider-specific validation remains necessary before any numerical integration.
+
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)

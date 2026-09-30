@@ -77,7 +77,7 @@ verified; thermal/mineralogical/resource/gravity integration limits recorded in
 docs/dataset-discovery.md. Next: global hypothetical mission placement and final
 atlas usability/performance acceptance.
 
-Milestone 5: global hypothetical mission integration. Saved scenario domains
+Milestone 5 861ff94 pushed, CI passed (run 36792355155): global hypothetical mission integration. Saved scenario domains
 select the original polar service or verified global numeric grid. Global asset
 placement/edit/movement use native elevation; 3D sprites, selection/tooltips and
 scientific overlays share the existing renderer. The unchanged Python energy
@@ -95,6 +95,18 @@ after that fix; eight mission/polar failure-state tests pass after separating
 global workflow availability from the polar cache. Full suite now contains 26
 browser tests; its final all-at-once run follows in the acceptance slice.
 Next: reusable bounded PDS collection discovery and final atlas acceptance.
+
+Milestone 6: verified collection registry and reusable PDS metadata discovery.
+Requests cap at 20 records / 2 MiB, validate collection membership and file-size
+associations, and retain SHA-256/UTC/source snapshots. The catalog browses original
+labels, periods, indexed bounds and files; acquisition-budget controls start no
+download. Live NASA requests returned the real 18-product Diviner GCP collection;
+actual rendered catalog screenshot reviewed. No thermal numeric integration is
+claimed; source axis/calibration validation remains necessary.
+Validation: three bounded discovery/cache/API unit tests and the Chromium catalog
+error/retry/budget/mobile workflow pass; typecheck and production build pass.
+Existing atlas/scenario scientific definitions are preserved. Next: final rendered
+review, resource/latency observations, missing-overlay recovery and acceptance.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -248,8 +260,8 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 3de62c8 (GitHub run 36789772731 succeeded).
-Current milestone: feat: connect global terrain to hypothetical missions.
+Latest confirmed published milestone: 861ff94 (GitHub run 36792355155 succeeded).
+Current milestone: feat: add bounded PDS scientific data discovery.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 

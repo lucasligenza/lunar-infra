@@ -4,7 +4,7 @@ export type AtlasDataset = {
   period:Record<string,string|number|null>; coverage:{south:number;north:number;west:number;east:number}|null;
   pixels_per_degree:number|null; spacing_m_at_equator:number|null; unit:string; crs:string;
   longitude_convention:string; frame_note:string; data_type:string; cache:string|null;
-  acquisition_status:string; numerical_queries:boolean; overlay_available:boolean; download_bytes:number;
+  acquisition_status:string; numerical_queries:boolean; overlay_available:boolean; download_bytes:number;adapter:string;
   limitations:string[];
 };
 export type AtlasQuantity = {value:number|null;unit:string;status:string;source_id:string;version:string;
@@ -26,3 +26,8 @@ export type AreaReport={dataset_id:string;source_id:string;version:string;select
 export type ProfileReport={dataset_id:string;source_id:string;version:string;distance_km:number;sample_spacing_km:number;
   samples:{distance_km:number;longitude_deg:number;latitude_deg:number;elevation_m:number|null;status:string}[];method:string;warnings:string[]};
 export type AtlasAnalysisState={radius:string;kind:'circle'|'box';bounds:{south:string;north:string;west:string;east:string};endpoint:{latitude:string;longitude:string};report:AreaReport|null;profile:ProfileReport|null};
+export type DiscoveryProvider={id:string;dataset_id:string;name:string;collection_id:string;source_url:string;note:string};
+export type DiscoverySnapshot={collection_id:string;source_url:string;fetched_at:string;metadata_sha256:string;total_products:number;limit:number;note:string;
+  products:{identifier:string;title:string;product_class:string;label_url:string|null;version:string|null;period:{start:string|null;stop:string|null};
+    indexed_coverage:{south:string|number|null;north:string|number|null;west:string|number|null;east:string|number|null;note:string};
+    files:{url:string;bytes:number|null;md5:string|null;media_type:string|null}[]}[]};

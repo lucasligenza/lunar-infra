@@ -146,3 +146,7 @@
 .mission-fly { position:absolute; top:20px; left:16px; background:#111923; padding:8px 12px; border:1px solid var(--border); font-size:12px; }
 .mission-layer-status { max-width:calc(100% - 190px); max-height:50%; overflow:auto; line-height:1.6; z-index:2; }
 .mission-layer-status > summary { cursor:pointer; }.mission-layer-status > p { margin:10px 0; }
+.dataset-discovery, .acquisition-plan { border-top:1px solid var(--border); padding-top:12px; margin-top:16px; }
+.dataset-discovery > button { margin:4px 6px 8px 0; }.metadata-fingerprint { overflow-wrap:anywhere; font-size:11px; }
+.dataset-discovery ul { list-style:none; }.dataset-discovery li { border-block-start:1px solid var(--border); margin-block:12px; padding-block:8px; }
+.dataset-discovery li span, .dataset-discovery li small { display:block; margin-top:6px; }

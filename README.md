@@ -44,6 +44,10 @@ requirements, and `--offline` reuses verified source files. Open **Lunar atlas**
 on the globe to inspect terrain from selectable registered global sources and
 search the scientific catalog. Discovered products are labeled separately from
 prepared numerical sources. See [Phase 4 plan](docs/phase4-plan.md).
+The Catalog tab previews acquisition/disk budgets and browses verified PDS
+collection metadata. Discovery preserves labels, coverage fields, file sizes,
+periods and source checksums; it downloads no numeric product and does not enable
+unvalidated thermal queries. See [data discovery](docs/dataset-discovery.md).
 
 Install the frontend from the repository root:
 

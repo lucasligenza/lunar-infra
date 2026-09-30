@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "providers": [
+    {
+      "id": "diviner-gcp",
+      "dataset_id": "diviner-temperature",
+      "name": "Diviner Global Cumulative Products",
+      "collection_id": "urn:nasa:pds:lro_diviner_derived1:data_derived_gcp",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_gcp/collection_data_derived_gcp.xml",
+      "note": "PDS collection metadata only. Local-hour temperature climatology is not mission UTC illumination. Labels and numeric axes need validation before integration."
+    }
+  ]
+}
