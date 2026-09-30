@@ -3,6 +3,8 @@
 Reproducible lunar terrain exploration using actual NASA LOLA elevation and modeled
 solar visibility. Phase 1 follows the supplied lunar data explorer roadmap.
 See [PROGRESS.md](PROGRESS.md) for completed milestones and remaining work.
+Phase 2 adds a mission-control workspace and hypothetical infrastructure scenarios;
+see the [implementation plan](docs/phase2-plan.md) and [mission API](docs/mission-api.md).
 
 Requires Python 3.12+, [uv](https://docs.astral.sh/uv/getting-started/installation/),
 and Node.js 24 with npm. Dependencies are locked for reproducible installation.
@@ -44,6 +46,15 @@ visibility layers, and click a location to inspect it. The coordinate form also
 accepts planetocentric latitude and east-positive longitude. Source labels, units,
 methods and sampling footprints are available in the inspector. At latitude
 `-89.5`, longitude `0`, the prepared raster reports -705 m elevation.
+
+Select terrain, enter a scenario name and choose **Create scenario at selected site**.
+Choose an asset from the infrastructure catalog, then click valid terrain to place it.
+Click its symbol or list entry to configure it. **Save asset** persists parameters;
+**Move on map** relocates it. Reopen, duplicate or delete scenarios from the left
+rail; deletion requires confirmation. **Save scenario** saves the edited name.
+Placements save immediately through the API; unsaved form changes are labeled.
+The local database is `data/local/missions.sqlite`, separate from downloaded rasters.
+Set `LUNAROS_DB_PATH` before backend startup to use another database path.
 
 The frontend proxies `/api` to the backend at `http://127.0.0.1:8000`. Set
 `LUNAROS_BACKEND_URL` before starting Next.js if the backend runs elsewhere.

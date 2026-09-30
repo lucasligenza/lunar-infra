@@ -21,10 +21,16 @@ Phase 2: infrastructure simulation and mission control. Phases 3-4 excluded.
 ## Active milestone and features in progress
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
-Milestone 2: typed hypothetical assets, SQLite scenarios and validated CRUD API.
+Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
+Milestone 3: scenario explorer and interactive asset placement/configuration.
 
 ## Validation results
 
+- Infrastructure browser integration covers create/place/edit/move, invalid
+  placement preserving saved state, reload/reopen, duplicate and confirmed removal.
+  Configuration saves show the backend revision; unsaved edits are explicit.
+  All seven Chromium tests, typecheck and production build pass. Infrastructure
+  screenshot reviewed: real map, base marker, selected asset and editable units.
 - Scenario milestone: 48 Python tests plus eight subtests pass, covering restart
   persistence, all asset types, duplication, deletion, invalid/nodata locations,
   invalid batteries/time axes and simultaneous revision conflicts/rollback.
@@ -74,12 +80,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: b033422.
-Current milestone: feat: persist lunar infrastructure scenarios.
+Latest confirmed published milestone: ff5035b.
+Current milestone: feat: add interactive lunar infrastructure placement.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement scenario and asset workflows in the UI: create/reopen/save, valid map
-placement, selection, parameter editing, movement, removal and duplication.
+Implement the deterministic Python energy engine and conservation tests before
+adding simulation charts or playback.
