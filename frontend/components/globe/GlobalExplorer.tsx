@@ -101,7 +101,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
           <dt>Local analysis</dt><dd data-testid="local-coverage">{inspection.local_analysis?'240 m south-pole grid':inspection.local_status.replaceAll('_',' ')}</dd></dl>
           <p className="coverage-note">{inspection.local_analysis?'Prepared 240 m elevation, slope and average solar visibility are available.':'Global atlas elevation and derived slope are available at their supporting grid resolution. Prepared polar illumination is unavailable here.'}</p>
           <button className="primary-button" onClick={()=>onMode('regional')}>Analyze this region</button>
-          <button disabled={!inspection.planning} onClick={()=>onMode('mission')}>Design a mission here</button>
+          <button disabled={inspection.elevation.status!=='ok'} onClick={()=>onMode('mission')}>Design a mission here</button>
           <p className="temporal-note">Real-data mission playback unavailable. Temporal profiles are hypothetical.</p></>}
         <details><summary>Scientific sources</summary><p>Global imagery is a visualization product, not a measurement. Local and global elevation have different sampling footprints.</p>
           {metadata?.source_urls.map(url=><a key={url} href={url} target="_blank" rel="noreferrer">{url.includes('svs')?'NASA visualization source':'NASA LOLA archive'}</a>)}

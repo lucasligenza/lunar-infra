@@ -39,6 +39,23 @@ export function tileGeometry(base:THREE.SphereGeometry,z:number,x:number,y:numbe
 }
 
 type Tile={key:string;z:number;x:number;y:number;mesh:THREE.Mesh;bitmap:ImageBitmap};
+// Test the tile's conservative spherical extent, not just its center. At low
+// camera heights the center can be off-screen while the tile covers the viewport.
+export function visibleTiles(camera:THREE.PerspectiveCamera,z:number) {
+  camera.updateMatrixWorld();
+  const frustum=new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
+  const direction=camera.position.clone().normalize();
+  const angularRadius=Math.min(Math.PI,Math.PI/2**(z+1)*Math.SQRT2);
+  const radius=2*Math.sin(angularRadius/2)+.02;
+  const candidates:{key:string;z:number;x:number;y:number;score:number}[]=[];
+  for(let y=0;y<2**z;y++)for(let x=0;x<2**(z+1);x++) {
+    const bounds=geographicTile(z,x,y),center=new THREE.Vector3(...lunarVector((bounds.west+bounds.east)/2,(bounds.south+bounds.north)/2));
+    const alignment=center.dot(direction);
+    if(alignment>-Math.sin(Math.min(Math.PI/2,angularRadius))&&frustum.intersectsSphere(new THREE.Sphere(center,radius)))
+      candidates.push({key:`${z}/${x}/${y}`,z,x,y,score:1-alignment});
+  }
+  return candidates.sort((a,b)=>a.score-b.score).slice(0,24);
+}
 export class ScientificOverlay {
   group=new THREE.Group();
   private tiles=new Map<string,Tile>();private wanted=new Set<string>();private queue:{key:string;z:number;x:number;y:number}[]=[];
@@ -59,17 +76,9 @@ export class ScientificOverlay {
     const key=[...camera.position.toArray(),...camera.quaternion.toArray(),camera.aspect].map(v=>v.toFixed(3)).join(',');
     if(key===this.cameraKey)return;this.cameraKey=key;camera.updateMatrixWorld();
     const z=Math.min(5,Math.max(1,Math.floor(Math.log2(2.6/Math.max(.06,camera.position.length()-1)))));
-    const candidates:{key:string;z:number;x:number;y:number;score:number}[]=[];
-    if(z>0)for(let y=0;y<2**z;y++)for(let x=0;x<2**(z+1);x++) {
-      const b=geographicTile(z,x,y),center=new THREE.Vector3(...lunarVector((b.west+b.east)/2,(b.south+b.north)/2));
-      const normal=center.clone();const screen=center.project(camera);
-      const padding=1+4/2**z;
-      const limbPadding=Math.sin(Math.min(Math.PI/2,Math.PI/2**(z+1)*Math.SQRT2));
-      if(normal.dot(camera.position.clone().normalize())>-limbPadding&&Math.abs(screen.x)<padding&&Math.abs(screen.y)<padding&&screen.z<1)
-        candidates.push({key:`${z}/${x}/${y}`,z,x,y,score:screen.x**2+screen.y**2});
-    }
+    const candidates=visibleTiles(camera,z);
     const roots=[{key:'0/0/0',z:0,x:0,y:0},{key:'0/1/0',z:0,x:1,y:0}];
-    const chosen=[...roots,...candidates.sort((a,b)=>a.score-b.score).slice(0,24)];this.wanted=new Set(chosen.map(tile=>tile.key));
+    const chosen=[...roots,...candidates];this.wanted=new Set(chosen.map(tile=>tile.key));
     this.queue=chosen.filter(tile=>!this.tiles.has(tile.key)&&!this.pending.has(tile.key));
     // Keep roots as a complete fallback. Switch levels together, so opacity is
     // applied once rather than accumulating parent and child colors.

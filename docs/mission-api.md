@@ -4,7 +4,10 @@ All infrastructure is hypothetical. Default engineering numbers are editable
 examples, not NASA hardware specifications. Existing scientific endpoints remain.
 
 - POST /scenarios: name, site {latitude_deg, longitude_deg}, optional mission and
-  assets. Returns a versioned definition with UUID, dataset versions and revision.
+  assets. `region_id` defaults to `south-pole`; `global-atlas` enables placements
+  on verified native global terrain. Latitude is -90..90, longitude is [0,360).
+  Each domain validates the actual prepared source footprint/nodata.
+  Returns a versioned definition with UUID, dataset versions and revision.
 - GET /scenarios and /scenarios/{id}: saved definitions, most recently edited first.
 - PATCH /scenarios/{id}: revision plus name, site and/or complete mission definition.
 - DELETE /scenarios/{id}?revision=N: deletes after the UI obtains confirmation.

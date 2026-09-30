@@ -100,6 +100,14 @@ native global GLD100/LOLA terrain slopes, with explicit source resolution and
 stencil support; these remain distinct from the finer prepared polar analysis.
 See [atlas derivations](atlas-data.md).
 
+Global-atlas hypothetical missions can place assets wherever verified numeric
+elevation exists. The domain is saved separately from the original polar domain.
+Source frame qualifications remain attached: GLD100 and Moon 2000 geology are
+nominally registered on the 1737.4 km sphere, without a claimed surveyed transform
+into ME/PA DE421. Coarse global terrain does not qualify a construction site.
+No temporal illumination becomes available simply by extending elevation coverage;
+every global power run requires an explicit hypothetical interval profile.
+
 The graphics coordinate axes are +X at 0 degrees east on the equator, +Y north,
 and -Z at 90 degrees east. This is an orthogonal permutation of the same lunar
 spherical frame. Radius is 1737400 m; relief is at true scale. Source texture

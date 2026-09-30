@@ -50,8 +50,10 @@ class NumericGrid:
 class AtlasStore:
     def __init__(self,directory:Path=OUTPUT,globe=None,polar=None):
         self.directory=directory; self.globe=globe; self.polar=polar
-        self.definitions=definitions(); self.grids={}; self.errors={};self.classifications={}
-        if globe is not None: self.grids['lola-global']=NumericGrid(globe.elevation,self.definitions['lola-global'])
+        self.definitions=definitions(); self.grids={}; self.errors={};self.classifications={};self.registries={}
+        if globe is not None:
+            self.grids['lola-global']=NumericGrid(globe.elevation,self.definitions['lola-global'])
+            self.registries['lola-global']={'source':globe.registry['terrain'],'artifacts':{'elevation.bin':globe.registry['artifacts']['elevation.bin']}}
         source=self.definitions['gld100']; path=directory/source.id
         try:
             registry=json.loads((path/'registry.json').read_text(encoding='utf8'))
@@ -68,6 +70,7 @@ class AtlasStore:
                 slopes=np.load(path/'slope.npy',mmap_mode='r',allow_pickle=False)
                 if slopes.shape!=values.shape or slopes.dtype!=np.dtype('<f4'):raise ValueError('Invalid slope grid')
             self.grids[source.id]=NumericGrid(values,source,slopes)
+            self.registries[source.id]=registry
         except (OSError,ValueError,KeyError) as error:self.errors[source.id]=str(error)
         source=self.definitions['usgs-geology']
         try:self.classifications[source.id]=GeologyGrid(directory/source.id,source)

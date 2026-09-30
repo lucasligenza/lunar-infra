@@ -5,6 +5,8 @@ layers, cube-sphere sectors, arbitrary area statistics, native elevation profile
 and an optional USGS geological-unit layer. Open **Lunar atlas** on the globe;
 its Layers, Regions, Analysis and Catalog tabs share the selected lunar location.
 The original south-pole 240 m analysis and hypothetical mission simulator remain.
+Global atlas sites also support saved hypothetical infrastructure missions on the
+3D Moon. Elevation availability never implies validated temporal solar conditions.
 
 Prepare geology with `uv run python -m backend.app.data.atlas --dataset usgs-geology`.
 Use `--plan` first to inspect the bounded approximately 84 MB selected-member
@@ -68,8 +70,12 @@ use arrow keys to pan, scroll to zoom, and click the Moon to select a location.
 Focus the globe and press Enter to select the center of the view. Search seven
 destinations, fly to coordinates, reset the camera, or toggle imagery/graticule.
 The source drawer identifies coarse elevation and supported local coverage.
-Use **Analyze this region** or **Design a mission here** at the prepared south pole.
-Elsewhere, local analysis is explicitly unavailable; no local values are fabricated.
+Use **Analyze this region** or **Design a mission here** at a selected location.
+Inside the prepared polar footprint, analysis retains the 240 m map. Elsewhere,
+regional analysis uses native global atlas data and the 3D surface. Global missions
+validate asset placement against GLD100 (or prepared LOLA if GLD100 is absent).
+These coarser samples cannot establish landing or construction safety. Global
+source frames retain their precision qualifications; no surveyed transform is implied.
 The top mode controls preserve location, camera, active scenario, drafts and the
 selected simulation interval. Hidden playback pauses. On phones, destination and
 region panels can be closed so they do not obstruct navigation.

@@ -88,6 +88,21 @@ numeric queries always use original values. The same Three.js mesh supports
 progressive scientific tiles and a synchronized comparison reveal. See
 [atlas data and rendering](atlas-data.md) for limits and coordinate conventions.
 
+Scenarios retain their saved domain: `south-pole` resolves the original projected
+terrain service, while `global-atlas` resolves the best verified global numeric
+grid. Location validation and provenance occur through this shared API boundary;
+the deterministic energy engine is unchanged. The additive domain uses the existing
+schema/versioned SQLite aggregate and revision checks. Global runs snapshot the
+source definition and numeric artifact hashes. Changing dataset versions requires
+reviewing/recreating a scenario before rerunning. Atlas availability remains
+independent of polar cache availability.
+
+The mission globe reuses the scientific overlay renderer and camera context.
+Hypothetical asset sprites are screen-sized symbols at lunar coordinates, with
+selection, tooltips and map movement. Their position samples the coarse visual
+LOLA mesh, while placement validity and the inspector use native numeric data.
+They describe neither hardware footprints nor validated terrain clearances.
+
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)

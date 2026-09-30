@@ -16,9 +16,9 @@ const PARAMETERS: Record<Asset["kind"], Parameter[]> = {
   robot: [{ field: "active_demand_kw", label: "Active demand (kW)" }, { field: "idle_demand_kw", label: "Idle demand (kW)" }, { field: "duty_cycle", label: "Duty cycle (0–1)", max: 1 }],
 };
 
-export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, onInspect, onDirty }: {
+export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, onInspect, onDirty, globalDomain=false }: {
   asset: Asset; busy: boolean; onSave: (changes: object) => void; onMove: () => void; onRemove: () => void; onInspect: () => void;
-  onDirty: (dirty: boolean) => void;
+  onDirty: (dirty: boolean) => void; globalDomain?:boolean;
 }) {
   const [draft, setDraft] = useState(asset);
   const [profile, setProfile] = useState(asset.load_profile_kw?.join(", ") ?? "");
@@ -46,8 +46,8 @@ export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, 
       {PARAMETERS[asset.kind].map(parameter => <label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min ?? 0} max={parameter.max ?? 1e9}
         value={draft[parameter.field] as number} onChange={event => setDraft({ ...draft, [parameter.field]: Number(event.target.value) })} /></label>)}
       {asset.kind === "habitat" && <label>Optional load profile (kW per interval)<textarea aria-label="Optional load profile (kW per interval)" value={profile} onChange={event => setProfile(event.target.value)} placeholder="Blank uses continuous demand" /></label>}
-      <fieldset><legend>Location / ME-PA DE421</legend>
-        <label>Asset latitude (°)<input type="number" required step="any" min={-90} max={0} value={draft.location.latitude_deg} onChange={event => setDraft({ ...draft, location: { ...draft.location, latitude_deg: Number(event.target.value) } })} /></label>
+      <fieldset><legend>{globalDomain?'Location / source lunar frame':'Location / ME-PA DE421'}</legend>
+        <label>Asset latitude (°)<input type="number" required step="any" min={-90} max={globalDomain?90:0} value={draft.location.latitude_deg} onChange={event => setDraft({ ...draft, location: { ...draft.location, latitude_deg: Number(event.target.value) } })} /></label>
         <label>Asset longitude (° E)<input type="number" required step="any" min={0} max={359.999999999} value={draft.location.longitude_deg} onChange={event => setDraft({ ...draft, location: { ...draft.location, longitude_deg: Number(event.target.value) } })} /></label>
       </fieldset>
       <p className={dirty ? "warning" : "nominal"}>{dirty ? "Unsaved asset changes" : "Asset configuration saved"}</p>

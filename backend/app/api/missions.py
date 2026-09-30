@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import ValidationError
 
-from backend.app.api.routes import Store
+from backend.app.services.mission_terrain import MissionTerrain
 from backend.app.models.mission import AssetCreate, AssetPatch, Revision, Scenario, ScenarioCreate, ScenarioPatch
 from backend.app.services.scenarios import Conflict, CorruptRun, NotFound, ScenarioRepository
 from backend.app.models.simulation import RunSummary, SimulationRun
@@ -18,6 +18,10 @@ def repository(request: Request):
 
 
 Repository = Annotated[ScenarioRepository, Depends(repository)]
+
+
+def mission_terrain(request:Request):return MissionTerrain(request.app.state.store,request.app.state.atlas)
+Store=Annotated[MissionTerrain,Depends(mission_terrain)]
 
 
 def translate(operation):
@@ -34,9 +38,10 @@ def translate(operation):
 
 
 def validate_locations(store, definition):
+    terrain=store.resolve(definition)
     for location in [definition.site, *[asset.location for asset in definition.assets]]:
         try:
-            sample = store.inspect(location.longitude_deg, location.latitude_deg)
+            sample = terrain.inspect(location.longitude_deg, location.latitude_deg)
         except ValueError as error:
             raise ValueError("Location is outside the prepared NASA terrain") from error
         if sample.elevation.status != "ok":
@@ -54,7 +59,7 @@ def update(repo, store, identifier, revision, change):
 def create_scenario(definition: ScenarioCreate, repo: Repository, store: Store):
     def create():
         validate_locations(store, definition)
-        sources = {item["product_id"]: item["version"] for item in store.registry["sources"].values()}
+        sources = {item["product_id"]: item["version"] for item in store.resolve(definition).registry["sources"].values()}
         return repo.create(definition, sources)
     return translate(create)
 
@@ -133,11 +138,12 @@ def run_simulation(identifier: UUID, version: Revision, repo: Repository, store:
         if scenario.revision != version.revision:
             raise Conflict("Scenario changed. Reopen before running the simulation.")
         validate_locations(store, scenario)
-        sources = {item["product_id"]: item["version"] for item in store.registry["sources"].values()}
+        terrain=store.resolve(scenario)
+        sources = {item["product_id"]: item["version"] for item in terrain.registry["sources"].values()}
         if scenario.dataset_identifiers != sources:
             raise Conflict("Spatial dataset versions changed; review and recreate the scenario with current data.")
         result = simulate(ScenarioCreate.model_validate(scenario.model_dump(include={"name", "region_id", "site", "mission", "assets"})))
-        return repo.save_run(scenario, result, store.registry["sources"])
+        return repo.save_run(scenario, result, terrain.registry["sources"])
     return translate(run)
 
 

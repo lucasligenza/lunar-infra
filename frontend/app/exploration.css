@@ -137,3 +137,12 @@
 .geology-legend ul { list-style:none; max-height:240px; overflow:auto; margin-top:12px; }
 .geology-legend li { display:flex; align-items:center; gap:8px; font-size:12px; line-height:1.6; margin:7px 0; }
 .geology-legend i { width:14px; height:14px; flex-shrink:0; border:1px solid #fff3; }
+.mission-moon { position:absolute; inset:0 0 35px; background:#080c11; }.mission-moon .camera-controls { bottom:20px; }
+.globe-asset-tooltip { position:absolute; pointer-events:none; z-index:5; padding:7px 10px; background:#14232e; border:1px solid var(--border); color:var(--ink); font-size:12px; border-radius:3px; }
+.mission-layer-status { position:absolute; bottom:16px; left:16px; padding:7px; font-size:11px; background:#111923; color:var(--quiet); }
+.global-mission-controls { border-top:1px solid var(--border); padding-top:12px; }.global-mission-controls label { font-size:12px; }
+.global-mission-controls select { width:100%; background:#14232e; padding:9px; margin:8px 0; border:1px solid var(--border); }
+.global-mission-controls p { color:var(--quiet); font-size:12px; line-height:1.6; }
+.mission-fly { position:absolute; top:20px; left:16px; background:#111923; padding:8px 12px; border:1px solid var(--border); font-size:12px; }
+.mission-layer-status { max-width:calc(100% - 190px); max-height:50%; overflow:auto; line-height:1.6; z-index:2; }
+.mission-layer-status > summary { cursor:pointer; }.mission-layer-status > p { margin:10px 0; }

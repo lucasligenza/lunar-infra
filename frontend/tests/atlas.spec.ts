@@ -1,6 +1,7 @@
 import {test,expect} from '@playwright/test';
-import {SphereGeometry} from 'three';
-import {tileGeometry,geographicTile} from '../lib/atlas-render';
+import {SphereGeometry,PerspectiveCamera} from 'three';
+import {tileGeometry,geographicTile,visibleTiles} from '../lib/atlas-render';
+import {lunarVector} from '../lib/globe';
 import {areaBoundary} from '../lib/atlas-area';
 
 test('georeferenced overlay patches preserve globe geometry at seam and poles',()=>{
@@ -21,6 +22,15 @@ test('georeferenced overlay patches preserve globe geometry at seam and poles',(
     if(z===0)expect(hemisphere).toBeGreaterThanOrEqual(-1e-6);patch.dispose();
   }
   expect(Array.from(base.attributes.position.array)).toEqual(before);base.dispose();
+});
+
+test('close-up camera includes surface tiles whose centers are outside the viewport',()=>{
+  for(const [lon,lat] of [[23.47,.67],[359.9,0],[.1,89.5],[270,-89.5],[180,20]])for(const z of [1,3,5]) {
+    const camera=new PerspectiveCamera(42,870/590,.002,30);camera.position.set(...lunarVector(lon,lat,1.18));
+    if(Math.abs(lat)>85)camera.up.set(0,0,lat>0?-1:1);camera.lookAt(0,0,0);
+    const tiles=visibleTiles(camera,z),x=Math.floor(lon/(180/2**z)),y=Math.min(2**z-1,Math.floor((90-lat)/(180/2**z)));
+    expect(tiles.some(tile=>tile.x===x&&tile.y===y)).toBe(true);expect(tiles.length).toBeLessThanOrEqual(24);
+  }
 });
 
 test('atlas queries original GLD100 across regions and switches verified datasets',async({page,request})=>{

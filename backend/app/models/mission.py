@@ -17,7 +17,7 @@ class Definition(BaseModel):
 
 
 class Location(Definition):
-    latitude_deg: float = Field(ge=-90, le=0, allow_inf_nan=False)
+    latitude_deg: float = Field(ge=-90, le=90, allow_inf_nan=False)
     longitude_deg: float = Field(ge=0, lt=360, allow_inf_nan=False)
 
 
@@ -103,7 +103,7 @@ class Mission(Definition):
 
 class ScenarioCreate(Definition):
     name: str = Field(min_length=1, max_length=100, pattern=r"\S")
-    region_id: Literal["south-pole"] = "south-pole"
+    region_id: Literal["south-pole","global-atlas"] = "south-pole"
     site: Location
     mission: Mission = Field(default_factory=Mission)
     assets: list[Asset] = Field(default_factory=list, max_length=100)

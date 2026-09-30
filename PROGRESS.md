@@ -62,7 +62,7 @@ interactions reviewed; chart labels enlarged and atlas header/tabs made sticky
 after screenshot inspection. Focused browser regression and typecheck pass.
 Production build passes. Next: validated USGS geology integration.
 
-Milestone 4: USGS v2 global geology integration. Eight pinned archive members
+Milestone 4 3de62c8 pushed, CI passed (run 36789772731): USGS v2 global geology integration. Eight pinned archive members
 acquired via bounded ranges (83855573 bytes transferred); original 12,247 polygons
 and Moon 2000 projection validated. 49 interpreted classes rasterized at 16 ppd
 with original colors/descriptions, categorical query metadata and a registered 3D
@@ -76,6 +76,25 @@ refinement. Actual geology globe screenshot reviewed. NASA PDS collection discov
 verified; thermal/mineralogical/resource/gravity integration limits recorded in
 docs/dataset-discovery.md. Next: global hypothetical mission placement and final
 atlas usability/performance acceptance.
+
+Milestone 5: global hypothetical mission integration. Saved scenario domains
+select the original polar service or verified global numeric grid. Global asset
+placement/edit/movement use native elevation; 3D sprites, selection/tooltips and
+scientific overlays share the existing renderer. The unchanged Python energy
+model records source metadata and artifact hashes and requires explicit synthetic
+or hypothetical illumination. Saved definitions/results and selected playback
+interval survive mode transitions/reopening. Native elevation/slope/source appear
+in the global inspector; global terrain works independently of the polar cache.
+Validation: 88 Python tests plus eight subtests and all 24 Chromium tests pass;
+typecheck and production build pass. Actual desktop/mobile mission views reviewed;
+asset sprites now render after scientific color patches to remain readable.
+Close-up screenshots also revealed tile-center culling could hide valid science
+patches. Conservative spherical tile extents now intersect the camera frustum;
+a new seam/pole/close-up regression passes. All eight atlas/mission tests pass
+after that fix; eight mission/polar failure-state tests pass after separating
+global workflow availability from the polar cache. Full suite now contains 26
+browser tests; its final all-at-once run follows in the acceptance slice.
+Next: reusable bounded PDS collection discovery and final atlas acceptance.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -217,8 +236,9 @@ No current implementation blocker. 240 m slopes cannot resolve landing hazards.
 The visual globe retains its coarse 1-degree LOLA mesh and at most 4k imagery.
 Phase 4 native GLD100 queries/derived slopes use 0.03125-degree cells and progressive
 scientific color tiles; colored overlays do not increase geometric resolution.
-Detailed local analysis and infrastructure placement retain the prepared polar
-footprint. Destination centers are rounded navigation aids, not surveyed sites.
+Detailed 240 m local analysis retains the prepared polar footprint; global missions
+use the available native global terrain with explicit coarser-resolution/frame
+qualifications. Destination centers are rounded navigation aids, not surveyed sites.
 Illumination is modeled long-term visibility and uses older underlying terrain.
 Time-dependent NASA illumination is not integrated, so real-data mission playback
 is unavailable. Energy runs use explicitly labeled hypothetical factors; the model
@@ -228,12 +248,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: e037ff1 (GitHub run 36787831715 succeeded).
-Current milestone: feat: integrate global USGS lunar geology.
+Latest confirmed published milestone: 3de62c8 (GitHub run 36789772731 succeeded).
+Current milestone: feat: connect global terrain to hypothetical missions.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
 Complete Phase 4 milestones in docs/phase4-plan.md, preserving all earlier science
-and mission workflows. Next slice connects global terrain to hypothetical missions.
+and mission workflows. Next slice adds bounded provider discovery and final atlas verification.

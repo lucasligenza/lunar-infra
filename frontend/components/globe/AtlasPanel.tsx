@@ -5,6 +5,7 @@ import type {AtlasDataset,AtlasPoint,AtlasView,AtlasLayer,AtlasSector,AtlasAnaly
 import type {GlobeLocation} from '../../types/globe';
 import AtlasRegions from './AtlasRegions';
 import AtlasAnalysis from './AtlasAnalysis';
+import AtlasLegend from './AtlasLegend';
 
 export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
   sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;onSelect:(location:GlobeLocation,distance?:number)=>void;analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean}) {
@@ -39,9 +40,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
       <label>Scientific overlay<select aria-label="Scientific overlay" value={view.layer} onChange={e=>onView({...view,layer:e.target.value})}><option value="none">Imagery only</option>
         {layers.filter(value=>value.dataset_id===selectedDataset||value.id==='geology').map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
       {layer&&<><label>Layer opacity {Math.round(view.opacity*100)}%<input aria-label="Scientific layer opacity" type="range" min={0} max={1} step={.05} value={view.opacity} onChange={e=>onView({...view,opacity:Number(e.target.value)})} /></label>
-        {layer.categories?<details className="geology-legend"><summary>{layer.categories.length} geological units / categorical legend</summary><ul>{layer.categories.map(unit=><li key={unit.code}><i style={{background:unit.color}}/><span>{unit.code} / {unit.name}</span></li>)}</ul></details>:
-          <div className="atlas-legend" aria-label={`${layer.name} legend`}><div style={{background:`linear-gradient(90deg,${layer.colors.join(',')})`}}/><p><span>{layer.minimum?.toLocaleString()} {layer.unit}</span><span>{layer.maximum?.toLocaleString()} {layer.unit}</span></p></div>}
-        <p>{layer.source_id} {layer.version}; native grid {(1/layer.angular_spacing_deg).toFixed(0)} pixels/degree. Visual tiles load progressively; queries use original numeric cells.</p>
+        <AtlasLegend layer={layer}/>
         <p role="status" data-testid="atlas-overlay-status">{overlayStatus}</p>
         <label><input type="checkbox" checked={view.compare} onChange={e=>onView({...view,compare:e.target.checked})}/>Compare imagery and science</label>
         {view.compare&&<label>Reveal position<input aria-label="Comparison reveal" type="range" min={.05} max={.95} step={.01} value={view.reveal} onChange={e=>onView({...view,reveal:Number(e.target.value)})}/></label>}

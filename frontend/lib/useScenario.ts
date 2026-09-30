@@ -23,7 +23,7 @@ export function useScenario(available: boolean) {
   const refresh = useCallback(() => execute(async () => setScenarios(await missionRequest<Scenario[]>("/scenarios"))), [execute]);
   useEffect(() => { if (available) void refresh(); }, [available, refresh]);
   const open = (id: string) => execute(async () => accept(await missionRequest<Scenario>(`/scenarios/${id}`)));
-  const create = (name: string, site: Location) => execute(async () => accept(await missionRequest<Scenario>("/scenarios", "POST", { name, site })));
+  const create = (name: string, site: Location,region_id='south-pole') => execute(async () => accept(await missionRequest<Scenario>("/scenarios", "POST", { name, site,region_id })));
   const patch = (changes: Partial<Pick<Scenario, "name" | "site" | "mission">>) => execute(async () => {
     if (!active) throw new Error("Open a scenario first.");
     return accept(await missionRequest<Scenario>(`/scenarios/${active.id}`, "PATCH", { revision: active.revision, ...changes }));
