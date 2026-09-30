@@ -7,23 +7,28 @@ Phase 1: Lunar Data Explorer, following the user's roadmap. Phases 2-4 excluded.
 ## Completed milestones
 
 - 9ed94f6 (pushed): verified global LOLA overview ingestion and initial architecture.
-- Current milestone: scientific monorepo foundation and real south-pole pipeline.
+- 5933d31 (pushed): scientific monorepo foundation and real south-pole pipeline.
   NASA polar elevation and quantitative modeled illumination; bounded crop,
   CRS validation, nodata masks, local slope and aligned solar visibility.
+- Current milestone: typed scientific inspection service, FastAPI endpoints,
+  georeferenced PNG layers, readiness checks and explicit scientific error handling.
 
 ## Active milestone and features in progress
 
-Scientific processing complete. Next: reusable site analysis and FastAPI endpoints.
+Scientific processing and FastAPI inspection complete. Next: interactive frontend.
 The interactive Next.js/OpenLayers frontend remains to be implemented.
 
 ## Validation results
 
-- 23 tests pass, with eight additional unittest subtests. No failures or skipped
+- 33 tests pass, with eight additional unittest subtests. No failures or skipped
   real-data integration tests in this environment.
 - Analytic projection comparisons, pole and coordinate validation, half-open bounds,
   known planes, nodata stencils, anisotropic pixels, CRS variants and grid alignment.
 - Real-data processing repeats identically and preserves every cropped elevation
   sample. Output rasters align exactly; illumination resampling is tested.
+- API tests cover typed responses, valid zero, nodata, invalid/outside queries,
+  missing/corrupt files, OpenAPI schemas and PNG transparency. A real API query
+  matches its registered GeoTIFF pixel exactly.
 - Region: 400 x 400 cells; elevation -4242.5 to +1954.5 m; maximum slope 35.1239 deg.
   All 160000 cells are valid in each layer.
 - Rasterio emits affine multiplication deprecation warnings internally. Local code
@@ -48,13 +53,13 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone before this commit: 9ed94f6.
-Current milestone: feat: prepare validated lunar south-pole terrain.
+Latest confirmed published milestone before this commit: 5933d31.
+Current milestone: feat: expose scientific site inspection API.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement reusable inspection, /health, /datasets, /regions, /sites/inspect and
-georeferenced renderings with typed API tests. Then implement and verify the
-interactive frontend and startup docs. Commit and push each validated milestone.
+Implement and verify the Next.js/OpenLayers interactive map, site inspector,
+layer controls, navigation, provenance and loading/error states. Complete startup
+docs and end-to-end validation. Commit and push each successful milestone.

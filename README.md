@@ -18,6 +18,15 @@ and prepares a 96 x 96 km region at 240 m resolution. Use `--offline` to reproce
 cached files. See [data setup](data/README.md). Downloads and GeoTIFFs are ignored.
 No synthetic data is substituted if acquisition fails.
 
+Start the backend after preparation:
+
+```powershell
+uv run uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+```
+
+Visit http://127.0.0.1:8000/docs for the working scientific API. The frontend is
+the next milestone. See [API documentation](docs/API.md).
+
 The original 2 MB global-overview CLI remains available as `uv run python -m lunaros
 fetch` and `uv run python -m lunaros inspect`; it is not used for polar analysis.
 
