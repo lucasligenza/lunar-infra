@@ -1,0 +1,39 @@
+{
+  "retrieved_utc_date": "2026-09-29",
+  "sources": {
+    "elevation": {
+      "product_id": "LDEM_75S_240M",
+      "version": "V2.0",
+      "dataset_id": "LRO-L-LOLA-4-GDR-V1.0",
+      "files": {
+        "ldem_75s_240m.img": {
+          "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_240m.img",
+          "bytes": 29062688,
+          "sha256": "d031efe2611b17dfbf3c158f5e15dc04cd5719349dcbf6384bb21fd97697c490"
+        },
+        "ldem_75s_240m.lbl": {
+          "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_240m.lbl",
+          "bytes": 4990,
+          "sha256": "ec07239f41d8abc1a3681495b5799b770c7206b5268b76721d69180df0422e02"
+        }
+      }
+    },
+    "illumination": {
+      "product_id": "AVGVISIB_85S_060M_201608",
+      "version": "V1.05",
+      "dataset_id": "LRO-L-LOLA-4-GDR-V1.0",
+      "files": {
+        "AVGVISIB_85S_060M_201608.IMG": {
+          "url": "https://imbrium.mit.edu/EXTRAS/ILLUMINATION/IMG/AVGVISIB_85S_060M_201608.IMG",
+          "bytes": 51166728,
+          "sha256": "82dadf321dee28f1947c1fed81858d4cf50fe8eb2aa405aae114e8ab21c1efe1"
+        },
+        "AVGVISIB_85S_060M_201608.LBL": {
+          "url": "https://imbrium.mit.edu/EXTRAS/ILLUMINATION/IMG/AVGVISIB_85S_060M_201608.LBL",
+          "bytes": 4094,
+          "sha256": "33decce957d5d4d9608557d8d969d1e1b94056a159b2563624ade4b528a0c917"
+        }
+      }
+    }
+  }
+}

@@ -16,3 +16,9 @@ build/
 *.log
 *.tmp
 .DS_Store
+.next/
+*.tsbuildinfo
+.cache/
+test-results/
+playwright-report/
+artifacts/

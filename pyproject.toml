@@ -3,7 +3,28 @@ name = "lunaros"
 version = "0.1.0"
 description = "Reproducible NASA LOLA terrain exploration"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi>=0.142.1",
+    "numpy>=2.5.3",
+    "pillow>=12.3.0",
+    "pydantic>=2.13.5",
+    "pyproj>=3.8.0",
+    "rasterio>=1.5.1",
+    "uvicorn>=0.54.0",
+]
 
 [tool.lunaros]
-runtime = "Python standard library; browser ES modules"
+runtime = "FastAPI scientific backend; Next.js and OpenLayers frontend"
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "backend/tests"]
+pythonpath = ["."]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+]

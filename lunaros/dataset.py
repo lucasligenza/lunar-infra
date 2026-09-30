@@ -117,9 +117,14 @@ def load(raw_dir: Path) -> tuple[Grid, array]:
 
 
 def fetch(raw_dir: Path) -> None:
+    fetch_files(raw_dir, manifest()["files"])
+    load(raw_dir)
+
+
+def fetch_files(raw_dir: Path, files: dict) -> None:
     """Download bounded, checksummed files; never accept partial cache entries."""
     raw_dir.mkdir(parents=True, exist_ok=True)
-    for name, spec in manifest()["files"].items():
+    for name, spec in files.items():
         destination = raw_dir / name
         if destination.exists():
             try:
@@ -140,7 +145,6 @@ def fetch(raw_dir: Path) -> None:
             temporary.replace(destination)
         finally:
             temporary.unlink(missing_ok=True)
-    load(raw_dir)
 
 
 def summary(raw_dir: Path) -> dict:
