@@ -12,13 +12,15 @@ Phase 1: Lunar Data Explorer, following the user's roadmap. Phases 2-4 excluded.
   CRS validation, nodata masks, local slope and aligned solar visibility.
 - ab54689 (pushed): typed scientific inspection service, FastAPI endpoints,
   georeferenced PNG layers, readiness checks and explicit scientific error handling.
-- Current milestone: Next.js/OpenLayers lunar map, scientific layer controls,
+- 19d1437 (pushed): Next.js/OpenLayers lunar map, scientific layer controls,
   interactive selection, inspector, provenance, responsive layout and error recovery.
+- Current milestone: acceptance evidence and GitHub scientific/browser validation.
 
 ## Active milestone and features in progress
 
-Scientific processing, FastAPI inspection and interactive frontend are implemented
-and validated locally. Final acceptance documentation and repeatable CI remain.
+Phase 1 acceptance criteria are satisfied locally, including the optional compatible
+illumination integration. The CI workflow repeats validation on a fresh Linux runner;
+its initial remote result is pending. See docs/phase1-acceptance.md for evidence.
 
 ## Validation results
 
@@ -60,12 +62,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone before this commit: ab54689.
-Current milestone: feat: render interactive lunar data explorer.
+Latest confirmed published milestone before this commit: 19d1437.
+Current milestone: ci: validate Phase 1 scientific explorer.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Record the Phase 1 acceptance evidence and add a repeatable GitHub validation
-workflow. No Phase 2 work is authorized during this assignment.
+Confirm the initial GitHub Actions result. Phase 1 feature work is complete locally;
+stop after final validation. No Phase 2 work is authorized during this assignment.

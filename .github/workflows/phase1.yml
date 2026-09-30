@@ -1,0 +1,51 @@
+name: Phase 1 validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scientific-explorer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked Python dependencies
+        run: uv sync --locked
+      - name: Acquire and validate actual NASA data
+        run: uv run python -m backend.app.data.pipeline
+      - name: Validate scientific calculations and API
+        run: uv run pytest -q
+      - name: Install locked frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Check frontend types
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Validate real data-to-UI integration
+        working-directory: frontend
+        run: npm test

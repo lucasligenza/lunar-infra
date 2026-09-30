@@ -65,6 +65,8 @@ Browser tests use the actual prepared NASA data and start both local servers whe
 needed. On Linux, use `npx playwright install --with-deps chromium` to install
 browser system dependencies. `npm run build` followed by `npm start` also serves
 the frontend locally; this project has not been deployed to a public service.
+GitHub Actions repeats these checks and downloads the pinned data on a fresh Linux
+runner. See [Phase 1 acceptance evidence](docs/phase1-acceptance.md) for test coverage.
 
 The 240 m terrain grid supports regional exploration, not landing-hazard analysis.
 Solar visibility is a modeled long-term frequency over approximately 18.6 years,
