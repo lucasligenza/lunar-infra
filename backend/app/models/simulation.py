@@ -2,7 +2,8 @@ from typing import Literal
 
 from pydantic import AwareDatetime, Field
 
-from backend.app.models.mission import Definition, Mission, MODEL_VERSION
+from uuid import UUID
+from backend.app.models.mission import Definition, Mission, MODEL_VERSION, Scenario
 
 
 class BatteryInterval(Definition):
@@ -68,4 +69,23 @@ class SimulationResult(Definition):
     assumptions: list[str]
     intervals: list[Interval]
     events: list[Event]
+    summary: Summary
+
+
+class SimulationRun(Definition):
+    id: UUID
+    schema_version: Literal[1] = 1
+    created_at: AwareDatetime
+    scenario_snapshot: Scenario
+    scientific_provenance: dict
+    input_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    result_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    result: SimulationResult
+
+
+class RunSummary(Definition):
+    id: UUID
+    created_at: AwareDatetime
+    scenario_revision: int
+    input_kind: Literal["synthetic", "custom_hypothetical"]
     summary: Summary

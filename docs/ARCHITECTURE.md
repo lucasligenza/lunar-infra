@@ -51,6 +51,12 @@ scenario as a validated versioned JSON aggregate; edits hold an immediate transa
 and compare revisions before replacing it. This keeps simultaneous browser edits
 from silently overwriting one another. Definitions and local database files stay
 separate from immutable scientific rasters. No extra database server is required.
+The pure Python simulation module consumes a validated definition and explicit
+interval inputs. A synchronous API call runs bounded local work (100000 asset-
+intervals maximum), then stores a run with immutable input/source snapshots and
+hashes. Scenario revisions are rechecked before publishing the result. No worker
+queue is needed for this bounded model; longer computations can later use the
+same numerical function behind a job runner.
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)

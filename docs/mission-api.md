@@ -25,6 +25,17 @@ Back up that database separately from regenerable scientific rasters. Schema
 version is recorded using PRAGMA user_version and definition schema_version.
 This is a local, single-user application; no remote authentication is implemented.
 
+POST /scenarios/{id}/simulations with {revision} runs the saved mission and assets.
+An explicit saved illumination series is required; missing temporal input returns
+422, and stale revisions return 409. GET /simulations/{id} reopens the immutable
+run; GET /scenarios/{id}/simulations lists run summaries, newest first. The run
+contains the full input snapshot, spatial source metadata, model version, canonical
+input/result SHA-256 hashes and the computed time series/events/summary. These
+NASA sources describe placement terrain, not the hypothetical temporal factors.
+Corrupted stored results return 503. Editing a scenario never rewrites old results.
+Deleting a scenario also deletes its stored runs. Database migration 1 -> 2 adds
+the simulations table while preserving existing scenario definitions.
+
 Mission time is timezone-aware and normalized to UTC, with positive equal intervals
 and at most 10000 samples. Optional illumination_factors are explicit interval
 inputs in [0,1], labeled synthetic/custom_hypothetical. NASA average visibility

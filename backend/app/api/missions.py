@@ -6,7 +6,9 @@ from pydantic import ValidationError
 
 from backend.app.api.routes import Store
 from backend.app.models.mission import AssetCreate, AssetPatch, Revision, Scenario, ScenarioCreate, ScenarioPatch
-from backend.app.services.scenarios import Conflict, NotFound, ScenarioRepository
+from backend.app.services.scenarios import Conflict, CorruptRun, NotFound, ScenarioRepository
+from backend.app.models.simulation import RunSummary, SimulationRun
+from backend.app.simulation.energy import simulate
 
 router = APIRouter(tags=["Mission scenarios"])
 
@@ -25,6 +27,8 @@ def translate(operation):
         raise HTTPException(404, detail={"code": "not_found", "message": str(error)}) from error
     except Conflict as error:
         raise HTTPException(409, detail={"code": "revision_conflict", "message": str(error)}) from error
+    except CorruptRun as error:
+        raise HTTPException(503, detail={"code": "stored_run_invalid", "message": str(error)}) from error
     except (ValidationError, ValueError) as error:
         raise HTTPException(422, detail={"code": "invalid_definition", "message": str(error)}) from error
 
@@ -120,3 +124,28 @@ def remove_asset(identifier: UUID, asset_id: UUID, repo: Repository, store: Stor
             raise NotFound("Asset does not exist")
         document["assets"] = [a for a in document["assets"] if a["id"] != str(asset_id)]
     return update(repo, store, identifier, revision, remove)
+
+
+@router.post("/scenarios/{identifier}/simulations", response_model=SimulationRun, status_code=201)
+def run_simulation(identifier: UUID, version: Revision, repo: Repository, store: Store):
+    def run():
+        scenario = repo.get(identifier)
+        if scenario.revision != version.revision:
+            raise Conflict("Scenario changed. Reopen before running the simulation.")
+        validate_locations(store, scenario)
+        sources = {item["product_id"]: item["version"] for item in store.registry["sources"].values()}
+        if scenario.dataset_identifiers != sources:
+            raise Conflict("Spatial dataset versions changed; review and recreate the scenario with current data.")
+        result = simulate(ScenarioCreate.model_validate(scenario.model_dump(include={"name", "region_id", "site", "mission", "assets"})))
+        return repo.save_run(scenario, result, store.registry["sources"])
+    return translate(run)
+
+
+@router.get("/simulations/{identifier}", response_model=SimulationRun)
+def get_simulation(identifier: UUID, repo: Repository):
+    return translate(lambda: repo.get_run(identifier))
+
+
+@router.get("/scenarios/{identifier}/simulations", response_model=list[RunSummary])
+def list_simulations(identifier: UUID, repo: Repository):
+    return translate(lambda: repo.list_runs(identifier))
