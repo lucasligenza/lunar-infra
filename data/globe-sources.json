@@ -1,0 +1,20 @@
+{
+  "product_id": "NASA-SVS-4720-COLOR-2019",
+  "version": "2019",
+  "page_url": "https://svs.gsfc.nasa.gov/4720/",
+  "attribution": "NASA's Scientific Visualization Studio; LRO / LROC and LOLA teams",
+  "purpose": "Visualization only; color adjusted, polar albedo fill and inpainting; not a quantitative measurement",
+  "longitude_center_deg": 0,
+  "files": {
+    "lroc_color_poles_1k.jpg": {
+      "url": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_1k.jpg",
+      "bytes": 139068,
+      "sha256": "b246064f217f8d479df78c49c7c8595a8f5fbda008a72fd539978d2e121e0109"
+    },
+    "lroc_color_poles_4k.tif": {
+      "url": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_4k.tif",
+      "bytes": 13095388,
+      "sha256": "918649a7f8ed2f1329b2cd95bb0d25483befdcb60ae1a66db681a637cc21344f"
+    }
+  }
+}

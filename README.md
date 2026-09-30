@@ -13,6 +13,7 @@ Run from the repository root:
 ```powershell
 uv sync --locked
 uv run python -m backend.app.data.pipeline
+uv run python -m backend.app.data.globe
 uv run pytest
 ```
 
@@ -20,6 +21,9 @@ The active pipeline downloads about 80 MB, validates pinned hashes and polar CRS
 and prepares a 96 x 96 km region at 240 m resolution. Use `--offline` to reprocess
 cached files. See [data setup](data/README.md). Downloads and GeoTIFFs are ignored.
 No synthetic data is substituted if acquisition fails.
+The global pipeline additionally prepares compact NASA visualization textures and
+the native 0.25 degree LOLA overview. See [global data](docs/global-data.md) for
+source integrity, coverage and the distinction between visualization and analysis.
 
 Install the frontend from the repository root:
 

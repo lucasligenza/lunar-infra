@@ -12,9 +12,12 @@ from backend.app.services.scenarios import ScenarioRepository
 from lunaros.dataset import ROOT
 from backend.app.data.pipeline import PROCESSED
 from backend.app.services.inspection import TerrainStore
+from backend.app.api.globe import router as globe_router
+from backend.app.services.globe import GlobeStore
+from backend.app.data.globe import OUTPUT as GLOBE_DIR
 
 
-def create_app(data_dir: Path = PROCESSED, db_path: Path | None = None) -> FastAPI:
+def create_app(data_dir: Path = PROCESSED, db_path: Path | None = None, globe_dir: Path = GLOBE_DIR) -> FastAPI:
     # https://fastapi.tiangolo.com/advanced/events/
     @asynccontextmanager
     async def lifespan(application: FastAPI):
@@ -26,6 +29,11 @@ def create_app(data_dir: Path = PROCESSED, db_path: Path | None = None) -> FastA
             application.state.store = None
             application.state.data_error = "Scientific data unavailable or invalid. Run the data pipeline and restart."
             logging.getLogger(__name__).warning("Scientific dataset loading failed: %s", error)
+        try:
+            application.state.globe = GlobeStore(globe_dir)
+        except (OSError, ValueError, KeyError) as error:
+            application.state.globe = None
+            logging.getLogger(__name__).warning('Global data unavailable: %s', error)
         yield
         application.state.store = None
 
@@ -34,6 +42,7 @@ def create_app(data_dir: Path = PROCESSED, db_path: Path | None = None) -> FastA
                           lifespan=lifespan)
     application.include_router(router)
     application.include_router(mission_router)
+    application.include_router(globe_router)
     return application
 
 

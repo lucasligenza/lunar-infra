@@ -32,7 +32,9 @@ jobs:
       - name: Install locked Python dependencies
         run: uv sync --locked
       - name: Acquire and validate actual NASA data
-        run: uv run python -m backend.app.data.pipeline
+        run: |
+          uv run python -m backend.app.data.pipeline
+          uv run python -m backend.app.data.globe
       - name: Validate science, scenarios and energy conservation
         run: uv run pytest -q
       - name: Install locked frontend dependencies

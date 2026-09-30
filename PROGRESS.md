@@ -24,11 +24,16 @@ illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 
 ## Active milestone and features in progress
 
-Phase 3 milestone 1: audit and renderer/data investigation complete. Baseline
+Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
 captured and visually inspected. Cesium ion requires account/token and hosted
 terms; Three.js plus NASA textures/validated global LOLA is the selected fallback.
-Next: reproducible global acquisition, elevation and coverage API.
+Milestone 2: reproducible global NASA acquisition, coarse elevation/coverage API
+and source-linked destinations implemented. Global preparation repeats identically
+and retains every native elevation sample. Full suite: 71 tests plus eight subtests
+pass, including two new global scientific/API tests. Native observation periods,
+source hashes, nodata and separate visualization/analysis coverage are recorded.
+Next: global 3D renderer and redesigned application shell.
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
@@ -125,8 +130,8 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published handoff: 97ce26a.
-Current milestone: chore: audit global lunar explorer integration.
+Latest confirmed published milestone: a07b772.
+Current milestone: feat: prepare global NASA lunar visualization data.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 

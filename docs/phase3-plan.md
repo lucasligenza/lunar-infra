@@ -1,6 +1,6 @@
 # Phase 3 plan and baseline audit
 
-## Verified baseline (2026-10-02)
+## Verified baseline (2026-09-30)
 
 Clean `main`, origin `https://github.com/lucasligenza/lunar-infra.git`, latest
 published handoff `97ce26a`. Inspection and execution confirm 69 Python tests plus
