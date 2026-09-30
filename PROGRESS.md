@@ -4,6 +4,8 @@
 
 Phase 3: global 3D Moon exploration, destinations and connected premium UI.
 AI and optimization remain excluded. See docs/phase3-plan.md.
+Phase 3 acceptance is verified locally and on GitHub, including actual rendered
+review and the production build. See docs/phase3-acceptance.md for coverage limits.
 Phase 2 acceptance checks pass locally and on GitHub with fresh NASA acquisition.
 All seven Phase 2 implementation milestones are committed and pushed. Real-data temporal
 illumination is not integrated; synthetic/custom hypothetical runs are explicit.
@@ -46,14 +48,15 @@ interval survive mode changes; hidden playback pauses. Two added browser tests
 pass, including actual rendered marker-coordinate checks. All 14 browser tests,
 typecheck and production build pass. Regional, mission and
 global-with-assets screenshots captured and visually inspected.
-Milestone 5: responsive/failure-state review and camera regressions complete locally.
+Milestone 5 5c53d23 pushed: responsive/failure-state review and camera regressions complete locally.
 All 17 browser tests, typecheck and production build pass; the final rapid-switch
 coverage guard also passes its focused regression. Laptop (1280x800), desktop
 (1440x1000) and mobile (390x844) screenshots inspected. Mobile copy/panel overlaps
 were corrected; missing/global-loading states and local panel collapse tested.
 First decoded imagery measured 0.25 s from renderer creation on local Chromium;
 at-rest draw counts remain stable. This is not a universal device benchmark.
-Next: final acceptance documentation and confirmed fresh-run GitHub CI.
+Final fresh-run CI passed; acceptance documentation records the completed review.
+The production application runs locally with verified NASA datasets.
 
 Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
@@ -66,6 +69,18 @@ and acceptance evidence. Documentation handoff records confirmed remote validati
 
 ## Validation results
 
+- Phase 3 local suite: 71 Python tests plus eight subtests; 17 Chromium tests;
+  TypeScript and production build pass. Delayed coverage also passes its final
+  focused regression. Source integrity, actual coordinates/markers, destination
+  navigation, camera limits, mode/scenario continuity and missing-data recovery
+  are tested. Acceptance and rendered review are in docs/phase3-acceptance.md.
+- All five Phase 3 implementation/audit commits have successful GitHub runs. Final fresh-data
+  [run 36773865632](https://github.com/lucasligenza/lunar-infra/actions/runs/36773865632)
+  for 5c53d23 passed: pinned NASA acquisition, 71 Python tests plus eight subtests,
+  typecheck, production build and all 17 Chromium tests.
+- Final production Chromium check: real globe loads; global/regional/mission
+  transitions pass with zero page errors. Root and health/global/destinations/
+  inspection/scenario proxies return HTTP 200; original elevation remains -705 m.
 - Final Phase 2 suite: 69 Python tests plus eight subtests pass; all 10 Chromium
   tests, TypeScript validation and production build pass. Actual NASA integration
   checks run without skips. New regressions cover missing/non-finite input factors,
@@ -130,6 +145,13 @@ and acceptance evidence. Documentation handoff records confirmed remote validati
 
 ## Dataset integration status
 
+- LDEM_4 V3.0: preserved native global 1440 x 720 int16 grid, 0.25 degrees,
+  DN * 0.5 m on the same lunar sphere/frame. Global inspection and coverage API
+  validate separately from the polar store. Observations 2009-2016.
+- NASA SVS 4720 visualization: pinned 2019 1k JPEG/4k TIFF, dimension-preserving
+  JPEG preparation. Adjusted color/polar fill are visualization only. Global
+  browser payload is about 4.53 MB including native elevation, with small imagery
+  first. data/globe-sources.json and data/ldem_4.json record hashes and provenance.
 - LDEM_75S_240M V2.0: 29062688-byte polar DEM, observations 2009-07-13 through
   2017-02-02. Crop retains the native 240 m grid over a 96 x 96 km pole region.
 - AVGVISIB_85S_060M_201608 V1.05: 51166728-byte modeled solar visibility, native
@@ -141,6 +163,10 @@ and acceptance evidence. Documentation handoff records confirmed remote validati
 ## Known scientific limitations and blockers
 
 No current implementation blocker. 240 m slopes cannot resolve landing hazards.
+Global elevation is coarse 0.25-degree data, rendered on a 1-degree mesh with at
+most 4k imagery; no high-resolution global terrain streaming is implemented.
+Detailed local analysis and infrastructure placement retain the prepared polar
+footprint. Destination centers are rounded navigation aids, not surveyed sites.
 Illumination is modeled long-term visibility and uses older underlying terrain.
 Time-dependent NASA illumination is not integrated, so real-data mission playback
 is unavailable. Energy runs use explicitly labeled hypothetical factors; the model
@@ -150,12 +176,13 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 93f6435.
-Current milestone: fix: refine responsive lunar navigation and coverage states.
+Latest confirmed published milestone: 5c53d23.
+Current milestone: docs: record global explorer acceptance and coverage.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Confirm final fresh-data GitHub validation and record Phase 3 acceptance, source
-coverage, visual review and reproducible startup instructions.
+Phase 3 is complete within documented data/resolution coverage. Await the next
+user-approved roadmap; no AI, optimization or new hosted service is authorized.
+For a new session, follow README startup and read docs/phase3-acceptance.md.

@@ -114,7 +114,8 @@ browser system dependencies. `npm run build` followed by `npm start` also serves
 the frontend locally; this project has not been deployed to a public service.
 GitHub Actions repeats these checks and downloads the pinned data on a fresh Linux
 runner. See [Phase 1](docs/phase1-acceptance.md) and
-[Phase 2](docs/phase2-acceptance.md) acceptance evidence for test coverage.
+[Phase 2](docs/phase2-acceptance.md) and [Phase 3](docs/phase3-acceptance.md)
+acceptance evidence for test coverage and rendered visual review.
 
 The 240 m terrain grid supports regional exploration, not landing-hazard analysis.
 The global 0.25° elevation source is approximately 7.58 km per pixel at the equator;
