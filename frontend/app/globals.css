@@ -115,6 +115,7 @@ button[aria-pressed="true"] { border-color: var(--accent); background: #274555; 
 .timeline-summary .event-shortage, .event-list .event-shortage { color: var(--failure); border-color: #784f55; }
 .mission-events { border-top: 1px solid var(--border); padding: 10px 20px; font-size: 11px; }
 .mission-events p { color: var(--quiet); line-height: 1.6; margin-top: 9px; overflow-wrap: anywhere; }
+.mobile-navigation { display: none; }
 .event-list { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 12px; }
 .map-workspace { position: relative; min-width: 0; overflow: hidden; background: #14212c; }
 .terrain-map { position: absolute; inset: 0 0 35px; }
@@ -224,6 +225,9 @@ input[type="number"] { display: block; margin-top: 6px; width: 100%; background:
   .inspector-content { overflow: visible; }
   .context-rail { overflow: visible; border-left: 0; }
   .context-rail > .inspector { overflow: visible; }
+  .mobile-navigation { display: flex; position: sticky; top: 0; z-index: 10; background: #142331; border-bottom: 1px solid var(--border); }
+  .mobile-navigation a { flex: 1; text-align: center; padding: 10px 5px; font-size: 11px; text-decoration: none; }
+  #terrain-workspace, #exploration-tools, #context-inspector, #mission-timeline { scroll-margin-top: 40px; }
   .mission-timeline { max-height: none; }
   .timeline-charts { grid-template-columns: 1fr; }
   .timeline-scrub { flex-wrap: wrap; }

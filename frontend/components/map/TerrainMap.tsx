@@ -128,6 +128,7 @@ export default function TerrainMap({ region, layer, site, grid, onSelect, onPoin
         fill: new Fill({ color: asset.operational ? "#183c4f" : "#38434a" }), stroke: new Stroke({ color: asset.id === selectedAssetId ? "#90d5ed" : "#d0e1e7", width: 2 }) }),
         text: new Text({ text: ASSET_SYMBOLS[asset.kind], font: "bold 12px sans-serif", fill: new Fill({ color: "#e8f3f7" }) }) }));
       source.addFeature(feature);
+      if (asset.id !== selectedAssetId) continue;
       const label = new Feature(new Point(toPolar(asset.location.longitude_deg, asset.location.latitude_deg, region.reference_radius_m)));
       label.set("assetId", asset.id);
       label.set("assetName", asset.name);

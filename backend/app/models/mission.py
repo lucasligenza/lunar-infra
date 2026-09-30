@@ -86,8 +86,13 @@ class Mission(Definition):
 
     @model_validator(mode="after")
     def time_axis(self):
-        self.start = self.start.astimezone(timezone.utc)
-        self.end = self.end.astimezone(timezone.utc)
+        try:
+            self.start = self.start.astimezone(timezone.utc)
+            self.end = self.end.astimezone(timezone.utc)
+        except OverflowError as error:
+            raise ValueError("Mission UTC dates are outside supported range") from error
+        if self.start.microsecond or self.end.microsecond:
+            raise ValueError("Mission timestamps use whole-second precision")
         duration = (self.end - self.start).total_seconds()
         if duration <= 0 or duration % self.timestep_seconds or not 1 <= self.intervals <= 10000:
             raise ValueError("Mission requires 1-10000 complete, equal intervals with end after start")

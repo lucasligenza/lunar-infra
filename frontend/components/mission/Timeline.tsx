@@ -9,7 +9,7 @@ function Chart({ title, rows, values, unit, color, selected, onSelect, battery =
   const maximum = battery ? 100 : Math.max(1, ...values);
   const x = (index: number) => 35 + index / Math.max(1, rows.length - 1) * 425;
   const y = (value: number) => 83 - value / maximum * 65;
-  const points = values.map((value, index) => `${index ? "L" : "M"}${x(index).toFixed(2)},${y(value).toFixed(2)}`).join(" ");
+  const points = values.map((value, index) => index && !battery ? `H${x(index).toFixed(2)} V${y(value).toFixed(2)}` : `${index ? "L" : "M"}${x(index).toFixed(2)},${y(value).toFixed(2)}`).join(" ");
   const position = rows.findIndex(row => row.index === selected);
   const pick = (fraction: number) => onSelect(rows[Math.round(Math.max(0, Math.min(1, fraction)) * (rows.length - 1))].index);
   return <div className="timeline-chart"><div><h3>{title}</h3><span>{unit}</span></div>
@@ -48,7 +48,7 @@ export default function Timeline({ run, index, onIndex }: { run: SimulationRun; 
   function select(value: number) { setPlaying(false); onIndex(value); }
   const events = run.result.events.filter(event => event.interval_index >= visible[0].index && event.interval_index <= visible.at(-1)!.index).slice(0, 100);
   const summary = run.result.summary;
-  return <section className={expanded ? "mission-timeline expanded" : "mission-timeline"} aria-label="Mission timeline">
+  return <section id="mission-timeline" className={expanded ? "mission-timeline expanded" : "mission-timeline"} aria-label="Mission timeline">
     <div className="timeline-toolbar"><button className="timeline-toggle" onClick={() => setExpanded(value => !value)} aria-label={expanded ? "Collapse timeline" : "Expand timeline"}>{expanded ? "⌄" : "⌃"} Mission timeline</button>
       <span className="input-source-tag">{run.result.input_kind === "synthetic" ? "Synthetic demonstration" : "Hypothetical custom input"}</span>
       <button onClick={() => { if (index === rows.length - 1) onIndex(0); setPlaying(value => !value); }}>{playing ? "Pause playback" : "Play mission"}</button>

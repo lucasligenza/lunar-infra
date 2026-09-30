@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { ASSET_NAMES, type Asset } from "../../types/mission";
+import { parseSeries } from "../../lib/series";
 
 type Parameter = { field: keyof Asset; label: string; max?: number; min?: number };
 const demand: Parameter = { field: "demand_kw", label: "Continuous demand (kW)" };
@@ -29,7 +30,9 @@ export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, 
     event.preventDefault(); setError(null);
     const { id: _id, kind: _kind, ...changes } = draft;
     if (asset.kind === "habitat") {
-      const values = profile.trim() ? profile.trim().split(/[\s,]+/).map(Number) : null;
+      let values: number[] | null;
+      try { values = parseSeries(profile); }
+      catch (failure) { setError((failure as Error).message); return; }
       if (values?.some(value => !Number.isFinite(value) || value < 0)) { setError("Use nonnegative kW values, one per simulation interval."); return; }
       changes.load_profile_kw = values;
     }
@@ -42,7 +45,7 @@ export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, 
       <label className="checkbox-label"><input type="checkbox" checked={draft.operational} onChange={event => setDraft({ ...draft, operational: event.target.checked })} />Operational</label>
       {PARAMETERS[asset.kind].map(parameter => <label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min ?? 0} max={parameter.max ?? 1e9}
         value={draft[parameter.field] as number} onChange={event => setDraft({ ...draft, [parameter.field]: Number(event.target.value) })} /></label>)}
-      {asset.kind === "habitat" && <label>Optional load profile (kW per interval)<textarea value={profile} onChange={event => setProfile(event.target.value)} placeholder="Blank uses continuous demand" /></label>}
+      {asset.kind === "habitat" && <label>Optional load profile (kW per interval)<textarea aria-label="Optional load profile (kW per interval)" value={profile} onChange={event => setProfile(event.target.value)} placeholder="Blank uses continuous demand" /></label>}
       <fieldset><legend>Location / ME-PA DE421</legend>
         <label>Asset latitude (°)<input type="number" required step="any" min={-90} max={0} value={draft.location.latitude_deg} onChange={event => setDraft({ ...draft, location: { ...draft.location, latitude_deg: Number(event.target.value) } })} /></label>
         <label>Asset longitude (° E)<input type="number" required step="any" min={0} max={359.999999999} value={draft.location.longitude_deg} onChange={event => setDraft({ ...draft, location: { ...draft.location, longitude_deg: Number(event.target.value) } })} /></label>

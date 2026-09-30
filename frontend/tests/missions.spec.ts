@@ -40,6 +40,7 @@ test("scenario placement editing movement persistence duplication and deletion",
     await expect(page.getByRole("alert").filter({ hasText: "outside" })).toBeVisible();
     expect((await (await request.get(`/api/scenarios/${scenario.id}`)).json()).assets[0].location).toEqual(moved.assets[0].location);
     const duplication = page.waitForResponse(r => r.url().endsWith("/duplicate"));
+    page.once("dialog", dialog => dialog.accept());
     await page.getByRole("button", { name: "Duplicate scenario", exact: true }).click();
     const duplicate = await (await duplication).json(); created.push(duplicate.id);
     await expect(page.getByRole("button", { name: `Open scenario: ${name} copy`, exact: true })).toBeVisible();

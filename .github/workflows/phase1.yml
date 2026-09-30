@@ -1,4 +1,4 @@
-name: Phase 1 validation
+name: LunarOS validation
 
 on:
   push:
@@ -10,12 +10,13 @@ permissions:
   contents: read
 
 jobs:
-  scientific-explorer:
+  scientific-mission-control:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       CI: "true"
       NEXT_TELEMETRY_DISABLED: "1"
+      LUNAROS_DB_PATH: .cache/ci-missions.sqlite
     steps:
       - uses: actions/checkout@v7
         with:
@@ -32,7 +33,7 @@ jobs:
         run: uv sync --locked
       - name: Acquire and validate actual NASA data
         run: uv run python -m backend.app.data.pipeline
-      - name: Validate scientific calculations and API
+      - name: Validate science, scenarios and energy conservation
         run: uv run pytest -q
       - name: Install locked frontend dependencies
         working-directory: frontend

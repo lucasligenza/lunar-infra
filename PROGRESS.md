@@ -3,6 +3,8 @@
 ## Current development phase
 
 Phase 2: infrastructure simulation and mission control. Phases 3-4 excluded.
+All local Phase 2 acceptance checks pass; final publication/remote CI confirmation
+is the active handoff task. Real-data temporal illumination is not integrated.
 
 ## Completed milestones
 
@@ -25,10 +27,20 @@ Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD AP
 Milestone 3 b180a1a pushed: scenario explorer and interactive asset placement.
 Milestone 4 f3a9e76 pushed: deterministic energy engine and numerical tests.
 Milestone 5 084b39c pushed: simulation API and immutable stored runs.
-Milestone 6: explicit mission inputs, computed telemetry, charts and playback.
+Milestone 6 21c85e4 pushed: explicit mission inputs, computed telemetry, charts and playback.
+Milestone 7: final regression fixes, responsive navigation and acceptance evidence.
 
 ## Validation results
 
+- Final Phase 2 suite: 69 Python tests plus eight subtests pass; all 10 Chromium
+  tests, TypeScript validation and production build pass. Actual NASA integration
+  checks run without skips. New regressions cover missing/non-finite input factors,
+  custom UTC missions, concurrent edit conflicts, independent drafts surviving
+  unrelated saves, explicit reopen resetting drafts, corrupt run schemas and
+  consistent shortage tolerances. Small-screen section navigation is tested.
+- All six preceding Phase 2 commits have successful GitHub validation. Latest
+  confirmed [run 36725728488](https://github.com/lucasligenza/lunar-infra/actions/runs/36725728488)
+  passed for 21c85e4. Final regression milestone remote validation is pending push.
 - Playback browser test compares API results to displayed generation/load/SOC and
   shortage telemetry; tests interval scrubbing, speed/play/pause, chart window,
   collapse/expand, stale-result clearing and reopening a current saved run.
@@ -92,17 +104,20 @@ Milestone 6: explicit mission inputs, computed telemetry, charts and playback.
 
 No current implementation blocker. 240 m slopes cannot resolve landing hazards.
 Illumination is modeled long-term visibility and uses older underlying terrain.
-No thermal data or power simulation is in this phase. See scientific-assumptions.md.
+Time-dependent NASA illumination is not integrated, so real-data mission playback
+is unavailable. Energy runs use explicitly labeled hypothetical factors; the model
+omits thermal coupling, degradation and spatial shading. See scientific-assumptions.md
+and docs/energy-model.md. SQLite scenarios/results are local and excluded from Git.
 Git writes and outbound networking require elevated execution in this environment.
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 084b39c.
-Current milestone: feat: add computed mission timeline playback.
+Latest confirmed published milestone: 21c85e4.
+Current milestone: fix: harden mission workflows and scientific input validation.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Final usability/scientific review, missing-value and conflict regression coverage,
-responsive navigation, CI confirmation and Phase 2 acceptance documentation.
+Push the final validated milestone, confirm fresh-run GitHub CI and record the
+handoff. No Phase 3 work is authorized by this assignment.

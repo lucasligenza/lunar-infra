@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Mission, Scenario } from "../../types/mission";
+import { parseSeries } from "../../lib/series";
 
 export default function MissionInputs({ scenario, busy, onSave, onRun, onDirty }: {
   scenario: Scenario; busy: boolean; onSave: (mission: Mission) => Promise<Scenario | undefined>;
@@ -24,10 +25,12 @@ export default function MissionInputs({ scenario, busy, onSave, onRun, onDirty }
   function definition(): Mission | null {
     setError(null);
     const duration = Date.parse(`${end}Z`) - Date.parse(`${start}Z`);
-    if (!Number.isFinite(duration) || duration <= 0 || !Number.isInteger(step) || step < 1 || duration % (step * 1000) || count > 10000) {
+    if (!Number.isFinite(duration) || duration <= 0 || !Number.isInteger(step) || step < 1 || step > 604800 || duration % (step * 1000) || count > 10000 || !label.trim()) {
       setError("Use a positive UTC period with 1–10000 complete, equal intervals."); return null;
     }
-    const values = factors.trim() ? factors.trim().split(/[\s,]+/).map(Number) : null;
+    let values: number[] | null;
+    try { values = parseSeries(factors); }
+    catch (failure) { setError((failure as Error).message); return null; }
     if (values && (values.length !== count || values.some(value => !Number.isFinite(value) || value < 0 || value > 1))) {
       setError(`Provide exactly ${count} finite electrical input factors between 0 and 1.`); return null;
     }
@@ -55,7 +58,7 @@ export default function MissionInputs({ scenario, busy, onSave, onRun, onDirty }
     <p>{Number.isFinite(count) ? count : "Invalid"} reporting intervals / interval-average power</p>
     <label>Constant factor (0–1)<input type="number" min={0} max={1} step="any" value={constant} onChange={event => setConstant(Number(event.target.value))} /></label>
     <div className="button-row"><button disabled={busy} onClick={() => preset(false)}>Fill constant profile</button><button disabled={busy} onClick={() => preset(true)}>Apply synthetic stress profile</button></div>
-    <label>Electrical input factors (one per interval)<textarea value={factors} onChange={event => { setFactors(event.target.value); setKind("custom_hypothetical"); setLabel("User-defined hypothetical electrical factors; no validated temporal dataset"); }} /></label>
+    <label>Electrical input factors (one per interval)<textarea aria-label="Electrical input factors (one per interval)" value={factors} onChange={event => { setFactors(event.target.value); setKind("custom_hypothetical"); setLabel("User-defined hypothetical electrical factors; no validated temporal dataset"); }} /></label>
     <label>Input description<input maxLength={200} value={label} onChange={event => setLabel(event.target.value)} /></label>
     <p className={dirty ? "warning" : "nominal"}>{dirty ? "Unsaved simulation inputs" : "Simulation inputs saved"}</p>
     {error && <p role="alert" className="warning">{error}</p>}

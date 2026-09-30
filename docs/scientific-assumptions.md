@@ -76,6 +76,17 @@ orientation models are implied. Asset/site locations must have valid NASA elevat
 
 The integrated illumination raster cannot supply time-dependent solar input.
 Hypothetical explicit interval inputs are separate from the map's long-term average.
+Real-data mission playback is unavailable until a compatible time-dependent source
+has been validated. Synthetic presets and user-supplied hypothetical profiles are
+always labeled in saved runs and the interface. Missing or non-finite factors fail
+validation; they are never filled from the average raster.
+
+See the [energy model](energy-model.md) for conservation equations, storage dispatch,
+numerical tolerances and omitted physics. The timeline displays interval-average
+power and interval-end SOC, with the UTC interval range shown in telemetry. Power
+charts use steps; SOC lines connect reported endpoints for visual guidance, without
+asserting additional samples. These results are engineering calculations under
+explicit assumptions, not measurements of deployed infrastructure.
 
 ## Source references
 

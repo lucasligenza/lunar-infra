@@ -45,6 +45,7 @@ export default function Explorer() {
   const [placement, setPlacement] = useState<AssetKind | "move" | null>(null);
   const [assetDirty, setAssetDirty] = useState(false);
   const [missionDirty, setMissionDirty] = useState(false);
+  const [editorEpoch, setEditorEpoch] = useState(0);
   const simulation = useSimulation(scenario.active);
   const [intervalIndex, setIntervalIndex] = useState(0);
   useEffect(() => { setIntervalIndex(0); }, [simulation.run?.id]);
@@ -99,14 +100,24 @@ export default function Explorer() {
   }
 
   async function mapSelect(lon: number, lat: number) {
-    if (scenario.busy) return;
+    if (scenario.busy || simulation.busy) return;
     if (placement === "move" && selectedAsset) {
       const updated = await scenario.editAsset(selectedAsset.id, { location: { latitude_deg: lat, longitude_deg: lon } });
       if (updated) setPlacement(null);
     } else if (placement && placement !== "move") {
       const updated = await scenario.place(placement, { latitude_deg: lat, longitude_deg: lon });
       if (updated) { setSelectedAssetId(updated.assets.at(-1)!.id); setPlacement(null); }
-    } else { setSelectedAssetId(null); void inspect(lon, lat); }
+    } else if (discardAsset()) { setSelectedAssetId(null); void inspect(lon, lat); }
+  }
+
+  const working = scenario.busy || simulation.busy;
+  function discardAsset() { return !assetDirty || window.confirm("Discard unsaved asset changes?"); }
+  function discardAll() { return !(assetDirty || missionDirty || (scenario.active && scenarioName !== scenario.active.name)) || window.confirm("Discard unsaved scenario changes and reopen?"); }
+  function selectAsset(id: string) { if (id === selectedAssetId || discardAsset()) { setSelectedAssetId(id); setPlacement(null); } }
+  async function openScenario(id: string) {
+    if (!discardAll()) return;
+    const opened = await scenario.open(id);
+    if (opened) { setScenarioName(opened.name); setEditorEpoch(value => value + 1); }
   }
 
   const layer = region?.layers.find(value => value.id === layerId);
@@ -118,37 +129,38 @@ export default function Explorer() {
       <span className="header-divider" /><p>{scenario.active?.name ?? "Mission control"}<small>{scenario.active ? "Hypothetical infrastructure / south pole" : "Terrain workspace"}</small></p></div>
       <div className="header-status"><span className={region ? "status-dot ready" : "status-dot"} />
         {scenario.active ? scenario.busy ? "Saving…" : assetDirty ? "Unsaved asset changes" : missionDirty ? "Unsaved simulation inputs" : scenarioName !== scenario.active.name ? "Unsaved name" : `Saved / revision ${scenario.active.revision}` : region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}
-        {scenario.active && <button className="primary-button" disabled={scenario.busy || scenarioName === scenario.active.name || !scenarioName.trim()} onClick={() => void scenario.patch({ name: scenarioName })}>Save scenario</button>}
+        {scenario.active && <button className="primary-button" disabled={working || scenarioName === scenario.active.name || !scenarioName.trim()} onClick={() => void scenario.patch({ name: scenarioName })}>Save scenario</button>}
         <span className="phase-label">South pole / ME-PA DE421</span></div>
     </header>
+    <nav className="mobile-navigation" aria-label="Workspace navigation"><a href="#terrain-workspace">Map</a><a href="#exploration-tools">Tools</a><a href="#context-inspector">Inspector</a>{simulation.run && <a href="#mission-timeline">Timeline</a>}</nav>
     <div className={toolsOpen ? "workspace" : "workspace tools-collapsed"}>
-      <aside className="tool-rail" aria-label="Exploration tools">
+      <aside id="exploration-tools" className="tool-rail" aria-label="Exploration tools">
         <div className="tool-rail-title"><h2>Workspace</h2><button aria-label={toolsOpen ? "Collapse tools" : "Expand tools"} onClick={() => setToolsOpen(value => !value)}>{toolsOpen ? "‹" : "›"}</button></div>
         {toolsOpen && region && layer && <div className="map-controls-stack">
           <details open className="tool-section scenario-controls"><summary>Mission scenarios</summary>
             <label>Scenario name<input maxLength={100} value={scenarioName} onChange={event => setScenarioName(event.target.value)} /></label>
-            <button className="primary-button" disabled={scenario.busy || !site || !scenarioName.trim()} onClick={() => {
-              if (site) void scenario.create(scenarioName, { latitude_deg: site.coordinates.latitude_deg, longitude_deg: site.coordinates.longitude_deg });
+            <button className="primary-button" disabled={working || !site || !scenarioName.trim()} onClick={() => {
+              if (site && (!(assetDirty || missionDirty) || window.confirm("Discard unsaved asset and simulation input changes?"))) void scenario.create(scenarioName, { latitude_deg: site.coordinates.latitude_deg, longitude_deg: site.coordinates.longitude_deg });
             }}>Create scenario at selected site</button>
             {!site && <p>Select a valid terrain location first.</p>}
-            <div className="button-row"><button disabled={scenario.busy} onClick={() => void scenario.refresh()}>Refresh scenarios</button>
-              {scenario.active && <button disabled={scenario.busy} onClick={() => void scenario.duplicate()}>Duplicate scenario</button>}</div>
-            <div className="scenario-list">{scenario.scenarios.map(value => <button key={value.id} disabled={scenario.busy} aria-label={`Open scenario: ${value.name}`}
-              aria-pressed={value.id === scenario.active?.id} onClick={() => void scenario.open(value.id)}>{value.name}<small>{value.assets.length} assets / {new Date(value.modified_at).toLocaleDateString()}</small></button>)}</div>
-            {scenario.active && <button className="danger-button" disabled={scenario.busy} onClick={() => {
+            <div className="button-row"><button disabled={working} onClick={() => void scenario.refresh()}>Refresh scenarios</button>
+              {scenario.active && <button disabled={working} onClick={() => { if (discardAll()) void scenario.duplicate(); }}>Duplicate scenario</button>}</div>
+            <div className="scenario-list">{scenario.scenarios.map(value => <button key={value.id} disabled={working} aria-label={`Open scenario: ${value.name}`}
+              aria-pressed={value.id === scenario.active?.id} onClick={() => void openScenario(value.id)}>{value.name}<small>{value.assets.length} assets / {new Date(value.modified_at).toLocaleDateString()}</small></button>)}</div>
+            {scenario.active && <button className="danger-button" disabled={working} onClick={() => {
               if (window.confirm(`Delete scenario “${scenario.active?.name}”? This cannot be undone.`)) void scenario.remove();
             }}>Delete scenario</button>}
           </details>
-          {scenario.active && <MissionInputs key={`${scenario.active.id}:${scenario.active.revision}`} scenario={scenario.active}
+          {scenario.active && <MissionInputs key={`${scenario.active.id}:${editorEpoch}:${JSON.stringify(scenario.active.mission)}`} scenario={scenario.active}
             busy={scenario.busy || simulation.busy || assetDirty} onDirty={setMissionDirty}
             onSave={mission => scenario.patch({ mission })} onRun={simulation.simulate} />}
           {scenario.active && <details open className="tool-section asset-catalog"><summary>Infrastructure catalog</summary>
             <p>Hypothetical assets. Click a tool, then place it on valid terrain.</p>
-            {(Object.keys(ASSET_NAMES) as AssetKind[]).map(kind => <button key={kind} disabled={scenario.busy} aria-pressed={placement === kind}
-              onClick={() => { setSelectedAssetId(null); setPlacement(kind); }}><span className="asset-badge" aria-hidden="true">{ASSET_SYMBOLS[kind]}</span>Place {ASSET_NAMES[kind].toLowerCase()}</button>)}
+            {(Object.keys(ASSET_NAMES) as AssetKind[]).map(kind => <button key={kind} disabled={working} aria-pressed={placement === kind}
+              onClick={() => { if (discardAsset()) { setSelectedAssetId(null); setPlacement(kind); } }}><span className="asset-badge" aria-hidden="true">{ASSET_SYMBOLS[kind]}</span>Place {ASSET_NAMES[kind].toLowerCase()}</button>)}
             <div className="asset-list">{scenario.active.assets.map(asset => <button key={asset.id} aria-pressed={asset.id === selectedAssetId}
-              onClick={() => { setSelectedAssetId(asset.id); setPlacement(null); }} aria-label={`Select asset: ${asset.name}`}><span>{ASSET_SYMBOLS[asset.kind]}</span>{asset.name}</button>)}</div>
-            <button disabled={scenario.busy || !site} onClick={() => { if (site) void scenario.patch({ site: { latitude_deg: site.coordinates.latitude_deg, longitude_deg: site.coordinates.longitude_deg } }); }}>Use selected location as base site</button>
+              disabled={working} onClick={() => selectAsset(asset.id)} aria-label={`Select asset: ${asset.name}`}><span>{ASSET_SYMBOLS[asset.kind]}</span>{asset.name}</button>)}</div>
+            <button disabled={working || !site} onClick={() => { if (site) void scenario.patch({ site: { latitude_deg: site.coordinates.latitude_deg, longitude_deg: site.coordinates.longitude_deg } }); }}>Use selected location as base site</button>
           </details>}
           <details open className="tool-section"><summary>Map layers</summary>
           <section className="layer-panel" aria-label="Scientific layers"><h3>Scientific layers</h3>
@@ -175,11 +187,11 @@ export default function Explorer() {
           <details className="tool-section input-limit"><summary>Temporal data availability</summary><p>NASA solar visibility is a long-term average. Validated time-dependent illumination is not integrated; real-data mission playback is unavailable.</p></details>
         </div>}
       </aside>
-      <section className="map-workspace" aria-label="Terrain exploration">
+      <section id="terrain-workspace" className="map-workspace" aria-label="Terrain exploration">
         {region && layer && <TerrainMap region={region} layer={layer} site={site} grid={grid}
           onSelect={(lon, lat) => void mapSelect(lon, lat)} onPointer={setPointer}
           assets={scenario.active?.assets} baseSite={scenario.active?.site} selectedAssetId={selectedAssetId}
-          onAssetSelect={id => { setSelectedAssetId(id); setPlacement(null); }} placementActive={Boolean(placement)} />}
+          onAssetSelect={id => { if (!working) selectAsset(id); }} placementActive={Boolean(placement)} />}
         {scenario.error && <div className="mission-error" role="alert">{scenario.error}</div>}
         {simulation.error && <div className="mission-error" role="alert">{simulation.error}</div>}
         {simulation.notice && <div className="simulation-notice" role="status">{simulation.notice}</div>}
@@ -197,13 +209,13 @@ export default function Explorer() {
         <footer className="map-footer"><span>{pointer ? `${Math.abs(pointer[1]).toFixed(4)}° S / ${pointer[0].toFixed(4)}° E` : "Move across the map to read coordinates"}</span>
           <span>Moon ME/PA DE421 · polar stereographic</span></footer>
       </section>
-      <div className="context-rail">
+      <div id="context-inspector" className="context-rail">
       {selectedInterval && <Telemetry interval={selectedInterval} asset={selectedAsset} />}
-      {selectedAsset ? <AssetInspector key={`${selectedAsset.id}:${scenario.active?.revision}`} asset={selectedAsset} busy={scenario.busy || simulation.busy}
+      {selectedAsset ? <AssetInspector key={`${selectedAsset.id}:${editorEpoch}:${JSON.stringify(selectedAsset)}`} asset={selectedAsset} busy={working}
         onDirty={setAssetDirty}
         onSave={changes => void scenario.editAsset(selectedAsset.id, changes)} onMove={() => setPlacement("move")}
         onRemove={() => { if (window.confirm(`Remove “${selectedAsset.name}”?`)) void scenario.removeAsset(selectedAsset.id); }}
-        onInspect={() => { setSelectedAssetId(null); void inspect(selectedAsset.location.longitude_deg, selectedAsset.location.latitude_deg); }} /> :
+        onInspect={() => { if (discardAsset()) { setSelectedAssetId(null); void inspect(selectedAsset.location.longitude_deg, selectedAsset.location.latitude_deg); } }} /> :
         <SiteInspector site={site} loading={inspecting} error={inspectError} datasets={datasets} />}
       </div>
     </div>

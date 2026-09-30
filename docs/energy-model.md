@@ -47,6 +47,11 @@ instant and redispatches the remaining interval. This records exact shortage ons
 under these assumptions, including fractional intervals. Reported powers are
 interval averages, and SOC/energy are end-of-interval values, with initial values
 also preserved. Coarse intervals still cannot recover variation absent from input.
+Mission endpoints use whole-second UTC precision; subsecond timestamps are rejected
+to preserve exact reopening through the current editor. Each provided factor is
+finite and between zero and one. Missing values have no interpolation rule and fail
+validation. The power charts display interval averages as steps; SOC connects
+interval-end samples, while exact shortage/battery-limit events retain their timestamps.
 
 No random state, Earth daily cycle or automatic location-to-illumination inference
 is used. At most 10000 reporting intervals and 100000 asset-intervals are supported

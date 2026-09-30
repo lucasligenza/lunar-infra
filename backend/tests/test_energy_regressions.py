@@ -26,3 +26,11 @@ def test_tiny_efficiency_rejected_when_bound_time_underflows():
     definition = scenario(generation=0, demand=100, battery={"capacity_kwh": 1, "initial_soc": .1, "discharge_efficiency": 5e-324})
     with pytest.raises(ValueError, match="numerical precision"):
         simulate(definition)
+
+
+def test_shortage_constraint_uses_power_tolerance_independent_of_reporting_duration():
+    result = simulate(scenario(generation=0, demand=2e-9, step=1))
+    assert result.summary.first_power_shortage is not None
+    assert result.intervals[0].constraint_violations == ["unserved_demand"]
+    assert result.summary.unserved_kwh == pytest.approx(2e-9 / 3600, abs=1e-20)
+    assert_balance(result)

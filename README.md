@@ -1,10 +1,10 @@
 # LunarOS
 
-Reproducible lunar terrain exploration using actual NASA LOLA elevation and modeled
-solar visibility. Phase 1 follows the supplied lunar data explorer roadmap.
+Lunar terrain exploration using actual NASA LOLA elevation and modeled solar
+visibility, with hypothetical infrastructure planning and deterministic energy simulation.
 See [PROGRESS.md](PROGRESS.md) for completed milestones and remaining work.
-Phase 2 adds a mission-control workspace and hypothetical infrastructure scenarios;
-see the [implementation plan](docs/phase2-plan.md) and [mission API](docs/mission-api.md).
+See [Phase 2 acceptance evidence](docs/phase2-acceptance.md), the
+[implementation plan](docs/phase2-plan.md) and [mission API](docs/mission-api.md).
 
 Requires Python 3.12+, [uv](https://docs.astral.sh/uv/getting-started/installation/),
 and Node.js 24 with npm. Dependencies are locked for reproducible installation.
@@ -53,6 +53,10 @@ Click its symbol or list entry to configure it. **Save asset** persists paramete
 **Move on map** relocates it. Reopen, duplicate or delete scenarios from the left
 rail; deletion requires confirmation. **Save scenario** saves the edited name.
 Placements save immediately through the API; unsaved form changes are labeled.
+Reopening restores the saved definition after confirming any discarded drafts.
+Simultaneous edits return a revision conflict; reopen before retrying your changes.
+On small screens, the sticky Map, Tools, Inspector and Timeline links navigate
+between workspace sections.
 The local database is `data/local/missions.sqlite`, separate from downloaded rasters.
 Set `LUNAROS_DB_PATH` before backend startup to use another database path.
 
@@ -69,6 +73,8 @@ first shortage. Right-panel telemetry follows that interval. Powers are interval
 averages and SOC is the interval-end value. Saving any scenario edit clears stale
 telemetry; rerun to update it. Reopening an unchanged scenario restores its saved
 result. See the [energy model](docs/energy-model.md) for equations and omissions.
+Mission timestamps use whole-second UTC precision. Empty or non-finite entries
+in an input series are rejected rather than interpolated or treated as zero.
 
 The frontend proxies `/api` to the backend at `http://127.0.0.1:8000`. Set
 `LUNAROS_BACKEND_URL` before starting Next.js if the backend runs elsewhere.
@@ -91,7 +97,8 @@ needed. On Linux, use `npx playwright install --with-deps chromium` to install
 browser system dependencies. `npm run build` followed by `npm start` also serves
 the frontend locally; this project has not been deployed to a public service.
 GitHub Actions repeats these checks and downloads the pinned data on a fresh Linux
-runner. See [Phase 1 acceptance evidence](docs/phase1-acceptance.md) for test coverage.
+runner. See [Phase 1](docs/phase1-acceptance.md) and
+[Phase 2](docs/phase2-acceptance.md) acceptance evidence for test coverage.
 
 The 240 m terrain grid supports regional exploration, not landing-hazard analysis.
 Solar visibility is a modeled long-term frequency over approximately 18.6 years,

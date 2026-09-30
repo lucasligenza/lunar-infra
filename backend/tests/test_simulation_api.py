@@ -37,6 +37,11 @@ def test_run_snapshot_reproducibility_reopen_integrity_and_cascade(synthetic_dat
             tampered["result"]["intervals"][0]["generation_kw"] += 1
             db.execute("UPDATE simulations SET document=? WHERE id=?", (json.dumps(tampered), str(runs[1].id)))
         assert reopened.get(f"/simulations/{runs[1].id}").status_code == 503
+        with sqlite3.connect(database) as db:
+            malformed = runs[0].model_dump(mode="json")
+            del malformed["result"]["summary"]
+            db.execute("UPDATE simulations SET document=? WHERE id=?", (json.dumps(malformed), str(runs[0].id)))
+        assert reopened.get(f"/simulations/{runs[0].id}").status_code == 503
         assert reopened.delete(path + "?revision=2").status_code == 204
         assert reopened.get(f"/simulations/{runs[0].id}").status_code == 404
 

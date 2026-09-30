@@ -66,6 +66,7 @@ def simulate(definition: ScenarioCreate) -> SimulationResult:
         losses = charged.copy()
         limits = {str(b.id): set() for b in batteries}
         curtailed = unserved = elapsed = 0.0
+        interval_shortage = False
         remaining = dt
         # Fixed-sign net power can hit each storage bound at most once in an interval.
         for _ in range(len(batteries) + 2):
@@ -101,6 +102,7 @@ def simulate(definition: ScenarioCreate) -> SimulationResult:
             spilled = max(0.0, net - fsum(dispatch.values())) if net > 0 else 0.0
             event_time = start + timedelta(hours=elapsed)
             if shortage > 1e-9:
+                interval_shortage = True
                 if first_shortage is None:
                     first_shortage = event_time
                 if not shortage_active:
@@ -153,7 +155,7 @@ def simulate(definition: ScenarioCreate) -> SimulationResult:
                 soc_start=before[str(b.id)] / b.capacity_kwh, soc_end=energy[str(b.id)] / b.capacity_kwh,
                 charge_kw=charged[str(b.id)] / dt, discharge_kw=discharged[str(b.id)] / dt,
                 losses_kwh=losses[str(b.id)], limits=sorted(limits[str(b.id)])) for b in batteries},
-            constraint_violations=["unserved_demand"] if unserved > 1e-9 else []))
+            constraint_violations=["unserved_demand"] if interval_shortage else []))
     generated = fsum(row.generation_kw * dt for row in rows)
     demanded = fsum(row.demand_kw * dt for row in rows)
     unserved = fsum(row.unserved_kw * dt for row in rows)

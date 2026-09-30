@@ -9,6 +9,7 @@ from hashlib import sha256
 import json
 import sqlite3
 from uuid import uuid4
+from pydantic import ValidationError
 
 from backend.app.models.mission import Scenario, ScenarioCreate
 from backend.app.models.simulation import RunSummary, SimulationResult, SimulationRun
@@ -110,7 +111,10 @@ class ScenarioRepository:
 
     @staticmethod
     def validate_run(document) -> SimulationRun:
-        run = SimulationRun.model_validate_json(document)
+        try:
+            run = SimulationRun.model_validate_json(document)
+        except ValidationError as error:
+            raise CorruptRun("Stored simulation has an invalid schema. Rerun from its saved scenario.") from error
         if (digest({"scenario": run.scenario_snapshot.model_dump(mode="json"), "spatial_sources": run.scientific_provenance}) != run.input_sha256
                 or digest(run.result.model_dump(mode="json")) != run.result_sha256):
             raise CorruptRun("Stored simulation failed integrity verification. Rerun from its saved scenario.")

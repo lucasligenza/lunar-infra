@@ -7,7 +7,7 @@ export default function Telemetry({ interval, asset }: { interval: Interval; ass
   const battery = asset ? interval.batteries[asset.id] : undefined;
   return <section className="telemetry" aria-label="Simulated telemetry">
     <div className="telemetry-heading"><h2>Simulated conditions</h2><span className={interval.constraint_violations.length ? "failure" : "nominal"}>{interval.constraint_violations.length ? "Power shortage" : "Demand served"}</span></div>
-    <p>{new Date(interval.start).toISOString().replace(".000Z", " UTC")}</p>
+    <p>{new Date(interval.start).toISOString().replace(".000Z", " UTC")} to {new Date(interval.end).toISOString().replace(".000Z", " UTC")}</p>
     <dl><dt>Generation</dt><dd><strong data-testid="telemetry-generation">{number(interval.generation_kw)}</strong> kW</dd>
       <dt>Demand</dt><dd><strong data-testid="telemetry-demand">{number(interval.demand_kw)}</strong> kW</dd>
       <dt>Battery SOC at interval end</dt><dd data-testid="telemetry-soc">{interval.soc_end === null ? "No batteries" : `${number(interval.soc_end * 100)}%`}</dd>

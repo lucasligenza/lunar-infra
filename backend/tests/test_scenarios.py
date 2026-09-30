@@ -90,6 +90,8 @@ def test_invalid_battery_parameters(changes):
 
 @pytest.mark.parametrize("changes", [{"start": "2027-01-01T00:00:00"}, {"end": "2026-01-01T00:00:00Z"},
     {"timestep_seconds": 5000}, {"timestep_seconds": True}, {"illumination_factors": [1]},
+    {"start": "2027-01-01T00:00:00.123Z", "end": "2027-01-03T00:00:00.123Z"},
+    {"start": "0001-01-01T00:00:00+14:00"},
     {"illumination_kind": "nasa_average"}])
 def test_invalid_time_axes_and_unvalidated_sources(changes):
     with pytest.raises(ValidationError):

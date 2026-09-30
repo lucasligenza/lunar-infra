@@ -44,8 +44,6 @@ Development servers bind to loopback. Playwright starts both servers and validat
 the real data-to-UI flow, navigation and failure recovery. Pure numerical functions
 remain usable outside the web application for future scientific tools.
 
-Implementation references:
-
 Mission definitions use discriminated Pydantic asset schemas. SQLite stores each
 scenario as a validated versioned JSON aggregate; edits hold an immediate transaction
 and compare revisions before replacing it. This keeps simultaneous browser edits
@@ -57,6 +55,16 @@ intervals maximum), then stores a run with immutable input/source snapshots and
 hashes. Scenario revisions are rechecked before publishing the result. No worker
 queue is needed for this bounded model; longer computations can later use the
 same numerical function behind a job runner.
+
+React treats API responses as the authoritative saved state. Independent asset and
+mission drafts survive unrelated saves; explicit reopening resets them after a
+discard confirmation. Changing the saved revision invalidates displayed results.
+Playback selects one Python result interval used by every chart and telemetry panel;
+it does not calculate power or battery state in JavaScript. Mobile section links
+retain access to the scientific map, tools, inspector and computed timeline.
+
+Implementation references:
+
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)
