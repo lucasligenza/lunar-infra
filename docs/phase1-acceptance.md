@@ -1,9 +1,10 @@
 # Phase 1 acceptance evidence
 
-Local validation completed on Windows with locked Python and npm dependencies.
-GitHub Actions repeats acquisition, scientific tests, type checks, production
-build and browser integration on Linux. Its initial remote result is pending
-when this report is committed; local results are not a claim of remote success.
+Validation completed on Windows and GitHub's fresh Linux runner with locked
+Python and npm dependencies. [GitHub run 36715026163](https://github.com/lucasligenza/lunar-infra/actions/runs/36715026163)
+passed for implementation commit d06426b on 2026-09-30: actual NASA acquisition,
+33 Python tests and eight subtests, type checking, production build and six
+Chromium browser integration tests. Real-data tests were executed, not skipped.
 
 | Requirement | Implementation and evidence |
 | --- | --- |

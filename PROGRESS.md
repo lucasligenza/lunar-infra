@@ -14,13 +14,15 @@ Phase 1: Lunar Data Explorer, following the user's roadmap. Phases 2-4 excluded.
   georeferenced PNG layers, readiness checks and explicit scientific error handling.
 - 19d1437 (pushed): Next.js/OpenLayers lunar map, scientific layer controls,
   interactive selection, inspector, provenance, responsive layout and error recovery.
-- Current milestone: acceptance evidence and GitHub scientific/browser validation.
+- d06426b (pushed, CI passed): acceptance evidence and GitHub scientific/browser
+  validation on a fresh Linux runner with actual NASA acquisition.
+- Final documentation milestone: record confirmed acceptance and remote validation.
 
 ## Active milestone and features in progress
 
-Phase 1 acceptance criteria are satisfied locally, including the optional compatible
-illumination integration. The CI workflow repeats validation on a fresh Linux runner;
-its initial remote result is pending. See docs/phase1-acceptance.md for evidence.
+Phase 1 is complete and verified locally and on GitHub's fresh Linux runner,
+including compatible modeled illumination integration. No active feature work.
+See docs/phase1-acceptance.md for evidence.
 
 ## Validation results
 
@@ -40,6 +42,11 @@ its initial remote result is pending. See docs/phase1-acceptance.md for evidence
   all layers, pan/zoom, provenance, mobile layout, outside-region and API/raster retry.
 - Frontend TypeScript validation and production build pass. Desktop and mobile
   screenshots were inspected; controls remain usable without overlap.
+- [GitHub run 36715026163](https://github.com/lucasligenza/lunar-infra/actions/runs/36715026163)
+  passed for d06426b on 2026-09-30: fresh NASA acquisition, 33 Python tests and
+  eight subtests, frontend type checking/build and six Chromium tests. No skips.
+- Local production frontend and API readiness/proxy return HTTP 200 and the
+  real -705 m sample at latitude -89.5, longitude 0.
 - Rasterio emits affine multiplication deprecation warnings internally. Local code
   uses the supported matrix operator; numerical results are unaffected.
 
@@ -62,12 +69,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone before this commit: 19d1437.
-Current milestone: ci: validate Phase 1 scientific explorer.
+Latest confirmed published and CI-validated implementation: d06426b.
+Final record commit: docs: record verified Phase 1 completion.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Confirm the initial GitHub Actions result. Phase 1 feature work is complete locally;
-stop after final validation. No Phase 2 work is authorized during this assignment.
+None within the initial assignment. Phase 1 is complete. Await an explicit new
+assignment before starting Phase 2; its infrastructure simulations remain unbuilt.
