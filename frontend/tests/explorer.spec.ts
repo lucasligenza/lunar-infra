@@ -28,6 +28,10 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
   await page.goto("/");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
   await expect(page.getByText("Select a location", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Collapse tools" }).click();
+  await expect(page.getByRole("region", { name: "Scientific layers" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Expand tools" }).click();
+  await expect(page.getByRole("region", { name: "Scientific layers" })).toBeVisible();
   await page.getByLabel("Latitude (°)", { exact: true }).fill("-89.5");
   await page.getByLabel("Longitude (° E)", { exact: true }).fill("0");
   const expected: Site = await (await request.get("/api/sites/inspect?latitude=-89.5&longitude=0")).json();

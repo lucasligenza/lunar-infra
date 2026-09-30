@@ -2,7 +2,7 @@
 
 ## Current development phase
 
-Phase 1: Lunar Data Explorer, following the user's roadmap. Phases 2-4 excluded.
+Phase 2: infrastructure simulation and mission control. Phases 3-4 excluded.
 
 ## Completed milestones
 
@@ -20,12 +20,15 @@ Phase 1: Lunar Data Explorer, following the user's roadmap. Phases 2-4 excluded.
 
 ## Active milestone and features in progress
 
-Phase 1 is complete and verified locally and on GitHub's fresh Linux runner,
-including compatible modeled illumination integration. No active feature work.
-See docs/phase1-acceptance.md for evidence.
+Phase 2 milestone 1: audited functional Phase 1 and redesigned the workspace with
+a dedicated collapsible tool rail and an unobstructed scientific map. Plan and
+scientific time-series limitation are recorded in docs/phase2-plan.md.
 
 ## Validation results
 
+- Phase 2 audit/layout: 33 Python tests plus eight subtests, six browser tests,
+  typecheck and production build pass. Added tool-collapse coverage passes.
+  Desktop screenshot reviewed; map remains unobstructed and controls functional.
 - 33 tests pass, with eight additional unittest subtests. No failures or skipped
   real-data integration tests in this environment.
 - Analytic projection comparisons, pole and coordinate validation, half-open bounds,
@@ -69,12 +72,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published and CI-validated implementation: d06426b.
-Final record commit: docs: record verified Phase 1 completion.
+Latest confirmed published milestone: 1930dee (Phase 1 completion record).
+Current milestone: style: redesign LunarOS mission control layout.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-None within the initial assignment. Phase 1 is complete. Await an explicit new
-assignment before starting Phase 2; its infrastructure simulations remain unbuilt.
+Implement typed hypothetical assets and SQLite-backed scenarios with validated
+locations, revision checks and scenario/asset API operations.

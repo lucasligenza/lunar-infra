@@ -1,13 +1,18 @@
 # LunarOS engineering rules
 
-Implement Phase 1 only: real lunar south-pole terrain and solar data exploration.
+Implement Phase 2: infrastructure placement, persistence and deterministic energy
+simulation, preserving Phase 1 scientific exploration. Phases 3-4 remain excluded.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.
 
 - Inspect Git status before editing; preserve unrelated user changes.
 - Pin scientific source URLs, versions, checksums, lunar CRS, units and periods.
 - Never use Earth CRS defaults, invent measurements, or substitute mock data.
-- Synthetic arrays belong only in explicitly mathematical tests.
+- Synthetic inputs belong only in mathematical tests or explicitly labeled
+  hypothetical simulations. Never turn NASA average visibility into eclipse times.
+- Keep simulation in Python, record input snapshots/model versions and verify
+  interval energy balances. No thermal/degradation claims without modeled physics.
+- Save scenarios through the API with revision checks; ignore local SQLite files.
 - Keep nodata distinct from valid zero. Check CRS, grid origin and resolution
   before combining rasters. Document resampling and derivation.
 - Raw and processed datasets, .env files, caches and secrets stay out of Git.

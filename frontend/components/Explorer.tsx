@@ -31,6 +31,7 @@ export default function Explorer() {
   const [latitude, setLatitude] = useState("-89.5");
   const [longitude, setLongitude] = useState("0");
   const activeInspection = useRef<AbortController | null>(null);
+  const [toolsOpen, setToolsOpen] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -81,11 +82,39 @@ export default function Explorer() {
 
   return <main className="explorer">
     <header className="app-header"><div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1>
-      <span className="header-divider" /><p>South-pole data explorer</p></div>
+      <span className="header-divider" /><p>Mission control <small>Terrain workspace</small></p></div>
       <div className="header-status"><span className={region ? "status-dot ready" : "status-dot"} />
-        {region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}<span className="phase-label">Phase 1</span></div>
+        {region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}<span className="phase-label">South pole / ME-PA DE421</span></div>
     </header>
-    <div className="workspace">
+    <div className={toolsOpen ? "workspace" : "workspace tools-collapsed"}>
+      <aside className="tool-rail" aria-label="Exploration tools">
+        <div className="tool-rail-title"><h2>Workspace</h2><button aria-label={toolsOpen ? "Collapse tools" : "Expand tools"} onClick={() => setToolsOpen(value => !value)}>{toolsOpen ? "‹" : "›"}</button></div>
+        {toolsOpen && region && layer && <div className="map-controls-stack">
+          <details open className="tool-section"><summary>Map layers</summary>
+          <section className="layer-panel" aria-label="Scientific layers"><h3>Scientific layers</h3>
+            <div role="radiogroup" aria-label="Active scientific layer">{region.layers.map(value => <label className={value.id === layerId ? "layer-choice selected" : "layer-choice"} key={value.id}>
+              <input type="radio" name="layer" value={value.id} checked={value.id === layerId} onChange={() => setLayerId(value.id)} />
+              <span className={`layer-symbol ${value.id}`} aria-hidden="true" />
+              <span>{value.name}<small>{value.id === "elevation" ? "NASA LOLA" : value.id === "slope" ? "Derived terrain" : "Modeled sunlight frequency"}</small></span>
+            </label>)}</div>
+            <label className="grid-toggle"><input type="checkbox" checked={grid} onChange={event => setGrid(event.target.checked)} />Lunar coordinate grid</label>
+          </section>
+          </details>
+          <details open className="tool-section"><summary>Location selection</summary>
+          <section className="coordinate-panel"><h3>Inspect by coordinates</h3><form onSubmit={submit}>
+            <label>Latitude (°)<input type="number" required min="-90" max="0" step="any" value={latitude} onChange={event => setLatitude(event.target.value)} /></label>
+            <label>Longitude (° E)<input type="number" required min="-180" max="360" step="any" value={longitude} onChange={event => setLongitude(event.target.value)} /></label>
+            <button className="primary-button" type="submit" disabled={inspecting}>Inspect location</button>
+          </form><p>Planetocentric · east-positive</p></section>
+          </details>
+          <section className="map-legend" aria-label="Scientific legend"><div><strong>{layer.name}</strong><span>{layer.unit === "fraction" ? "Modeled" : layer.unit === "deg" ? "Derived" : "LOLA"}</span></div>
+            <div className="legend-ramp" style={{ background: `linear-gradient(90deg, ${layer.colors.join(", ")})` }} />
+            <div className="legend-values"><span>{legendValue(layer.minimum)}</span><span>{legendValue(layer.maximum)}</span></div>
+            <p>{layer.description}</p><small>Colors clipped to legend range; transparent cells indicate missing data.</small>
+          </section>
+          <details className="tool-section input-limit"><summary>Temporal data availability</summary><p>NASA solar visibility is a long-term average. Validated time-dependent illumination is not integrated; real-data mission playback is unavailable.</p></details>
+        </div>}
+      </aside>
       <section className="map-workspace" aria-label="Terrain exploration">
         {region && layer && <TerrainMap region={region} layer={layer} site={site} grid={grid}
           onSelect={(lon, lat) => void inspect(lon, lat)} onPointer={setPointer} />}
@@ -96,26 +125,6 @@ export default function Explorer() {
           <p className="quiet">Start the backend and prepare the NASA datasets using the README instructions.</p></div>}
         {region && layer && <>
           <div className="map-heading"><h2>Lunar south pole</h2><p>{((region.bounds_m[2] - region.bounds_m[0]) / 1000).toFixed(0)} km region / {region.resolution_m} m terrain grid</p></div>
-          <div className="map-controls-stack">
-          <section className="layer-panel" aria-label="Scientific layers"><h3>Scientific layers</h3>
-            <div role="radiogroup" aria-label="Active scientific layer">{region.layers.map(value => <label className={value.id === layerId ? "layer-choice selected" : "layer-choice"} key={value.id}>
-              <input type="radio" name="layer" value={value.id} checked={value.id === layerId} onChange={() => setLayerId(value.id)} />
-              <span className={`layer-symbol ${value.id}`} aria-hidden="true" />
-              <span>{value.name}<small>{value.id === "elevation" ? "NASA LOLA" : value.id === "slope" ? "Derived terrain" : "Modeled sunlight frequency"}</small></span>
-            </label>)}</div>
-            <label className="grid-toggle"><input type="checkbox" checked={grid} onChange={event => setGrid(event.target.checked)} />Lunar coordinate grid</label>
-          </section>
-          <section className="coordinate-panel"><h3>Inspect by coordinates</h3><form onSubmit={submit}>
-            <label>Latitude (°)<input type="number" required min="-90" max="0" step="any" value={latitude} onChange={event => setLatitude(event.target.value)} /></label>
-            <label>Longitude (° E)<input type="number" required min="-180" max="360" step="any" value={longitude} onChange={event => setLongitude(event.target.value)} /></label>
-            <button className="primary-button" type="submit" disabled={inspecting}>Inspect location</button>
-          </form><p>Planetocentric · east-positive</p></section>
-          <section className="map-legend" aria-label="Scientific legend"><div><strong>{layer.name}</strong><span>{layer.unit === "fraction" ? "Modeled" : layer.unit === "deg" ? "Derived" : "LOLA"}</span></div>
-            <div className="legend-ramp" style={{ background: `linear-gradient(90deg, ${layer.colors.join(", ")})` }} />
-            <div className="legend-values"><span>{legendValue(layer.minimum)}</span><span>{legendValue(layer.maximum)}</span></div>
-            <p>{layer.description}</p><small>Colors clipped to legend range; transparent cells indicate missing data.</small>
-          </section>
-          </div>
           <div className="map-instruction">Drag to pan · scroll to zoom · click to inspect</div>
         </>}
         <footer className="map-footer"><span>{pointer ? `${Math.abs(pointer[1]).toFixed(4)}° S / ${pointer[0].toFixed(4)}° E` : "Move across the map to read coordinates"}</span>

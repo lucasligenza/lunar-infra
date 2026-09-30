@@ -1,6 +1,7 @@
 # LunarOS architecture
 
-Phase 1 is the lunar data explorer. Phases 2-4 are outside this implementation.
+Phase 1 provides scientific exploration. Phase 2 adds hypothetical infrastructure,
+scenario persistence and energy simulation. Phases 3-4 remain outside this assignment.
 
 ```text
 NASA PDS / LOLA team (pinned IMG + labels)
@@ -23,7 +24,9 @@ pipeline registers verified artifact hashes and source metadata. Services consum
 prepared files only and fail clearly when data is unavailable or corrupt. HTTP
 handlers delegate numerical logic to functions that later AI tools can call directly.
 The small bounded region can fit in memory; no database or distributed worker is
-needed. No infrastructure, optimization, AI or production deployment is included.
+needed for terrain. Phase 2 uses local SQLite for mission definitions and immutable
+simulation runs; numerical energy functions remain separate from HTTP and React.
+Optimization, AI and production deployment remain outside the implementation.
 
 OpenLayers displays georeferenced raster renderings in their lunar polar coordinate
 space, using a custom projection rather than Earth Web Mercator. Its browser
@@ -35,7 +38,8 @@ requests and clear previous measurements.
 
 Next.js proxies same-origin /api requests to FastAPI; the browser needs no separate
 CORS configuration. Scientific layer metadata, legends and source identifiers come
-from the backend. Desktop controls overlay the map; mobile controls flow below it.
+from the backend. Desktop scientific controls occupy a collapsible left tool rail;
+mobile controls flow below the map.
 Development servers bind to loopback. Playwright starts both servers and validates
 the real data-to-UI flow, navigation and failure recovery. Pure numerical functions
 remain usable outside the web application for future scientific tools.
