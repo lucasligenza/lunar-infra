@@ -24,10 +24,16 @@ Phase 2 milestone 1 b033422 pushed: audit and mission-control layout.
 Milestone 2 ff5035b pushed: typed assets, SQLite scenarios and validated CRUD API.
 Milestone 3 b180a1a pushed: scenario explorer and interactive asset placement.
 Milestone 4 f3a9e76 pushed: deterministic energy engine and numerical tests.
-Milestone 5: simulation API and immutable stored runs with input/result hashes.
+Milestone 5 084b39c pushed: simulation API and immutable stored runs.
+Milestone 6: explicit mission inputs, computed telemetry, charts and playback.
 
 ## Validation results
 
+- Playback browser test compares API results to displayed generation/load/SOC and
+  shortage telemetry; tests interval scrubbing, speed/play/pause, chart window,
+  collapse/expand, stale-result clearing and reopening a current saved run.
+  Desktop and mobile simulation screenshots reviewed; no horizontal overflow.
+  All eight browser tests, frontend typecheck and production build pass.
 - Simulation API milestone: full suite passes 66 tests plus eight subtests.
   Runs reopen after restart, repeated inputs have identical results/hashes,
   later edits preserve snapshots, stale revisions/missing profiles are rejected,
@@ -91,12 +97,12 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed published milestone: f3a9e76.
-Current milestone: feat: expose reproducible mission simulation API.
+Latest confirmed published milestone: 084b39c.
+Current milestone: feat: add computed mission timeline playback.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Build mission input configuration, calculated charts/telemetry and timeline
-playback; reopen stored current-revision runs and clear stale telemetry on edits.
+Final usability/scientific review, missing-value and conflict regression coverage,
+responsive navigation, CI confirmation and Phase 2 acceptance documentation.

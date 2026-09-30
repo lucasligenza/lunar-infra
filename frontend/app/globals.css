@@ -74,6 +74,48 @@ button[aria-pressed="true"] { border-color: var(--accent); background: #274555; 
 .placement-prompt button { border: 1px solid var(--border); padding: 3px 7px; margin-left: 12px; }
 .mission-error { top: 160px; color: var(--warning); border-color: var(--warning); }
 .map-tooltip { position: absolute; pointer-events: none; transform: translate(-50%, 35px); padding: 6px 10px; background: #142331; border: 1px solid var(--accent); border-radius: 3px; color: var(--ink); font-size: 11px; max-width: 240px; z-index: 6; }
+.mission-input-form { display: grid; gap: 12px; padding: 0 15px 16px; }
+.mission-input-form label, .mission-input-form p { font-size: 11px; line-height: 1.6; color: var(--quiet); }
+.mission-input-form p.warning { color: var(--warning); }
+.mission-input-form p.nominal { color: var(--nominal); }
+.secondary-button { border: 1px solid var(--border); border-radius: 4px; background: #1c3242; padding: 9px 12px; font-size: 11px; }
+.context-rail { display: flex; flex-direction: column; min-height: 0; overflow: hidden; border-left: 1px solid var(--border); background: var(--panel); }
+.context-rail > .inspector { flex: 1; border-left: 0; overflow: hidden; }
+.telemetry { flex-shrink: 0; padding: 16px 20px; border-bottom: 1px solid var(--border); background: #172b39; }
+.telemetry-heading { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.telemetry-heading h2 { font-size: 14px; }
+.telemetry-heading span { font-size: 10px; }
+.telemetry > p { font-size: 10px; margin-top: 8px; color: var(--quiet); }
+.telemetry dl { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 11px; margin: 14px 0; }
+.telemetry dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+.telemetry dt { color: var(--quiet); }
+.telemetry small { display: block; font-size: 9px; color: var(--quiet); line-height: 1.5; }
+.asset-telemetry { padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--border); font-size: 11px; line-height: 1.6; }
+.asset-telemetry h3 { font-size: 12px; margin-bottom: 5px; }
+.simulation-notice { position: absolute; bottom: 85px; left: 15px; right: 15px; max-width: 450px; border: 1px solid #5c7585; border-radius: 4px; background: #142331; color: var(--quiet); padding: 10px 14px; font-size: 11px; }
+.mission-timeline { flex-shrink: 0; border-top: 1px solid #527488; background: #10202d; max-height: 350px; overflow-y: auto; }
+.timeline-toolbar { min-height: 49px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 9px 18px; }
+.timeline-toolbar button, .timeline-summary button, .event-list button { padding: 5px 10px; font-size: 11px; border: 1px solid #3c5b6f; border-radius: 4px; background: #1c3242; }
+.timeline-toolbar .timeline-toggle { background: transparent; border: 0; font-size: 13px; }
+.input-source-tag { color: var(--warning); font-size: 10px; padding: 4px 7px; border: 1px solid #6b5a3e; border-radius: 3px; }
+.timeline-toolbar label, .timeline-scrub label { display: flex; align-items: center; gap: 7px; font-size: 10px; color: var(--quiet); }
+.timeline-toolbar select, .timeline-scrub select { margin: 0; width: auto; font-size: 10px; padding: 4px; }
+.timeline-time { margin-left: auto; color: #d2e0e7; font-size: 11px; font-variant-numeric: tabular-nums; }
+.timeline-scrub { display: flex; align-items: center; gap: 18px; padding: 0 20px 8px; }
+.timeline-scrub input[type="range"] { flex: 1; accent-color: var(--accent); }
+.timeline-scrub > span { font-size: 10px; min-width: 90px; }
+.timeline-charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 4px 20px 6px; }
+.timeline-chart { min-width: 0; }
+.timeline-chart > div { display: flex; justify-content: space-between; align-items: center; font-size: 10px; padding-left: 15px; }
+.timeline-chart h3 { font-size: 11px; font-weight: 500; }
+.timeline-chart svg { width: 100%; display: block; cursor: crosshair; }
+.timeline-chart svg text { fill: #a2b8c6; font-size: 9px; }
+.no-storage { display: grid; place-content: center; text-align: center; font-size: 11px; color: var(--quiet); gap: 10px; }
+.timeline-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; font-size: 10px; padding: 0 22px 10px; color: var(--quiet); }
+.timeline-summary .event-shortage, .event-list .event-shortage { color: var(--failure); border-color: #784f55; }
+.mission-events { border-top: 1px solid var(--border); padding: 10px 20px; font-size: 11px; }
+.mission-events p { color: var(--quiet); line-height: 1.6; margin-top: 9px; overflow-wrap: anywhere; }
+.event-list { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 12px; }
 .map-workspace { position: relative; min-width: 0; overflow: hidden; background: #14212c; }
 .terrain-map { position: absolute; inset: 0 0 35px; }
 .map-heading { position: absolute; top: 23px; left: 25px; pointer-events: none; text-shadow: 0 1px 5px #14212c; }
@@ -171,7 +213,7 @@ input[type="number"] { display: block; margin-top: 6px; width: 100%; background:
 @media (max-width: 1100px) { .workspace { grid-template-columns: 225px minmax(0, 1fr) 280px; } .workspace.tools-collapsed { grid-template-columns: 48px minmax(0, 1fr) 280px; } .app-header { padding: 0 18px; } .header-status .phase-label { display: none; } .map-heading { left: 16px; } .map-footer span:last-child { display: none; } }
 @media (max-width: 800px) {
   .explorer { height: auto; min-height: 100dvh; }
-  .app-header { height: 63px; padding: 0 14px; }
+  .app-header { height: auto; min-height: 63px; padding: 10px 14px; flex-wrap: wrap; gap: 9px; }
   .brand p, .header-divider { display: none; }
   .header-status { font-size: 10px; }
   .workspace { display: flex; flex-direction: column; }
@@ -180,6 +222,13 @@ input[type="number"] { display: block; margin-top: 6px; width: 100%; background:
   .tool-rail { border-right: 0; border-top: 1px solid var(--border); }
   .inspector { border-left: 0; border-top: 1px solid var(--border); }
   .inspector-content { overflow: visible; }
+  .context-rail { overflow: visible; border-left: 0; }
+  .context-rail > .inspector { overflow: visible; }
+  .mission-timeline { max-height: none; }
+  .timeline-charts { grid-template-columns: 1fr; }
+  .timeline-scrub { flex-wrap: wrap; }
+  .timeline-scrub input[type="range"] { width: 100%; flex-basis: 100%; }
+  .timeline-time { margin-left: 0; }
   .map-heading { top: 14px; }
   .map-heading h2 { font-size: 18px; }
   .map-navigation { top: 82px; right: 12px; }

@@ -5,6 +5,10 @@ import dynamic from "next/dynamic";
 import SiteInspector from "./panels/SiteInspector";
 import { fetchScientific } from "../lib/api";
 import { useScenario } from "../lib/useScenario";
+import { useSimulation } from "../lib/useSimulation";
+import MissionInputs from "./panels/MissionInputs";
+import Telemetry from "./panels/Telemetry";
+import Timeline from "./mission/Timeline";
 import AssetInspector from "./panels/AssetInspector";
 import { ASSET_NAMES, ASSET_SYMBOLS, type AssetKind } from "../types/mission";
 import type { Dataset, LayerId, Region, Site } from "../types/scientific";
@@ -40,6 +44,11 @@ export default function Explorer() {
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [placement, setPlacement] = useState<AssetKind | "move" | null>(null);
   const [assetDirty, setAssetDirty] = useState(false);
+  const [missionDirty, setMissionDirty] = useState(false);
+  const simulation = useSimulation(scenario.active);
+  const [intervalIndex, setIntervalIndex] = useState(0);
+  useEffect(() => { setIntervalIndex(0); }, [simulation.run?.id]);
+  const selectedInterval = simulation.run?.result.intervals[Math.min(intervalIndex, simulation.run.result.intervals.length - 1)];
   const selectedAsset = scenario.active?.assets.find(asset => asset.id === selectedAssetId);
   useEffect(() => { setScenarioName(scenario.active?.name ?? "South-pole outpost"); }, [scenario.active?.id, scenario.active?.name]);
   useEffect(() => { setSelectedAssetId(null); setPlacement(null);
@@ -108,7 +117,7 @@ export default function Explorer() {
     <header className="app-header"><div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1>
       <span className="header-divider" /><p>{scenario.active?.name ?? "Mission control"}<small>{scenario.active ? "Hypothetical infrastructure / south pole" : "Terrain workspace"}</small></p></div>
       <div className="header-status"><span className={region ? "status-dot ready" : "status-dot"} />
-        {scenario.active ? scenario.busy ? "Saving…" : assetDirty ? "Unsaved asset changes" : scenarioName !== scenario.active.name ? "Unsaved name" : `Saved / revision ${scenario.active.revision}` : region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}
+        {scenario.active ? scenario.busy ? "Saving…" : assetDirty ? "Unsaved asset changes" : missionDirty ? "Unsaved simulation inputs" : scenarioName !== scenario.active.name ? "Unsaved name" : `Saved / revision ${scenario.active.revision}` : region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}
         {scenario.active && <button className="primary-button" disabled={scenario.busy || scenarioName === scenario.active.name || !scenarioName.trim()} onClick={() => void scenario.patch({ name: scenarioName })}>Save scenario</button>}
         <span className="phase-label">South pole / ME-PA DE421</span></div>
     </header>
@@ -130,6 +139,9 @@ export default function Explorer() {
               if (window.confirm(`Delete scenario “${scenario.active?.name}”? This cannot be undone.`)) void scenario.remove();
             }}>Delete scenario</button>}
           </details>
+          {scenario.active && <MissionInputs key={`${scenario.active.id}:${scenario.active.revision}`} scenario={scenario.active}
+            busy={scenario.busy || simulation.busy || assetDirty} onDirty={setMissionDirty}
+            onSave={mission => scenario.patch({ mission })} onRun={simulation.simulate} />}
           {scenario.active && <details open className="tool-section asset-catalog"><summary>Infrastructure catalog</summary>
             <p>Hypothetical assets. Click a tool, then place it on valid terrain.</p>
             {(Object.keys(ASSET_NAMES) as AssetKind[]).map(kind => <button key={kind} disabled={scenario.busy} aria-pressed={placement === kind}
@@ -169,6 +181,8 @@ export default function Explorer() {
           assets={scenario.active?.assets} baseSite={scenario.active?.site} selectedAssetId={selectedAssetId}
           onAssetSelect={id => { setSelectedAssetId(id); setPlacement(null); }} placementActive={Boolean(placement)} />}
         {scenario.error && <div className="mission-error" role="alert">{scenario.error}</div>}
+        {simulation.error && <div className="mission-error" role="alert">{simulation.error}</div>}
+        {simulation.notice && <div className="simulation-notice" role="status">{simulation.notice}</div>}
         {placement && <div className="placement-prompt" role="status">{placement === "move" ? "Click terrain to move the selected asset" : `Click terrain to place ${ASSET_NAMES[placement].toLowerCase()}`}
           <button onClick={() => setPlacement(null)}>Cancel placement</button></div>}
         {loading && <div className="startup-message" role="status"><span className="loading-ring" /><h2>Loading the lunar south pole</h2>
@@ -183,12 +197,16 @@ export default function Explorer() {
         <footer className="map-footer"><span>{pointer ? `${Math.abs(pointer[1]).toFixed(4)}° S / ${pointer[0].toFixed(4)}° E` : "Move across the map to read coordinates"}</span>
           <span>Moon ME/PA DE421 · polar stereographic</span></footer>
       </section>
-      {selectedAsset ? <AssetInspector key={`${selectedAsset.id}:${scenario.active?.revision}`} asset={selectedAsset} busy={scenario.busy}
+      <div className="context-rail">
+      {selectedInterval && <Telemetry interval={selectedInterval} asset={selectedAsset} />}
+      {selectedAsset ? <AssetInspector key={`${selectedAsset.id}:${scenario.active?.revision}`} asset={selectedAsset} busy={scenario.busy || simulation.busy}
         onDirty={setAssetDirty}
         onSave={changes => void scenario.editAsset(selectedAsset.id, changes)} onMove={() => setPlacement("move")}
         onRemove={() => { if (window.confirm(`Remove “${selectedAsset.name}”?`)) void scenario.removeAsset(selectedAsset.id); }}
         onInspect={() => { setSelectedAssetId(null); void inspect(selectedAsset.location.longitude_deg, selectedAsset.location.latitude_deg); }} /> :
         <SiteInspector site={site} loading={inspecting} error={inspectError} datasets={datasets} />}
+      </div>
     </div>
+    {simulation.run && <Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} />}
   </main>;
 }

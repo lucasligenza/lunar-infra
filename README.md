@@ -56,6 +56,20 @@ Placements save immediately through the API; unsaved form changes are labeled.
 The local database is `data/local/missions.sqlite`, separate from downloaded rasters.
 Set `LUNAROS_DB_PATH` before backend startup to use another database path.
 
+To exercise energy simulation, place a habitat, solar array and battery. Open
+**Simulation inputs**, set the UTC period/time step and choose **Fill constant
+profile**, **Apply synthetic stress profile**, or enter one electrical input factor
+per interval. These are explicitly hypothetical inputs; NASA average visibility
+cannot reconstruct sunlight over time. **Run simulation** saves changed inputs
+and executes the Python engine. It never generates a lunar daily cycle.
+
+The bottom timeline shows computed generation, demand, battery SOC and shortage
+events. Scrub, play/pause, change speed, narrow the chart window, or select the
+first shortage. Right-panel telemetry follows that interval. Powers are interval
+averages and SOC is the interval-end value. Saving any scenario edit clears stale
+telemetry; rerun to update it. Reopening an unchanged scenario restores its saved
+result. See the [energy model](docs/energy-model.md) for equations and omissions.
+
 The frontend proxies `/api` to the backend at `http://127.0.0.1:8000`. Set
 `LUNAROS_BACKEND_URL` before starting Next.js if the backend runs elsewhere.
 Visit http://127.0.0.1:8000/docs for interactive API documentation, or read
