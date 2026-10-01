@@ -66,17 +66,32 @@ site panel; site evidence remains in Design/Moon. Existing polar environment
 options also remain represented in the global mission selector.
 
 Final scientific/API regression: 106 Python tests + eight subtests pass (63.75 s).
-The full Chromium run passed 50/51; the remaining navigation test pressed Enter
-while a save disabled its command. The helper now waits for the actual command
-to become enabled; all 11 affected draft/navigation/settlement journeys pass,
-including old-scenario immutability and separate name-draft checks. Typecheck and
+The final full Chromium run passes all 51 journeys (8.8 minutes). An earlier
+navigation test pressed Enter while a save disabled its command; the helper now
+waits for the actual command to become enabled. All 11 focused draft/navigation/
+settlement checks also pass, including old-scenario immutability and separate
+name-draft checks. Typecheck and
 production build pass. Actual handoff, habitat and calculated-playback screenshots
 were inspected, along with all five viewport sizes and expanded controls. Review
 also fixed a clipped tools Close button, with a bounds/text-width regression.
 No datasets, screening math, simulator, persistence API or renderer were replaced.
 
-Active: committing/pushing M4, then checking the fresh full GitHub regression.
-Latest successful push: 2b0e8b5. Next: final acceptance record; no extra feature work.
+M4 pushed as 5f9a657. GitHub run 36929206460 passed fresh acquisition,
+scientific/API tests, typecheck/build and all 51 browser journeys. All four
+feature commits are pushed and their GitHub checks are green:
+9e59aaa / 411d323 / 2b0e8b5 / 5f9a657. HEAD matched origin/main after the feature
+push. Latest successful feature commit: 5f9a657f01b6b6798851240210aaa25897729e94.
+This acceptance record follows as a documentation-only commit.
+
+Active milestone: none; the four targeted milestones are complete. Next: await
+the user's next assignment; no extra features or scientific acquisition planned.
+Remaining limits: environmental data covers the prepared ~96 km south-pole
+square, with real nodata; Diviner is one historical summer/local-midnight bin,
+not current or habitat temperature. Validated time-dependent illumination is
+still unavailable, so power input is explicit hypothetical/synthetic. Screening
+does not certify habitability or construction safety. Cold detailed polar color
+loading may exceed 15 seconds; tests inspect Chromium and zoom-equivalent CSS
+viewports, not every GPU/browser or native operating-system zoom combination.
 
 The earlier roadmap records below are historical.
 

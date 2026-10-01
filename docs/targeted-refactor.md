@@ -46,3 +46,35 @@ Browser baseline and subsequent rendered reviews are recorded in PROGRESS.md.
 The existing GlobalExplorer, OpenLayers map, thermal ingestion, API contracts,
 scenario hooks, revision handling and Python simulation engine are retained.
 Raw data, generated rasters, screenshots, test traces and local databases are ignored.
+
+## Acceptance
+
+All four feature milestones are implemented, committed, pushed and green on GitHub:
+
+| Milestone | Commit | Fresh validation |
+| --- | --- | --- |
+| Scientific overlays | 9e59aaa | [36921099219](https://github.com/lucasligenza/lunar-infra/actions/runs/36921099219) |
+| Map-first workspace | 411d323 | [36925142251](https://github.com/lucasligenza/lunar-infra/actions/runs/36925142251) |
+| Compact playback | 2b0e8b5 | [36926566298](https://github.com/lucasligenza/lunar-infra/actions/runs/36926566298) |
+| Settlement-to-mission flow | 5f9a657 | [36929206460](https://github.com/lucasligenza/lunar-infra/actions/runs/36929206460) |
+
+Final local validation: 106 Python tests plus eight subtests; all 51 Chromium
+journeys in one complete run; typecheck and production build. Rendered baseline
+and final review include both environmental overlays, missing/unprepared/error
+states, contextual tools/inspectors, candidate evidence, habitat placement,
+saved missions, compact/expanded charts and real calculated playback. Five
+screen sizes and 125%/200% CSS zoom equivalents are covered. Earlier interaction
+failures were repaired and rerun; no tests were disabled or skipped for a commit.
+
+Confirmed defects were coarse complete-level polar tile selection, readiness
+claimed for decoded transparent HTTP-200 tiles, and stale scientific tile URLs
+when switching layer in Mission. Geographic per-fragment sampling avoids pole
+UV interpolation artifacts. Native Diviner radial structure and nodata remain.
+Rendering resolution is distinct from native numerical analysis resolution.
+
+Environmental coverage and temporal limitations remain explicit: the prepared
+south-pole square, a single historical Diviner season/local-time bin, average
+solar visibility rather than time-resolved sunlight, and preliminary settlement
+screening. Cold detailed polar views can take over 15 seconds to color; the base
+Moon stays interactive with loading progress. Cross-browser/GPU validation and
+native OS zoom are not claimed. No new dataset or numerical model was added.
