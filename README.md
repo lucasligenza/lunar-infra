@@ -1,8 +1,10 @@
 # LunarOS
 
-The mission-control interface has four direct activities: **Explore**, **Analyze**,
-**Design** and **Simulate**. Location, atlas selection, mission drafts and playback
-position stay connected while switching. Use **Commands** or **Ctrl/Cmd+K** to
+The interface has two primary workspaces: **Moon** for exploration and scientific
+overlays, and **Mission** for infrastructure design and simulation. Advanced
+analysis remains available in the atlas, and Mission has direct **Design** and
+**Simulate** controls. Location, atlas selection, drafts and playback position
+stay connected while switching. Use **Commands** or **Ctrl/Cmd+K** to
 search existing actions. The collapsible **Activity** console shows actual UTC
 requests, layer readiness and simulation results, with optional request details.
 
@@ -15,10 +17,17 @@ See the [UX audit](docs/ux-audit.md) and [design system](docs/design-system.md).
 See [Phase 5 acceptance](docs/phase5-acceptance.md) for rendered review, user journeys
 and responsive/accessibility validation limits.
 
+Mission starts with a map-first viewport. **Mission tools** opens scenarios and
+infrastructure; selecting an asset opens its inspector. Closing a panel restores
+the map width and retains drafts. Simulation playback starts compact, with UTC
+time, play/pause, scrubbing, battery reserve and interval-average power. **Expand
+details** reveals bounded charts, mission energy totals and provenance. Power is
+in kW; stored and accumulated energy is in kWh. No values are invented for playback.
+
 The Lunar Atlas adds global GLD100 elevation/slope, georeferenced scientific color
 layers, cube-sphere sectors, arbitrary area statistics, native elevation profiles
-and an optional USGS geological-unit layer. Open **Lunar atlas** on the globe;
-its Layers, Regions, Analysis and Catalog tabs share the selected lunar location.
+and an optional USGS geological-unit layer. Open **Overlays** on the globe;
+**Advanced** reveals Regions, Analysis and Catalog, sharing the selected location.
 The original south-pole 240 m analysis and hypothetical mission simulator remain.
 Global atlas sites also support saved hypothetical infrastructure missions on the
 3D Moon. Elevation availability never implies validated temporal solar conditions.

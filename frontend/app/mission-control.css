@@ -86,7 +86,18 @@ input[type=checkbox],input[type=radio],input[type=range] { accent-color:var(--ac
 .mission-moon .camera-controls { bottom:16px; }
 .mission-fly { top:58px; }
 .mission-layer-status { top:106px; bottom:auto; max-height:calc(100% - 190px); max-width:calc(100% - 32px); }
-.mission-timeline { max-height:40dvh; min-height:0; }
+.mission-timeline { display:flex; flex-direction:column; width:100%; min-width:0; max-height:min(420px,42dvh); min-height:0; overflow:hidden; }
+.timeline-toolbar,.timeline-scrub,.timeline-conditions { flex-shrink:0; }
+.timeline-toolbar { min-height:42px; gap:10px; padding:6px 16px; }
+.timeline-toolbar .timeline-toggle { border:1px solid var(--border); font-size:12px; }
+.timeline-conditions { display:flex; flex-wrap:wrap; align-items:center; gap:8px 22px; padding:0 20px 10px; color:var(--quiet); font-size:12px; }
+.timeline-conditions strong { font-family:var(--font-geist-mono),monospace; font-variant-numeric:tabular-nums; color:var(--ink); font-weight:500; }
+.timeline-conditions .failure { color:var(--failure); }.timeline-conditions .nominal { color:var(--nominal); }
+.timeline-details { min-height:0; overflow:auto; border-top:1px solid var(--border); }
+.timeline-detail-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding:10px 20px 4px; color:var(--quiet); }
+.timeline-detail-heading h3,.timeline-summary h3 { margin:0; font-size:12px; font-weight:500; }
+.timeline-detail-heading label { display:flex; align-items:center; gap:8px; font-size:11px; }.timeline-detail-heading select { width:auto; margin:0; }
+.timeline-summary h3 { flex-basis:100%; color:var(--ink); font-family:var(--font-geist-sans),sans-serif; }
 .mobile-navigation { z-index:var(--z-controls); }
 .mission-header { height:auto; min-height:64px; display:grid; grid-template-columns:auto auto minmax(80px,1fr) auto; gap:20px; }
 .mode-global .mission-header .header-status { display:flex; }
@@ -120,10 +131,17 @@ input[type=checkbox],input[type=radio],input[type=range] { accent-color:var(--ac
   .explorer[data-workspace-panel="inspector"] .map-workspace, .explorer[data-workspace-panel="inspector"] .tool-rail { display:none; }
   .explorer[data-workspace-panel="inspector"] .context-rail { display:flex; }
   .explorer .inspector-content { overflow:auto; }
-  .explorer[data-workspace-panel="timeline"] .workspace { display:none; }
-  .explorer[data-workspace-panel="timeline"] .timeline-slot { display:flex; flex:1; min-height:0; }
-  .explorer[data-workspace-panel="timeline"] .mission-timeline { display:block; flex:1; max-height:none; }
-  .explorer:not([data-workspace-panel="timeline"]) .mission-timeline { display:none; }
+  .explorer[data-workspace-panel="timeline"]:not(:has(.mission-timeline.expanded)) .tool-rail,
+  .explorer[data-workspace-panel="timeline"]:not(:has(.mission-timeline.expanded)) .context-rail { display:none; }
+  .explorer[data-workspace-panel="timeline"]:has(.mission-timeline.expanded) .workspace { display:none; }
+  .explorer[data-workspace-panel="timeline"] .timeline-slot { display:flex; min-height:0; }
+  .explorer[data-workspace-panel="timeline"] .mission-timeline { display:flex; max-height:40dvh; }
+  .explorer[data-workspace-panel="timeline"]:has(.mission-timeline.expanded) .timeline-slot { flex:1; }
+  .explorer[data-workspace-panel="timeline"]:has(.mission-timeline.expanded) .mission-timeline { flex:1; max-height:none; }
+  .explorer[data-workspace-panel="tools"] .mission-timeline,.explorer[data-workspace-panel="inspector"] .mission-timeline { display:none; }
+  .explorer[data-workspace-panel="map"] .mission-timeline { display:flex; max-height:40dvh; }
+  .timeline-toolbar { gap:8px; padding:8px 12px; }.timeline-conditions { gap:6px; padding:0 12px 8px; font-size:11px; }
+  .timeline-scrub { padding:0 12px 8px; gap:6px; }.timeline-scrub input[type="range"] { flex-basis:0; width:auto; }
   .workspace-toolbar > span { display:none; }.workspace-toolbar button { flex:1; }
   .map-heading h2 { font-size:18px; }.map-footer { padding-inline:12px; }
   .camera-controls { right:12px; bottom:12px; }

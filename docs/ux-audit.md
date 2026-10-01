@@ -133,3 +133,19 @@ across Moon inspectors; visualization resolution is distinguished from numeric
 analysis resolution. A pole-safe circle regression and complete-level tile
 selection address polar geometry and omitted overlay wedges without changing
 terrain geometry. Final acceptance counts are recorded in PROGRESS.md.
+
+## Targeted workspace and playback review
+
+The modular mission viewport no longer reserves closed tool/inspector rails.
+Actual 1920/1366/390-pixel screens show contextual docks and reachable controls;
+bounding-box tests also cover 1440 and 1024 widths and zoom-equivalent layouts.
+Tools and inspectors are mutually exclusive. Forms stay mounted so closing a
+panel does not discard drafts or weaken revision conflict checks.
+
+Playback now starts compact with actual interval telemetry and a persistent
+scrubber. Expanded charts have a bounded body and a pinned collapse action.
+Desktop/laptop screenshots show the map retaining most height when compact.
+An initial mobile screenshot exposed a blank compact Timeline task pane; the
+revised narrow layout retains the map until chart details are expanded. The
+selected interval and playback speed persist through collapse. Power is labeled
+interval-average kW, with mission energy totals separately identified as kWh.

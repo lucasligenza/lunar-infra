@@ -38,8 +38,21 @@ found during review retained the previous environmental tile URL when selecting
 terrain in Mission; registered metadata now synchronizes the URL and a browser
 regression verifies the correct slope request and rendering.
 
-Active: committing/pushing M2. Latest successful push: 9e59aaa.
-Next: compact simulation timeline with bounded details and explicit kW/kWh labels.
+M2 pushed as 411d323; GitHub regression status is being checked.
+
+M3 compact playback is validated locally: 11 simulation/draft/navigation/responsive
+browser journeys pass, followed by all six responsive checks after an observed
+mobile blank-pane correction. Typecheck and production build pass. Compact
+playback retains UTC time, scrubbing, play/pause, speed, actual battery state at
+interval end and interval-average kW. Expanded charts/events/provenance scroll
+inside a bounded body with pinned collapse controls (42% of desktop height).
+Mission totals are explicitly kWh. Collapse preserves the selected interval and
+playback settings. Actual desktop/laptop/mobile screenshots were inspected;
+mobile keeps the map when compact and uses a task pane for expanded charts.
+The Python engine and stored simulation format are unchanged.
+
+Active: committing/pushing M3. Latest successful push: 411d323.
+Next: clearer settlement evidence, mission creation, infrastructure and run actions.
 
 The earlier roadmap records below are historical.
 

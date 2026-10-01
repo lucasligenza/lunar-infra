@@ -88,6 +88,8 @@ test("custom mission parameters reject missing illumination and preserve explici
     await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Tools", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Mission tools", exact: true })).toBeInViewport();
     await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Timeline", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Expand timeline", exact: true })).toBeInViewport();
+    await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
     await expect(page.getByRole("button", { name: "Collapse timeline", exact: true })).toBeInViewport();
   } finally {
     const latest = await (await request.get(`/api/scenarios/${scenario.id}`)).json();

@@ -314,7 +314,7 @@ export default function Explorer() {
       <div hidden={mode==='mission' && Boolean(selectedAsset)&&scenarioInView}>{globalMissionView?<AtlasSiteInspector point={atlasSite} loading={inspecting} error={inspectError}/>:<SiteInspector site={site} loading={inspecting} error={inspectError} datasets={datasets} />}</div>
       </>}/>
     {mode==='simulation'&&!scenario.active&&<div className="simulation-empty" role="status"><h2>No mission open</h2><p>Create a scenario in Design or open a saved scenario from Tools. Simulation inputs and calculated results will appear here.</p></div>}
-    {simulation.run && scenarioInView && <div hidden={mode!=='simulation'} className="timeline-slot"><Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='simulation'} /></div>}
+    {simulation.run && scenarioInView && <div hidden={mode!=='simulation'} className="timeline-slot"><Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='simulation'} onExpandedChange={expanded=>{if(narrow)setMobilePane(expanded?'timeline':'map');}} /></div>}
     </div>
     <ActivityConsole visible={consoleVisible} onDismiss={()=>setConsoleVisible(false)}/>
     <HelpPanel open={helpOpen} initial={helpInitial} onClose={()=>{setHelpOpen(false);dismissGuide();}} motion={motion} onMotion={setMotion}

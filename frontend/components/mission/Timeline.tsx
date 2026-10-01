@@ -27,8 +27,8 @@ function Chart({ title, rows, values, unit, color, selected, onSelect, battery =
   </div>;
 }
 
-export default function Timeline({ run, index, onIndex, active = true }: { run: SimulationRun; index: number; onIndex: (index: number) => void; active?: boolean }) {
-  const [expanded, setExpanded] = useState(true);
+export default function Timeline({ run, index, onIndex, active = true, onExpandedChange }: { run: SimulationRun; index: number; onIndex: (index: number) => void; active?: boolean; onExpandedChange?: (expanded: boolean) => void }) {
+  const [expanded, setExpanded] = useState(false);
   const [playing, setPlaying] = useState(false);
   useEffect(()=>{if(!active) setPlaying(false);},[active]);
   const [speed, setSpeed] = useState(1);
@@ -50,20 +50,26 @@ export default function Timeline({ run, index, onIndex, active = true }: { run: 
   const events = run.result.events.filter(event => event.interval_index >= visible[0].index && event.interval_index <= visible.at(-1)!.index).slice(0, 100);
   const summary = run.result.summary;
   return <section id="mission-timeline" className={expanded ? "mission-timeline expanded" : "mission-timeline"} aria-label="Mission timeline">
-    <div className="timeline-toolbar"><button className="timeline-toggle" onClick={() => setExpanded(value => !value)} aria-label={expanded ? "Collapse timeline" : "Expand timeline"}>{expanded ? "⌄" : "⌃"} Mission timeline</button>
+    <div className="timeline-toolbar"><button className="timeline-toggle" onClick={() => { setExpanded(!expanded); onExpandedChange?.(!expanded); }} aria-expanded={expanded} aria-controls="mission-timeline-details" aria-label={expanded ? "Collapse timeline" : "Expand timeline"}>{expanded ? "Collapse details" : "Expand details"}</button>
       <span className="input-source-tag">{run.result.input_kind === "synthetic" ? "Synthetic demonstration" : "Hypothetical custom input"}</span>
       <button onClick={() => { if (index === rows.length - 1) onIndex(0); setPlaying(value => !value); }}>{playing ? "Pause playback" : "Play mission"}</button>
       <label>Playback speed<select aria-label="Playback speed" value={speed} onChange={event => setSpeed(Number(event.target.value))}><option value={1}>1 interval / second</option><option value={4}>4 intervals / second</option><option value={16}>16 intervals / second</option></select></label>
       <span className="timeline-time" data-testid="timeline-time">{current.start.replace("T", " ").replace("Z", " UTC")}</span>
     </div>
-    {expanded && <>
-      <div className="timeline-scrub"><input type="range" aria-label="Mission interval" min={0} max={rows.length - 1} step={1} value={index} onChange={event => select(Number(event.target.value))} />
-        <span>Interval {index + 1} / {rows.length}</span><label>Chart window<select aria-label="Chart window" value={windowSize} onChange={event => setWindowSize(Number(event.target.value))}><option value={0}>Entire mission</option><option value={12}>12 intervals</option><option value={48}>48 intervals</option></select></label></div>
+    <div className="timeline-scrub"><input type="range" aria-label="Mission interval" aria-valuetext={`${current.start}, interval ${index + 1} of ${rows.length}`} min={0} max={rows.length - 1} step={1} value={index} onChange={event => select(Number(event.target.value))} />
+      <span>Interval {index + 1} / {rows.length}</span></div>
+    <div className="timeline-conditions">
+      <span>Battery at interval end <strong data-testid="timeline-soc">{current.soc_end === null ? "No batteries" : `${(current.soc_end * 100).toFixed(2)}%`}</strong>{current.soc_end !== null && <span> · {current.energy_end_kwh.toFixed(2)} kWh stored</span>}</span>
+      <span>Average power <strong data-testid="timeline-power">{current.generation_kw.toFixed(2)} kW generation / {current.demand_kw.toFixed(2)} kW demand</strong></span>
+      <strong data-testid="timeline-power-status" className={current.unserved_kw > 0 ? "failure" : "nominal"}>{current.unserved_kw > 0 ? `${current.unserved_kw.toFixed(2)} kW unserved` : "Demand served"}</strong>
+    </div>
+    {expanded && <div id="mission-timeline-details" className="timeline-details">
+      <div className="timeline-detail-heading"><h3>Interval-average power (kW) / battery at interval end (%)</h3><label>Chart window<select aria-label="Chart window" value={windowSize} onChange={event => setWindowSize(Number(event.target.value))}><option value={0}>Entire mission</option><option value={12}>12 intervals</option><option value={48}>48 intervals</option></select></label></div>
       <div className="timeline-charts"><Chart title="Electrical generation" rows={visible} values={visible.map(row => row.generation_kw)} unit="kW" color="var(--accent)" selected={index} onSelect={select} />
         <Chart title="Electrical demand" rows={visible} values={visible.map(row => row.demand_kw)} unit="kW" color="var(--warning)" selected={index} onSelect={select} />
         {current.soc_end === null ? <div className="timeline-chart no-storage"><h3>Battery state of charge</h3><p>No batteries installed</p></div> :
           <Chart title="Battery SOC at interval end" rows={visible} values={visible.map(row => row.soc_end! * 100)} unit="%" color="var(--nominal)" selected={index} onSelect={select} battery />}</div>
-      <div className="timeline-summary"><span>Unserved: <strong className={summary.unserved_kwh > 0 ? "failure" : "nominal"}>{summary.unserved_kwh.toFixed(2)} kWh</strong></span>
+      <div className="timeline-summary"><h3>Mission energy totals (kWh)</h3><span>Generated: {summary.generated_kwh.toFixed(2)} kWh</span><span>Demanded: {summary.demanded_kwh.toFixed(2)} kWh</span><span>Unserved: <strong className={summary.unserved_kwh > 0 ? "failure" : "nominal"}>{summary.unserved_kwh.toFixed(2)} kWh</strong></span>
         <span>Curtailed: {summary.curtailed_kwh.toFixed(2)} kWh</span><span>Losses: {summary.battery_losses_kwh.toFixed(2)} kWh</span>
         <span>Balance residual: {summary.energy_balance_error_kwh.toExponential(2)} kWh</span>
         {summary.first_power_shortage && <button className="event-shortage" onClick={() => { const event = run.result.events.find(value => value.kind === "power_shortage"); if (event) select(Math.min(rows.length - 1, event.interval_index)); }}>First shortage: {summary.first_power_shortage.replace("T", " ").replace("Z", " UTC")}</button>}
@@ -76,6 +82,6 @@ export default function Timeline({ run, index, onIndex, active = true }: { run: 
         <p>Input SHA-256: {run.input_sha256}</p><p>Result SHA-256: {run.result_sha256}</p>
         {run.result.assumptions.map(assumption => <p key={assumption}>{assumption}</p>)}
       </details>
-    </>}
+    </div>}
   </section>;
 }

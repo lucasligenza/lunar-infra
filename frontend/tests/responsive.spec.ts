@@ -75,6 +75,19 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await pane(page, 'Timeline', width);
       const slider = page.getByRole('slider', { name: 'Mission interval' });
       await slider.fill('2');
+      await expect(page.getByTestId('timeline-soc')).toHaveText(`${(run.result.intervals[2].soc_end * 100).toFixed(2)}%`);
+      await expect(page.getByTestId('timeline-power-status')).toHaveText(`${run.result.intervals[2].unserved_kw.toFixed(2)} kW unserved`);
+      if(width<=900)await expect(page.getByTestId('terrain-map')).toBeVisible();
+      const compactBounds = (await page.getByRole('region',{name:'Mission timeline'}).boundingBox())!;
+      expect(compactBounds.x+compactBounds.width).toBeLessThanOrEqual(width+1);
+      await reachable(page.getByRole('combobox',{name:'Playback speed',exact:true}));
+      await expect(page.getByTestId('timeline-power-status')).toBeInViewport();
+      await page.screenshot({path:`../artifacts/targeted-playback-compact-${width}.png`});
+      await reachable(page.getByRole('button',{name:'Expand timeline',exact:true}));
+      await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
+      const timeline = await page.getByRole('region',{name:'Mission timeline'}).boundingBox();
+      if(width>900)expect(timeline!.height).toBeLessThanOrEqual(height*.42+1);
+      await reachable(page.getByRole('button',{name:'Collapse timeline',exact:true}));
       const axisSize = await page.locator('.timeline-chart svg text').first().evaluate(element => {
         const text = element as SVGTextElement, transform = text.getScreenCTM()!;
         return parseFloat(getComputedStyle(text).fontSize) * Math.hypot(transform.c, transform.d);
@@ -88,6 +101,10 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await slider.press('Home'); await page.getByRole('button', { name: 'Play mission', exact: true }).click();
       await expect.poll(() => slider.inputValue()).not.toBe('0');
       await page.getByRole('button', { name: 'Pause playback', exact: true }).click();
+      const paused = await slider.inputValue();
+      await page.getByRole('button',{name:'Collapse timeline',exact:true}).click();
+      await expect(slider).toBeVisible();await expect(slider).toHaveValue(paused);
+      if(width<=900)await expect(page.getByTestId('terrain-map')).toBeVisible();
       await openActivity(page, 'Design');
       await pane(page, 'Tools', width);
       await expect(page.getByRole('button', { name: `Open scenario: ${name}`, exact: true })).toHaveAttribute('aria-pressed', 'true');

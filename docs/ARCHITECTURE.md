@@ -155,6 +155,13 @@ map; tools and inspectors stay mounted while hidden so input drafts survive.
 Mobile task navigation selects a full-width panel. The inspector has one outer
 scroll container instead of nested scientific/asset scroll areas.
 
+Timeline starts compact. Playback, the selected interval, interval-average power
+and battery state at interval end stay visible without charts. Expanding details
+preserves playback/index and reveals a single bounded scroll area; its collapse
+control remains outside that area. Chart power is kW; whole-mission energy totals
+are kWh. All values use the same stored Python simulation result as the inspector.
+On small screens expanded charts occupy a task pane; collapsing restores the map.
+
 Scientific rendering reads numeric-derived PNGs independently of point queries.
 Alpha is checked before tiles can be reported as rendered, and readiness follows
 a renderer draw. Environmental metadata reports local preparation explicitly.
