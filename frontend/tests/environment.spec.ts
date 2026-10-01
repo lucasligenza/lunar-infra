@@ -7,6 +7,8 @@ test('validated polar visibility colors the globe and matches actual native insp
   await openDestinations(page);await page.getByRole('button',{name:/^Shackleton crater/}).click();
   await page.getByRole('button',{name:'Overlays',exact:true}).click();
   const expected=await(await request.get('/api/sites/inspect?latitude=-89.67&longitude=129.78')).json();
+  await expect(page.getByTestId('atlas-elevation')).toHaveText(`${expected.elevation.value.toLocaleString('en-US')} m`);
+  await expect(page.getByTestId('atlas-slope')).toHaveText(`${expected.slope.value.toFixed(3)}°`);
   await expect(page.getByTestId('atlas-sunlight')).toHaveText(`${(expected.solar_visibility.value*100).toFixed(1)}%`);
   const host=page.getByTestId('moon-canvas');const terrain=await host.getAttribute('data-terrain');
   await page.getByRole('combobox',{name:'Scientific overlay'}).selectOption('illumination');

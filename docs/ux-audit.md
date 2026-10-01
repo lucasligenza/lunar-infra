@@ -101,3 +101,23 @@ requires no unsaved drafts or pending requests.
 
 See [Phase 5 acceptance](phase5-acceptance.md) for complete journey coverage,
 viewport evidence and explicit native-zoom/accessibility validation limits.
+
+## Follow-up simplification
+
+The user's observed redundancy prompted the accepted Moon/Mission roadmap.
+Primary navigation now exposes two workspaces. Basic Moon controls emphasize
+search and Overlays; coordinate/display controls, the full catalog, sectors and
+regional numerical tools are disclosed through Advanced. Detailed simulation
+series are optional while the explicit hypothetical preset/run workflow remains
+visible. The console and help are optional. Only one contextual globe dock owns
+space at a time, including the candidate finder.
+
+Rendered candidate review showed reachable, separately scrolling evidence and
+settings at desktop and mobile sizes. A selected candidate persists through
+mission creation and actual calculated playback. Validated average sunlight and
+one source-specific Diviner temperature bin add scientific context, with unknown
+evidence explicitly retained. Basic point inspection shares best supporting data
+across Moon inspectors; visualization resolution is distinguished from numeric
+analysis resolution. A pole-safe circle regression and complete-level tile
+selection address polar geometry and omitted overlay wedges without changing
+terrain geometry. Final acceptance counts are recorded in PROGRESS.md.

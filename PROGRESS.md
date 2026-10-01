@@ -2,73 +2,46 @@
 
 ## Current development phase
 
+Accepted Moon/Mission simplification and settlement screening roadmap:
+[implementation plan](docs/simplification-plan.md). M1-M4 are implemented and
+pushed; M5 final disclosure, polar overlay coverage and regression review is validated locally.
 
-Active: accepted Moon/Mission simplification and settlement screening roadmap
-(docs/simplification-plan.md). M1 shell and Advanced disclosure are implemented:
-only two primary workspaces, collapsed destinations/console, optional help and
-preserved original 2D analysis, scenarios and playback. Validation: 39 Chromium
-journeys passed in 5.3 minutes across five viewports and zoom-equivalent layouts;
-91 scientific/API tests pass, typecheck passes. Actual opening desktop screenshot
-reviewed; panels and responsive mission screenshots captured by browser tests.
-Production build passes. M1 is ready for its ordinary commit/push. Latest successful pushed commit: 919d16f.
-Next: reusable projected overlays and validated polar solar visibility.
-Thermal acquisition: official 213 MB Diviner local-time product and labels acquired
-within approved 300 MB total; numeric integration remains in progress. No new
-suitability recommendations are claimed yet. Known limitation: no actual temporal
-solar mission input; candidate screening will not establish human/construction safety.
+- c5ff8d7: two primary workspaces, optional Help, collapsed technical tools.
+- a5d6e22: reusable projected overlays and validated average solar visibility.
+- 8c9e663: bounded Diviner summer/local-midnight temperature integration.
+- 6af53c3: repair the nested mission-overlay browser selector. Both preceding
+  pushes succeeded but their CI failed on this single ambiguous selector.
+  [Run 36869298031](https://github.com/lucasligenza/lunar-infra/actions/runs/36869298031)
+  passed fresh acquisition, 96 Python tests, typecheck/build and 41 browser tests.
+- b846f58: explainable settlement screening, source-specific tradeoff groups,
+  candidate selection and saved-mission/hypothetical-playback journey.
+  [Run 36871057381](https://github.com/lucasligenza/lunar-infra/actions/runs/36871057381)
+  passed fresh acquisition, 103 Python tests, typecheck/build and 48 browser tests
+  after retrying a NASA download timeout. No substituted data or disabled checks.
 
-M1 pushed: c5ff8d7. M2 projected solar overlay is functional: registered layer URLs
-share the existing 3D renderer, masks and zeros are preserved, and native numerical
-inspection agrees with prepared polar values. Validation: 93 Python tests pass;
-nine atlas/solar browser checks pass, final solar/error check passes without
-React duplicate-key errors, typecheck and production build pass. Actual rendered
-solar overlay reviewed. Latest successful pushed commit: c5ff8d7.
-Next: bounded Diviner native-table validation and thermal integration.
+Current local validation: 104 scientific/API tests plus eight subtests pass;
+all 49 Chromium journeys pass (7.3 minutes). Typecheck and production build pass. M5 moves map
+coordinates/display and detailed simulation parameters under Advanced, preserves
+all old API defaults, and adds explicit best-native point inspection. Polar tile
+levels coarsen completely within the existing texture budget rather than omit
+visible longitude wedges. Candidate circles use a pole-safe tangent basis.
 
-M2 pushed: a5d6e22. M3 Diviner integration is functional: 212,669,606-byte pinned
-acquisition; all 3,604,300 source records validate, 122,389 native bins retained,
-240.035957 m lattice with 0.877 m maximum quantization residual, original nodata.
-Source-specific numerical queries and 3D summer/local-time temperature overlay
-are available in the bounded polar crop. Original labels, observation period,
-calibration and limitations are recorded; no temporal mission integration claimed.
-Validation: 96 Python tests pass, independent published-table reference and label/
-integrity regression checks pass; both environmental browser journeys and production
-build/typecheck pass. Actual thermal overlay screenshot reviewed. CI prepares this
-bounded product for fresh-data validation. Latest successful push: a5d6e22.
-Next: explainable regional settlement candidate screening and mission transition.
+Thermal acquisition is 212,669,606 bytes, within the 300 MB budget. Native bins,
+source hashes, CRS, version, calibration and period are recorded. There is no
+current temperature or validated time-dependent solar mission input. Settlement
+screening is preliminary protected-outpost comparison, not human/construction
+safety certification or a universal habitability score. See
+[the method](docs/settlement-screening.md). Latest confirmed green push: b846f58.
+Rendered review includes actual opening globe, both polar overlays, candidate
+evidence, desktop/laptop layouts, mobile task panel and calculated mission playback.
+Five screen sizes and 125%/200% zoom-equivalent layouts pass browser checks.
+Global visualization geometry and polar color sampling remain coarser than native
+point analysis; the existing 2D map is retained under Advanced for finer inspection.
+All requested implementation is complete locally. At commit time the final
+milestone's push and fresh GitHub validation remain to be confirmed; the result
+is reported after the push. No further scientific acquisition is planned.
 
-CI repair: both a5d6e22 and 8c9e663 pushed successfully, but their GitHub Actions
-runs failed on the same global-mission browser selector. The new nested Layer
-source disclosure made `.mission-layer-status summary` ambiguous. NASA acquisition,
-Python science/API tests, typecheck and build passed on both fresh Linux runs;
-39/40 and 40/41 browser tests passed respectively. The repair targets the direct
-summary child and asserts it is unique, retaining the complete placement, save,
-simulation and playback journey. Full local browser validation and a new remote
-run will be recorded before resuming feature pushes. All 41 local Chromium tests
-now pass (5.9 minutes), including the repaired global mission and five viewport
-journeys; typecheck passes. Settlement work is in progress
-and is deliberately excluded from this repair commit. Latest confirmed push: 8c9e663;
-latest confirmed green CI milestone: c5ff8d7.
-
-Repair pushed: 6af53c3. Fresh Linux
-[GitHub run 36869298031](https://github.com/lucasligenza/lunar-infra/actions/runs/36869298031)
-passed NASA acquisition, 96 Python tests, frontend typecheck/build and all 41
-Chromium journeys. Both previous failures are resolved by the ordinary follow-up
-commit; published history is preserved. Feature implementation has resumed.
-
-M4 settlement screening: functional typed `/atlas/suitability` API, area-weighted
-native terrain neighborhoods, explicit missing evidence, source-specific terrain/
-sunlight tradeoff groups, editable assumptions and a bounded deterministic search.
-Moon shows candidate neighborhoods, reasons and unknowns; selection can create a
-saved mission and run existing explicitly hypothetical simulation/playback.
-Validation: 103 Python tests and eight subtests pass (58.6 seconds); seven new
-Chromium checks pass (1.4 minutes), including real candidate-to-saved-mission/
-calculated-playback integration, loading/error recovery and five viewport layouts.
-The prior 41-browser regression suite passed with the initial feature integration.
-Typecheck and production build pass; candidate evidence and responsive screenshots
-captured, with desktop evidence and mobile task-panel layout reviewed. No universal human habitability or safety claim.
-Latest confirmed push and green CI: 6af53c3. Next: final disclosure/overlay polish
-and complete regression and remote verification.
+The earlier phase records below are historical acceptance evidence.
 
 Phase 5 is complete: lunar mission-control UX and design overhaul. Scope and observed baseline
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
@@ -116,7 +89,7 @@ illumination is not integrated; synthetic/custom hypothetical runs are explicit.
   validation on a fresh Linux runner with actual NASA acquisition.
 - Final documentation milestone: record confirmed acceptance and remote validation.
 
-## Active milestone and features in progress
+## Historical milestone log
 
 Phase 5 M1: repository/runtime audit complete, actionable layout/navigation/design
 plan documented. Baseline screenshots are ignored artifacts; the audit mission
@@ -448,25 +421,24 @@ Time-dependent NASA illumination is not integrated, so real-data mission playbac
 is unavailable. Energy runs use explicitly labeled hypothetical factors; the model
 omits thermal coupling, degradation and spatial shading. See scientific-assumptions.md
 and docs/energy-model.md. SQLite scenarios/results are local and excluded from Git.
-Thermal/mineralogical/resource/gravity numerical layers are not prepared. Verified
-provider metadata is discoverable without implying those measurements are available.
+One bounded Diviner summer/local-midnight layer is prepared; thermal extrema and
+mission time series remain unavailable. Mineralogical/resource/gravity numerical
+layers are not prepared. Verified provider metadata alone does not imply integration.
 Geology is interpretation at 1:5,000,000 map scale, not proof of extractable resources.
 Git writes and outbound networking require elevated execution in this environment.
 
 ## Latest successful commit
 
-Latest confirmed pushed functional milestone: 7bbea57, final responsive and journey
-validation, passed in
-[GitHub run 36809881870](https://github.com/lucasligenza/lunar-infra/actions/runs/36809881870).
-The Phase 5 audit is validated in
-[GitHub run 36801148539](https://github.com/lucasligenza/lunar-infra/actions/runs/36801148539).
-This documentation milestone records confirmed Phase 5 production/remote acceptance.
-Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
-Push results and hashes are reported immediately after each successful push.
+Latest confirmed pushed and CI-validated feature: b846f58, settlement screening,
+[GitHub run 36871057381](https://github.com/lucasligenza/lunar-infra/actions/runs/36871057381).
+The CI repair 6af53c3 is independently green in run 36869298031.
+The current milestone's own hash is available through
+`git log -1 --format=%h -- PROGRESS.md`; its push/CI outcome is reported separately.
 
 ## Next development task
 
-No active Phase 5 work remains. Await the user's next approved scope. New scientific
-data and numerical algorithms are outside this completed UX assignment. Existing
-optional atlas data availability and native-zoom/accessibility validation limits
-remain explicit in docs/phase5-acceptance.md.
+Local functionality, production build, complete browser/rendered review and
+scientific checks pass. Confirm the final milestone's fresh GitHub validation;
+when green, this accepted roadmap is complete. Preserve
+explicit unknowns and existing scenarios; do not expand into AI, new datasets or
+unrequested engineering models.

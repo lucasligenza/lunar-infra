@@ -28,3 +28,7 @@ export async function utilities(page:Page) {
   const details=page.locator('.utility-menu');
   if(await details.getAttribute('open')===null)await details.locator('summary').click();
 }
+export async function simulationAdvanced(page:Page) {
+  const details=page.locator('.simulation-advanced');
+  if(await details.getAttribute('open')===null)await details.locator('summary').click();
+}

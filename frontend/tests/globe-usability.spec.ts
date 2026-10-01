@@ -71,7 +71,7 @@ test('global panels stay usable on laptop and mobile viewports',async({page})=>{
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
   await page.screenshot({path:'../artifacts/phase3-mobile-selected.png'});
   await page.getByRole('button',{name:'Close region details',exact:true}).click();
-  await page.getByRole('button',{name:'Display',exact:true}).click();
+  await page.getByRole('navigation',{name:'Global view tools'}).getByRole('button',{name:'Advanced',exact:true}).click();
   await expect(page.getByRole('checkbox',{name:'Lunar graticule',exact:true})).toBeInViewport();
   console.log(await page.getByTestId('globe-ready-time').textContent());
   await page.screenshot({path:'../artifacts/phase3-mobile-layers.png'});

@@ -4,7 +4,7 @@ import Dialog from './ui/Dialog';
 const STEPS = [
   ['Navigate the Moon', 'Explore starts with the 3D Moon. Drag to orbit, scroll to approach, or choose a named destination. Reset globe returns to near-side orbit.'],
   ['Select a location', 'Click the surface or enter lunar coordinates. The location panel identifies the actual available data. Your selection stays with you across activities.'],
-  ['Choose scientific layers', 'Open Lunar atlas → Layers to choose elevation, slope or prepared geology. Legends, units and source metadata describe each layer. Display colors do not change terrain geometry.'],
+  ['Choose scientific layers', 'Open Overlays to color the Moon with elevation, slope, geology, or available polar sunlight and temperature. Select a location, then Find settlement sites to compare nearby candidates. Advanced opens the full catalog and analysis tools.'],
   ['Analyze the terrain', 'Open Advanced ? Analyze this region. The prepared south pole has a 240 m 2D map; other locations use the global atlas. Analysis provides native measurements, area statistics and elevation profiles where data supports them.'],
   ['Design a mission', 'Open Mission or choose Design a mission here. Select valid terrain, name a scenario, then create it. Pick an asset from the catalog and click terrain to place it. Use the inspector to edit, move or remove it; saves go through the backend.'],
   ['Simulate and inspect', 'Choose Simulate, set UTC mission parameters and an explicit hypothetical electrical input profile, then Run simulation. Scrub or play the returned timeline to inspect calculated power and battery conditions. NASA average visibility is not time-resolved sunlight.'],

@@ -54,7 +54,15 @@ export function visibleTiles(camera:THREE.PerspectiveCamera,z:number) {
     if(alignment>-Math.sin(Math.min(Math.PI/2,angularRadius))&&frustum.intersectsSphere(new THREE.Sphere(center,radius)))
       candidates.push({key:`${z}/${x}/${y}`,z,x,y,score:1-alignment});
   }
-  return candidates.sort((a,b)=>a.score-b.score).slice(0,24);
+  return candidates.sort((a,b)=>a.score-b.score);
+}
+export function viewportTiles(camera:THREE.PerspectiveCamera) {
+  let z=Math.min(5,Math.max(1,Math.floor(Math.log2(2.6/Math.max(.06,camera.position.length()-1)))));
+  let candidates=visibleTiles(camera,z);
+  // Coarsen the whole visible level rather than dropping longitude wedges at
+  // a pole. Roots + 24 detail tiles stay inside the existing 32-texture budget.
+  while(candidates.length>24&&z>1)candidates=visibleTiles(camera,--z);
+  return candidates;
 }
 export class ScientificOverlay {
   group=new THREE.Group();
@@ -77,8 +85,7 @@ export class ScientificOverlay {
     if(!this.view||this.view.layer==='none'||this.disposed)return;
     const key=[...camera.position.toArray(),...camera.quaternion.toArray(),camera.aspect].map(v=>v.toFixed(3)).join(',');
     if(key===this.cameraKey)return;this.cameraKey=key;camera.updateMatrixWorld();
-    const z=Math.min(5,Math.max(1,Math.floor(Math.log2(2.6/Math.max(.06,camera.position.length()-1)))));
-    const candidates=visibleTiles(camera,z);
+    const candidates=viewportTiles(camera);
     const roots=[{key:'0/0/0',z:0,x:0,y:0},{key:'0/1/0',z:0,x:1,y:0}];
     const chosen=[...roots,...candidates];this.wanted=new Set(chosen.map(tile=>tile.key));
     for(const key of this.failed)if(!this.wanted.has(key))this.failed.delete(key);

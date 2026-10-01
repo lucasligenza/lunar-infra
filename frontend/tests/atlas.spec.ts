@@ -1,7 +1,7 @@
 import {openActivity,openDestinations,closeDestinations,atlasAdvanced,regionAdvanced} from './workspace';
 import {test,expect} from '@playwright/test';
 import {SphereGeometry,PerspectiveCamera} from 'three';
-import {tileGeometry,geographicTile,visibleTiles} from '../lib/atlas-render';
+import {tileGeometry,geographicTile,visibleTiles,viewportTiles} from '../lib/atlas-render';
 import {lunarVector} from '../lib/globe';
 import {areaBoundary} from '../lib/atlas-area';
 
@@ -30,7 +30,9 @@ test('close-up camera includes surface tiles whose centers are outside the viewp
     const camera=new PerspectiveCamera(42,870/590,.002,30);camera.position.set(...lunarVector(lon,lat,1.18));
     if(Math.abs(lat)>85)camera.up.set(0,0,lat>0?-1:1);camera.lookAt(0,0,0);
     const tiles=visibleTiles(camera,z),x=Math.floor(lon/(180/2**z)),y=Math.min(2**z-1,Math.floor((90-lat)/(180/2**z)));
-    expect(tiles.some(tile=>tile.x===x&&tile.y===y)).toBe(true);expect(tiles.length).toBeLessThanOrEqual(24);
+    expect(tiles.some(tile=>tile.x===x&&tile.y===y)).toBe(true);
+    const selected=viewportTiles(camera);expect(selected.length).toBeLessThanOrEqual(24);
+    expect(selected).toEqual(visibleTiles(camera,selected[0].z));
   }
 });
 
@@ -165,8 +167,9 @@ test('sectors favorites arbitrary regions profiles and mode state use actual num
 });
 
 test('analysis radius outlines use lunar great-circle geometry across seam and poles',()=>{
-  for(const location of [{latitude_deg:0,longitude_deg:359.9},{latitude_deg:89.9,longitude_deg:0},{latitude_deg:-90,longitude_deg:180}]) {
+  for(const location of [{latitude_deg:0,longitude_deg:359.9},{latitude_deg:90,longitude_deg:0},{latitude_deg:89.9,longitude_deg:0},{latitude_deg:-90,longitude_deg:180}]) {
     const outline=areaBoundary(location,{radius:'50',kind:'circle',bounds:{south:'0',north:'1',west:'0',east:'1'},endpoint:{latitude:'0',longitude:'0'},report:null,profile:null});
+    expect(new Set(outline.slice(0,-1).map(point=>`${point.latitude_deg.toFixed(7)}/${point.longitude_deg.toFixed(7)}`)).size).toBe(96);
     for(const point of outline){const lat=point.latitude_deg*Math.PI/180,start=location.latitude_deg*Math.PI/180,delta=(point.longitude_deg-location.longitude_deg)*Math.PI/180;
       const angle=2*Math.asin(Math.sqrt(Math.sin((lat-start)/2)**2+Math.cos(lat)*Math.cos(start)*Math.sin(delta/2)**2));expect(angle*1737.4).toBeCloseTo(50,7);}
   }

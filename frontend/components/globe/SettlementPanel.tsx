@@ -7,7 +7,7 @@ export default function SettlementPanel({state,location,onSelect,onMission}:{sta
   const {report,settings,setSettings,loading,error}=state;
   const groups=[...new Set(report?.candidates.map(candidate=>candidate.evidence_group)??[])];
   return <section aria-label="Settlement suitability" className="settlement-panel">
-    <h3>Find settlement sites</h3><p>Compare nearby areas for a protected human outpost. Every site needs life support and shielding.</p>
+    <p>Compare nearby areas for a protected human outpost. Every site needs life support and shielding.</p>
     <form onSubmit={event=>{event.preventDefault();if(location)void state.search(location);}}>
       <details><summary>Screening settings</summary>
         <label>Search radius (km)<input required type="number" min={1} max={600} value={settings.radius} onChange={event=>setSettings({...settings,radius:event.target.value})}/></label>

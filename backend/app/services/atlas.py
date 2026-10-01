@@ -9,7 +9,7 @@ from backend.app.models.atlas import AtlasPoint, CatalogEntry, Quantity
 from backend.app.geospatial.global_terrain import slope_at, SLOPE_METHOD
 from lunaros.dataset import checksum
 from backend.app.geospatial.projected_raster import ProjectedRaster
-from backend.app.geospatial.terrain import POLAR_PROJ
+from backend.app.geospatial.terrain import POLAR_PROJ, OutsideRegion
 from backend.app.services.geology import GeologyGrid
 
 RADIUS = 1737400
@@ -115,6 +115,27 @@ class AtlasStore:
         if identifier=='auto':identifier='gld100' if 'gld100' in self.grids else 'lola-global'
         if identifier not in self.grids:raise ValueError('Dataset unavailable for atlas numeric queries; prepare its validated adapter')
         return self.grids[identifier]
+    def inspect(self,longitude,latitude,identifier='auto'):
+        sample=None
+        if identifier=='best' and self.polar is not None and latitude<=0:
+            try:local=self.polar.inspect(longitude%360,latitude)
+            except OutsideRegion:pass
+            else:
+                source=self.definitions['lola-south']
+                def quantity(value):
+                    return Quantity(value=value.value,unit=value.unit,status=value.status,source_id=value.source_id,
+                        version=source.version,quantity_kind=value.quantity_kind,method=value.method,
+                        spacing_north_m=value.resolution_m,spacing_east_m=value.resolution_m,
+                        support_north_m=value.support_m,support_east_m=value.support_m)
+                sample=AtlasPoint(latitude_deg=latitude,longitude_deg=longitude%360,longitude_defined=latitude!=-90,
+                    pixel_center=[local.sample.center.longitude_deg,local.sample.center.latitude_deg],
+                    sample_row=local.sample.row,sample_column=local.sample.column,dataset_id=source.id,
+                    elevation=quantity(local.elevation),slope=quantity(local.slope),frame_note=source.frame_note,terrain_source=source.instrument)
+        if sample is None:sample=self.grid('auto' if identifier=='best' else identifier).sample(longitude,latitude)
+        if 'solar-visibility' in self.environment:sample.solar_visibility=self.environment['solar-visibility'].sample(longitude,latitude)
+        if 'diviner-polar-midnight' in self.environment:sample.temperature=self.environment['diviner-polar-midnight'].sample(longitude,latitude)
+        if 'usgs-geology' in self.classifications:sample.geology=self.classifications['usgs-geology'].sample(longitude,latitude)
+        return sample
     def close(self):
         for grid in self.classifications.values():grid.values._mmap.close()
         for grid in self.grids.values():

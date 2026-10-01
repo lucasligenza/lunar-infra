@@ -199,3 +199,10 @@ Terrain-only results remain separate from results supported by average sunlight.
 No universal habitability score is calculated: human safety, life support and
 construction feasibility require further analysis. See the
 [screening method and limitations](docs/settlement-screening.md).
+
+Basic controls emphasize Overlays. **Advanced** exposes coordinate navigation,
+display settings, the dataset catalog, sector browser, regional statistics and
+profiles. Detailed time steps and custom input series are under **Advanced
+simulation settings** in Mission. Moon uses native 240 m point measurements inside
+the prepared polar footprint; global coloring can be coarser and its legend names
+the supporting source. Existing saved mission/API dataset defaults are preserved.

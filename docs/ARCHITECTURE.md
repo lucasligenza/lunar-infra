@@ -130,6 +130,22 @@ The catalog can preview acquisition budgets and browse original labels/files.
 This separates discovery from calibration, processing and ready-state registration;
 provider-specific validation remains necessary before any numerical integration.
 
+Settlement screening is independent Python computation exposed through the typed
+atlas API. It uses native numerical terrain and registered environmental rasters,
+never rendered colors. The browser owns editable screening settings and the last
+report at the application root, so switching Moon/Mission preserves candidates.
+Candidate selection uses the existing shared lunar location and scenario APIs.
+Source/evidence groups prevent comparisons across different supporting grids.
+See [the screening method](settlement-screening.md).
+
+Moon's basic inspector explicitly requests `dataset=best`: native 240 m polar
+terrain inside its footprint, otherwise the best prepared global grid. Nodata
+remains nodata. Existing `auto`/explicit dataset API defaults and mission snapshots
+retain their global semantics. Numerical point measurements can be finer than
+the global color visualization, and the UI identifies that difference. The global
+tile renderer chooses a complete visible level within its bounded texture budget,
+including at poles, rather than discarding longitude wedges.
+
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)

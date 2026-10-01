@@ -31,7 +31,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     fetchScientific<DiscoveryProvider[]>('/atlas/providers',abort.signal).then(setProviders).catch(()=>{if(!abort.signal.aborted)setProviderError('Discovery provider registry unavailable. Reopen the atlas to retry.');});
     return ()=>abort.abort();},[]);
   useEffect(()=>{if(!location)return;const abort=new AbortController();setLoading(true);setPoint(null);setError(null);
-    fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${location.latitude_deg}&longitude=${location.longitude_deg}&dataset=${dataset}`,abort.signal)
+    fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${location.latitude_deg}&longitude=${location.longitude_deg}&dataset=${dataset==='auto'?'best':dataset}`,abort.signal)
       .then(point=>{if(!abort.signal.aborted){setPoint(point);setLoading(false);}})
       .catch(error=>{if(!abort.signal.aborted){setError(error.message);setLoading(false);}});return ()=>abort.abort();},[location,dataset]);
   const source=catalog.find(value=>value.id===point?.dataset_id);
@@ -66,6 +66,8 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     {!location&&<p>Select the lunar surface or a destination to inspect its native data.</p>}
     {loading&&<p role="status">Loading native terrain…</p>}{error&&<p role="alert">{error}</p>}
     {point&&<section aria-label="Atlas terrain inspection"><p className="region-coordinate">{point.latitude_deg.toFixed(5)}° latitude / {point.longitude_deg.toFixed(5)}° E</p>
+      <p className="point-resolution">{point.dataset_id==='lola-south'?'LOLA polar terrain':point.dataset_id==='gld100'?'Global GLD100 terrain':'Global LOLA terrain'} / {point.elevation.spacing_north_m.toFixed(0)} m native spacing</p>
+      {point.dataset_id!==selectedDataset&&['elevation','slope'].includes(view.layer)&&<p className="point-resolution">Point measurements use finer local terrain. The color legend identifies the global visualization source.</p>}
       <dl><dt>Elevation</dt><dd data-testid="atlas-elevation">{point.elevation.value===null?'Missing data':`${point.elevation.value.toLocaleString('en-US')} m`}</dd>
       <dt hidden={!advanced&&view.layer!=='illumination'&&point.solar_visibility?.status!=='ok'}>Average solar visibility</dt><dd hidden={!advanced&&view.layer!=='illumination'&&point.solar_visibility?.status!=='ok'} data-testid="atlas-sunlight">{point.solar_visibility?.status==='ok'?`${(point.solar_visibility.value!*100).toFixed(1)}%`:'Unavailable here'}</dd>
       <dt hidden={!advanced&&view.layer!=='temperature'&&point.temperature?.status!=='ok'}>Summer temperature / local midnight bin</dt><dd hidden={!advanced&&view.layer!=='temperature'&&point.temperature?.status!=='ok'} data-testid="atlas-temperature">{point.temperature?.status==='ok'?`${point.temperature.value!.toFixed(1)} K`:'Unavailable here'}</dd>

@@ -1,4 +1,4 @@
-import {openActivity} from './workspace';
+import {openActivity,simulationAdvanced} from './workspace';
 import { test, expect } from "@playwright/test";
 
 test("independent drafts survive saves and stale revisions cannot overwrite server state", async ({ page, request }) => {
@@ -12,6 +12,7 @@ test("independent drafts survive saves and stale revisions cannot overwrite serv
     await page.getByRole("button", { name: "Select asset: Habitat", exact: true }).click();
     await page.getByLabel("Continuous demand (kW)", { exact: true }).fill("12");
     await openActivity(page, 'Simulate');
+    await simulationAdvanced(page);
     await page.getByLabel("Time step (seconds)", { exact: true }).fill("1800");
     await openActivity(page, 'Design');
     await page.getByLabel("Scenario name", { exact: true }).fill(`${name} renamed`);
@@ -51,6 +52,7 @@ test("custom mission parameters reject missing illumination and preserve explici
   try {
     await page.goto("/?mode=simulation");
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
+    await simulationAdvanced(page);
     await page.getByLabel("Mission end (UTC)", { exact: true }).fill("2027-01-01T02:00");
     await page.getByLabel("Time step (seconds)", { exact: true }).fill("1800");
     const profile = page.getByLabel("Electrical input factors (one per interval)", { exact: true });

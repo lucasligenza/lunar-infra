@@ -61,3 +61,20 @@ def test_atlas_catalog_query_contract_and_missing_data(tmp_path):
     with TestClient(create_app(tmp_path/'missing',tmp_path/'empty.sqlite',tmp_path/'missing',tmp_path/'missing')) as client:
         assert client.get('/atlas/inspect?latitude=0&longitude=0').status_code==503
         assert not any(value['numerical_queries'] for value in client.get('/atlas/datasets').json())
+
+
+def test_automatic_inspection_uses_native_polar_terrain_without_filling_nodata():
+    from backend.app.services.inspection import TerrainStore
+    polar=TerrainStore();atlas=AtlasStore(polar=polar)
+    lon,lat=129.78,-89.67;native=polar.inspect(lon,lat);point=atlas.inspect(lon,lat,'best')
+    assert point.dataset_id=='lola-south'
+    assert point.elevation.value==native.elevation.value and point.slope.value==native.slope.value
+    assert point.elevation.spacing_north_m==pytest.approx(native.elevation.resolution_m)
+    assert point.slope.support_north_m==pytest.approx(2*native.elevation.resolution_m)
+    assert atlas.inspect(lon,lat,'gld100').dataset_id=='gld100'
+    assert atlas.inspect(lon,lat).dataset_id=='gld100'  # Existing mission/API default stays compatible.
+    assert atlas.inspect(0,90,'best').dataset_id=='gld100'
+    polar.elevation=polar.elevation.copy();polar.elevation[point.sample_row,point.sample_column]=np.nan
+    assert atlas.inspect(lon,lat,'best').elevation.status=='nodata'
+    atlas.polar=None;assert atlas.inspect(lon,lat,'best').dataset_id=='gld100'
+    atlas.close()

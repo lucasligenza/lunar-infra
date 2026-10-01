@@ -37,13 +37,13 @@ test('global NASA globe supports destinations, surface picking, layers and camer
   const box = (await canvas.boundingBox())!;
   await canvas.click({position:{x:box.width/2,y:box.height/2}});
   await expect(page.getByTestId('global-elevation')).not.toHaveText('Unavailable');
-  await page.getByRole('button',{name:'Display',exact:true}).click();
+  await page.getByRole('navigation',{name:'Global view tools'}).getByRole('button',{name:'Advanced',exact:true}).click();
   await page.getByRole('checkbox',{name:'Lunar graticule',exact:true}).check();
   await page.getByRole('checkbox',{name:'NASA color visualization',exact:true}).uncheck();
   await page.getByRole('checkbox',{name:'NASA color visualization',exact:true}).check();
   await page.getByRole('button',{name:'Zoom globe in',exact:true}).click();
   await page.getByRole('button',{name:'Zoom globe out',exact:true}).click();
-  await page.getByRole('button',{name:'Display',exact:true}).click();
+  await page.getByRole('navigation',{name:'Global view tools'}).getByRole('button',{name:'Advanced',exact:true}).click();
   await page.getByRole('button',{name:'Open destinations',exact:true}).click();
   for(const name of ['South Pole–Aitken basin','Lunar north pole','Tycho crater','Copernicus crater','Mare Tranquillitatis / Apollo 11','Lunar south pole','Shackleton crater']) {
   await openDestinations(page);

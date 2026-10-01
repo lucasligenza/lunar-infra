@@ -1,4 +1,4 @@
-import {openActivity,openDestinations,regionAdvanced} from './workspace';
+import {openActivity,openDestinations,regionAdvanced,simulationAdvanced} from './workspace';
 import {test,expect} from '@playwright/test';
 import { lunarCoordinate } from '../lib/globe';
 
@@ -27,6 +27,7 @@ test('global selection connects to local science and preserves mission drafts, a
     await page.getByRole('button',{name:'Select asset: Research habitat',exact:true}).click();
     await page.getByLabel('Continuous demand (kW)',{exact:true}).fill('9');
     await openActivity(page, 'Simulate');
+    await simulationAdvanced(page);
     await page.getByLabel('Time step (seconds)',{exact:true}).fill('1800');
     await openActivity(page, 'Explore');
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
@@ -47,6 +48,7 @@ test('global selection connects to local science and preserves mission drafts, a
     await expect(page.getByLabel('Continuous demand (kW)',{exact:true})).toHaveValue('9');
     await expect(page.getByLabel('Time step (seconds)',{exact:true})).toHaveValue('1800');
     await openActivity(page, 'Simulate');
+    await simulationAdvanced(page);
     await page.getByLabel('Time step (seconds)',{exact:true}).fill('3600');
     await openActivity(page, 'Design');
     await page.getByRole('button',{name:'Save asset',exact:true}).click();

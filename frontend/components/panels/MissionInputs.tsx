@@ -53,18 +53,21 @@ export default function MissionInputs({ scenario, busy, blocked, onSave, onRun, 
   }
   return <details open className="tool-section mission-inputs"><summary>Simulation inputs</summary><div className="mission-input-form">
     <p className="warning">Real-data playback unavailable. NASA visibility is an average, not a temporal series.</p>
+    <button disabled={busy} onClick={() => preset(true)}>Apply synthetic stress profile</button>
+    <details className="simulation-advanced"><summary>Advanced simulation settings</summary>
     <label>Mission start (UTC)<input type="datetime-local" step={1} value={start} onChange={event => setStart(event.target.value.length === 16 ? `${event.target.value}:00` : event.target.value)} /></label>
     <label>Mission end (UTC)<input type="datetime-local" step={1} value={end} onChange={event => setEnd(event.target.value.length === 16 ? `${event.target.value}:00` : event.target.value)} /></label>
     <label>Time step (seconds)<input type="number" min={1} max={604800} step={1} value={step} onChange={event => setStep(Number(event.target.value))} /></label>
     <p>{Number.isFinite(count) ? count : "Invalid"} reporting intervals / interval-average power</p>
     <label>Constant factor (0–1)<input type="number" min={0} max={1} step="any" value={constant} onChange={event => setConstant(Number(event.target.value))} /></label>
-    <div className="button-row"><button disabled={busy} onClick={() => preset(false)}>Fill constant profile</button><button disabled={busy} onClick={() => preset(true)}>Apply synthetic stress profile</button></div>
+    <button disabled={busy} onClick={() => preset(false)}>Fill constant profile</button>
     <label>Electrical input factors (one per interval)<textarea aria-label="Electrical input factors (one per interval)" value={factors} onChange={event => { setFactors(event.target.value); setKind("custom_hypothetical"); setLabel("User-defined hypothetical electrical factors; no validated temporal dataset"); }} /></label>
     <label>Input description<input maxLength={200} value={label} onChange={event => setLabel(event.target.value)} /></label>
+    <button className="secondary-button" disabled={busy || Boolean(blocked) || !dirty} onClick={() => void save(false)}>Save simulation inputs</button>
+    </details>
     <p className={dirty ? "warning" : "nominal"}>{dirty ? "Unsaved simulation inputs" : "Simulation inputs saved"}</p>
     {error && <p role="alert" className="warning">{error}</p>}
     {blocked && <p className="warning">{blocked}</p>}
-    <button className="secondary-button" disabled={busy || Boolean(blocked) || !dirty} onClick={() => void save(false)}>Save simulation inputs</button>
     <button className="primary-button" disabled={busy || Boolean(blocked)} title={blocked} onClick={() => void save(true)}>{busy ? "Working…" : "Run simulation"}</button>
   </div></details>;
 }
