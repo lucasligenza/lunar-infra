@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {recordActivity} from '../../lib/activity';
 import Map from "ol/Map.js";
 import View from "ol/View.js";
 import Projection from "ol/proj/Projection.js";
@@ -39,6 +40,7 @@ export default function TerrainMap({ region, layer, site, grid, onSelect, onPoin
   const placing = useRef(placementActive);
   const infrastructure = useRef<VectorSource | null>(null);
   const [imageStatus, setImageStatus] = useState("Loading terrain layer…");
+  useEffect(()=>{if(imageStatus==='Layer ready')recordActivity('DATA','Regional terrain layer loaded',`${region.id} / ${layer.id}`);else if(imageStatus.includes('unavailable'))recordActivity('WARN','Regional terrain layer unavailable',`${region.id} / ${layer.id}`);},[imageStatus]);
   const [retry, setRetry] = useState(0);
   const [resolution, setResolution] = useState<number | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ name: string; x: number; y: number } | null>(null);

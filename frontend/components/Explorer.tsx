@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
-import MissionHeader from "./MissionHeader";
+import MissionHeader, { ACTIVITIES } from "./MissionHeader";
+import CommandPalette, { type Command } from './CommandPalette';
+import ActivityConsole from './ActivityConsole';
+import { recordActivity } from '../lib/activity';
 import SiteInspector from "./panels/SiteInspector";
 import { fetchScientific } from "../lib/api";
 import { useScenario } from "../lib/useScenario";
@@ -13,7 +16,7 @@ import Timeline from "./mission/Timeline";
 import AssetInspector from "./panels/AssetInspector";
 import { ASSET_NAMES, ASSET_SYMBOLS, type AssetKind } from "../types/mission";
 import type { Dataset, LayerId, Region, Site } from "../types/scientific";
-import type { Mode, GlobeLocation, CameraState, GlobeInspection } from '../types/globe';
+import type { Mode, GlobeLocation, CameraState, GlobeInspection, Destination } from '../types/globe';
 import { toPolar } from '../lib/lunar';
 import type {AtlasView,AtlasSector,AtlasAnalysisState,AtlasPoint} from '../types/atlas';
 import MissionMoon from './globe/MissionMoon';
@@ -31,6 +34,15 @@ function errorText(error: unknown): string {
 }
 
 export default function Explorer() {
+  const [paletteOpen,setPaletteOpen]=useState(false),[consoleVisible,setConsoleVisible]=useState(true);
+  const [destinations,setDestinations]=useState<Destination[]>([]);
+  const [atlasRequest,setAtlasRequest]=useState<{tab:string;serial:number}|null>(null);
+  const [navigationRequest,setNavigationRequest]=useState<{coordinates:GlobeLocation;distance:number;serial:number}|null>(null);
+  const commandSerial=useRef(0);
+  useEffect(()=>{const abort=new AbortController();fetchScientific<Destination[]>('/destinations',abort.signal).then(setDestinations).catch(()=>{});return()=>abort.abort();},[]);
+  useEffect(()=>{const keyboard=(event:KeyboardEvent)=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&!event.repeat){
+    event.preventDefault();if(document.querySelector('dialog[open]:not(.command-palette)'))return;setPaletteOpen(value=>!value);
+  }};window.addEventListener('keydown',keyboard);return()=>window.removeEventListener('keydown',keyboard);},[]);
   const [mode,setMode] = useState<Mode>('global');
   const [location,setLocation] = useState<GlobeLocation|null>(null);
   const [camera,setCamera] = useState<CameraState|null>(null);
@@ -152,14 +164,14 @@ export default function Explorer() {
   const legendValue = (value: number) => layer?.unit === "fraction" ? `${(value * 100).toFixed(0)}%` :
     `${value.toLocaleString("en-US")}${layer?.unit === "deg" ? "°" : " m"}`;
 
-  function switchMode(next:Mode) { setMode(next); setPlacement(null);setMobilePane('map');
+  function switchMode(next:Mode) { if(next!==mode)recordActivity('MAP',`Activity changed: ${ACTIVITIES.find(activity=>activity.mode===next)?.label}`);setAtlasRequest(null);setNavigationRequest(null);setMode(next); setPlacement(null);setMobilePane('map');
     const url = new URL(window.location.href); url.searchParams.set('mode',next); window.history.replaceState(null,'',url);
     if(next==='mission'||next==='simulation') {
       const global=Boolean(!region||outsideFootprint||scenario.active?.region_id==='global-atlas');setGlobalPlanning(global);
       if(location)void inspect(location.longitude_deg,location.latitude_deg,global?'atlas':'polar');
     }else if(next==='regional' && location && !outsideFootprint) void inspect(location.longitude_deg,location.latitude_deg,'polar');
   }
-  function selectGlobal(point:GlobeLocation) { activeInspection.current?.abort(); setLocation(point); setSite(null);setAtlasSite(null); setCoverage(null); }
+  function selectGlobal(point:GlobeLocation) { recordActivity('MAP','Location selected',`${point.latitude_deg.toFixed(5)} / ${point.longitude_deg.toFixed(5)} east-positive degrees`); activeInspection.current?.abort(); setLocation(point); setSite(null);setAtlasSite(null); setCoverage(null); }
   const projectedLocation = location && region && location.latitude_deg<=0 ? toPolar(location.longitude_deg,location.latitude_deg,region.reference_radius_m) : null;
   const outsideFootprint = location && region && (location.latitude_deg>0 || (projectedLocation &&
     (projectedLocation[0]<region.bounds_m[0] || projectedLocation[0]>=region.bounds_m[2] || projectedLocation[1]<=region.bounds_m[1] || projectedLocation[1]>region.bounds_m[3])));
@@ -169,14 +181,26 @@ export default function Explorer() {
   const scenarioInView=!globalMissionView||scenario.active?.region_id==='global-atlas';
   const validLocation=globalMissionView?(atlasSite?.elevation.status==='ok'?{latitude_deg:atlasSite.latitude_deg,longitude_deg:atlasSite.longitude_deg}:null):site?.coordinates;
   const unsupportedSelection = missionContext && !globalMissionView && Boolean(outsideFootprint || (coverage && !coverage.local_analysis));
+  function openAtlas(tab:string) { switchMode('global');setAtlasRequest({tab,serial:++commandSerial.current}); }
+  function showLayer(layer:string) { setAtlasView({...atlasView,layer});openAtlas('layers'); }
+  const runDisabled=!scenario.active?'Open a saved scenario first':working?'A request is in progress':assetDirty||missionDirty||scenarioName!==scenario.active.name?'Save name, asset and simulation input drafts first':!scenario.active.mission.illumination_factors?'Set an explicit hypothetical illumination profile in Simulate':undefined;
+  const commands:Command[]=[
+    ...ACTIVITIES.map(activity=>({id:activity.mode,label:`Open ${activity.label}`,group:'Activities',disabled:working?'A request is in progress':undefined,run:()=>switchMode(activity.mode)})),
+    ...destinations.map(destination=>({id:destination.id,label:`Go to ${destination.name}`,group:'Lunar destinations',disabled:working?'A request is in progress':undefined,run:()=>{switchMode('global');selectGlobal(destination.coordinates);setNavigationRequest({coordinates:destination.coordinates,distance:destination.camera_distance_radii,serial:++commandSerial.current});}})),
+    {id:'elevation',label:'Show elevation layer',group:'Scientific layers',run:()=>showLayer('elevation')},
+    {id:'slope',label:'Show slope layer',group:'Scientific layers',run:()=>showLayer('slope')},
+    {id:'catalog',label:'Open dataset catalog',group:'Scientific sources',run:()=>openAtlas('catalog')},
+    {id:'run',label:'Run current simulation',group:'Saved mission',disabled:runDisabled,run:async()=>{if(scenario.active&&!runDisabled){switchMode('simulation');await simulation.simulate(scenario.active);}}},
+    {id:'activity',label:'Open activity console',group:'System',run:()=>setConsoleVisible(true)},
+  ];
   return <main data-workspace-panel={mobilePane} className={`explorer mode-${mode}${atlasRegionalView?' atlas-workspace':''}${inspectorOpen?'':' inspector-collapsed'}`}>
     <MissionHeader mode={mode} context={scenario.active?.name ?? (location ? `${location.latitude_deg.toFixed(3)}° / ${location.longitude_deg.toFixed(3)}° E` : 'No location selected')}
-      ready={Boolean(region)} busy={working} onMode={switchMode}
+      ready={Boolean(region)} busy={working} onMode={switchMode} onCommands={()=>setPaletteOpen(true)} onActivity={()=>setConsoleVisible(true)}
       status={scenario.active ? scenario.busy ? 'Saving…' : assetDirty ? 'Unsaved asset changes' : missionDirty ? 'Unsaved simulation inputs' : scenarioName !== scenario.active.name ? 'Unsaved name' : `Saved / revision ${scenario.active.revision}` : region ? 'Data ready' : loading ? 'Connecting' : 'Data unavailable'}
       onSave={scenario.active?()=>void scenario.patch({name:scenarioName}):undefined} canSave={Boolean(scenario.active&&scenarioName!==scenario.active.name&&scenarioName.trim())}/>
     {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
       atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
-      onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
+      atlasRequest={atlasRequest} navigationRequest={navigationRequest} onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
     {unsupportedSelection && <section className="unsupported-region" aria-label="Local coverage unavailable"><h2>Local analysis unavailable here</h2><p>The selected location remains {location?.latitude_deg.toFixed(5)}° latitude / {location?.longitude_deg.toFixed(5)}° E. {coverage?.local_status==='unavailable'?'Prepared polar datasets are not loaded. Run the polar pipeline and restart the API.':coverage?.local_status==='nodata'?'The selected terrain cell has missing elevation. Choose a location with valid data.':'Prepared 240 m terrain and infrastructure placement cover the south-pole footprint only.'}</p>
       <button onClick={()=>switchMode('global')}>Return to selected global location</button>
       <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}
@@ -286,5 +310,7 @@ export default function Explorer() {
     {mode==='simulation'&&!scenario.active&&<div className="simulation-empty" role="status"><h2>No mission open</h2><p>Create a scenario in Design or open a saved scenario from Tools. Simulation inputs and calculated results will appear here.</p></div>}
     {simulation.run && scenarioInView && <div hidden={mode!=='simulation'} className="timeline-slot"><Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='simulation'} /></div>}
     </div>
+    <ActivityConsole visible={consoleVisible} onDismiss={()=>setConsoleVisible(false)}/>
+    <CommandPalette open={paletteOpen} onClose={()=>setPaletteOpen(false)} commands={commands}/>
   </main>;
 }

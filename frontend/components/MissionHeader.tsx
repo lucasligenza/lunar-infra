@@ -7,9 +7,10 @@ export const ACTIVITIES = [
   { mode: 'simulation', label: 'Simulate', number: '04' },
 ] as const;
 
-export default function MissionHeader({ mode, context, status, ready, busy, onMode, onSave, canSave }: {
+export default function MissionHeader({ mode, context, status, ready, busy, onMode, onSave, canSave, onCommands, onActivity }: {
   mode: Mode; context: string; status: string; ready: boolean; busy: boolean;
   onMode: (mode: Mode) => void; onSave?: () => void; canSave: boolean;
+  onCommands: () => void; onActivity: () => void;
 }) {
   return <header className="app-header mission-header">
     <div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1></div>
@@ -19,8 +20,9 @@ export default function MissionHeader({ mode, context, status, ready, busy, onMo
     </nav>
     <div className="mission-context" title={context}>{context}</div>
     <div className="header-status"><span className={ready ? 'status-dot ready' : 'status-dot'} aria-hidden="true" />
-      <span role="status">{status}</span>
+      <span role="status" title={status}>{status}</span>
       {onSave && <button className="primary-button" disabled={busy || !canSave} onClick={onSave}>Save scenario</button>}
     </div>
+    <div className="header-utilities"><button onClick={onCommands} title="Open commands (Ctrl / Cmd K)">Commands</button><button onClick={onActivity}>Activity</button></div>
   </header>;
 }

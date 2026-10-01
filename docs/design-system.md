@@ -37,3 +37,10 @@ are targeted improvements, not a claim of a full external WCAG conformance audit
 Stacking tokens distinguish surfaces, viewport controls, deliberate popovers,
 console and dialogs. Primary structure uses Grid/Flexbox; absolute positioning
 is limited to map overlays and deliberate popup containers.
+
+Commands open with Ctrl/Cmd+K or the header action. Search, arrow keys and Enter
+operate the same application actions as the graphical controls. Unavailable
+actions display a reason. Escape closes the native modal and returns focus.
+The activity console starts minimized, can expand, clear or dismiss, and reopens
+from Activity. It shows actual UTC application events with optional request
+details; the viewport shrinks normally when the console expands.

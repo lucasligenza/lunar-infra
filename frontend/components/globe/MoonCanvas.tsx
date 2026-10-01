@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
+import {recordActivity} from '../../lib/activity';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { lunarCoordinate, lunarVector, terrainHeight } from '../../lib/globe';
@@ -22,6 +23,7 @@ export default function MoonCanvas(props: Props) {
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   const [tooltip,setTooltip]=useState<{name:string;x:number;y:number}|null>(null);
+  useEffect(()=>{if(status.includes('LOLA terrain ready'))recordActivity('DATA','Global terrain layer loaded',status);if(error)recordActivity('WARN','Global terrain unavailable',error);},[status,error]);
   const overlay=useRef<ScientificOverlay|null>(null);
   const boundaryGroup=useRef<THREE.Group|null>(null);
   useEffect(() => {

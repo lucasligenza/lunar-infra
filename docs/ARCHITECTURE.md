@@ -12,6 +12,18 @@ mounted while hidden between activities, preserving independent drafts. API
 revision checks remain authoritative. The timeline is visible only in Simulate
 and pauses when leaving it; the selected reporting interval persists on return.
 
+The command palette calls the existing mode, atlas-view and simulation handlers.
+Destination commands use the API's verified destination catalog. Native modal
+dialogs trap focus, handle Escape (including search inputs) and restore the opener.
+An explicit saved hypothetical input series is required for the run command;
+unsaved drafts and busy requests explain why it is unavailable.
+
+The activity store keeps at most 100 actual browser-session events. Completed
+scientific/API requests, actual raster readiness, selection and saved simulation
+responses emit UTC entries; failures are warnings. Optional details show request
+paths and returned IDs/revisions. Clearing/dismissing the console changes only
+presentation. It neither persists logs nor executes operating-system commands.
+
 ```text
 NASA PDS / LOLA team (pinned IMG + labels)
  -> data/raw/ (ignored and checksummed)

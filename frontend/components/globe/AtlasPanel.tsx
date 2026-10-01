@@ -9,7 +9,8 @@ import AtlasLegend from './AtlasLegend';
 import DatasetDiscovery from './DatasetDiscovery';
 import DatasetAcquisition from './DatasetAcquisition';
 
-export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
+export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false,request}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
+  request?:{tab:string;serial:number}|null;
   sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;onSelect:(location:GlobeLocation,distance?:number)=>void;analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean}) {
   const [catalog,setCatalog]=useState<AtlasDataset[]>([]),[layers,setLayers]=useState<AtlasLayer[]>([]);
   const [providers,setProviders]=useState<DiscoveryProvider[]>([]),[providerError,setProviderError]=useState<string|null>(null);
@@ -18,6 +19,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const [query,setQuery]=useState('');
   const [tab,setTab]=useState(analysisMode?'analysis':'layers');
   useEffect(()=>{if(analysisMode)setTab('analysis');},[analysisMode]);
+  useEffect(()=>{if(request)setTab(request.tab);},[request]);
   useEffect(()=>{const abort=new AbortController();
     fetchScientific<AtlasDataset[]>('/atlas/datasets',abort.signal).then(setCatalog).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
     fetchScientific<AtlasLayer[]>('/atlas/layers',abort.signal).then(setLayers).catch(error=>{if(!abort.signal.aborted)setError(error.message);});

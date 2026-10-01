@@ -9,11 +9,12 @@ import type { CameraState, Destination, GlobeInspection, GlobeLocation, GlobeMet
 import {areaBoundary} from '../../lib/atlas-area';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
 
-export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal }: {
+export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest }: {
   location: GlobeLocation | null; assets: Asset[]; base: GlobeLocation | null; camera: CameraState | null;
   onCamera:(state:CameraState)=>void; onSelect:(location:GlobeLocation)=>void; onCoverage:(coverage:GlobeInspection)=>void; onMode:(mode:Mode)=>void;
   atlasView:AtlasView;onAtlasView:(view:AtlasView)=>void;sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;
   analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean;onLocal?:()=>void;
+  atlasRequest?:{tab:string;serial:number}|null;navigationRequest?:{coordinates:GlobeLocation;distance:number;serial:number}|null;
 }) {
   const [metadata,setMetadata] = useState<GlobeMetadata|null>(null), [destinations,setDestinations] = useState<Destination[]>([]);
   const [error,setError] = useState<string|null>(null), [reload,setReload] = useState(0);
@@ -26,6 +27,8 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const [ready,setReady] = useState<number|null>(null), [lat,setLat] = useState('0'), [lon,setLon] = useState('0');
   const serial = useRef(0);
   const [atlasOpen,setAtlasOpen]=useState(false);
+  useEffect(()=>{if(atlasRequest){setAtlasOpen(true);setLayersOpen(false);setDrawerOpen(false);setSearchOpen(false);}},[atlasRequest]);
+  useEffect(()=>{if(navigationRequest){setFlight(navigationRequest);setDrawerOpen(true);setAtlasOpen(false);setLayersOpen(false);setSearchOpen(false);}},[navigationRequest]);
   useEffect(()=>{const narrow=window.matchMedia('(max-width: 900px)');const closeSearch=()=>{if(narrow.matches)setSearchOpen(false);};narrow.addEventListener('change',closeSearch);return()=>narrow.removeEventListener('change',closeSearch);},[]);
   const [atlasStatus,setAtlasStatus]=useState('Scientific overlay hidden');
   const boundaries=useMemo(()=>[...(sector?[sector.boundary]:[]),...(location&&analysisMode?[areaBoundary(location,analysis)]:[]),...(analysis.profile?[analysis.profile.samples]:[])],[sector,location,analysisMode,analysis]);
@@ -94,7 +97,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <p>Imagery up to 4096 × 2048; terrain source 0.25°; display mesh 1°. Local analysis: 240 m where prepared.</p>
         {ready!==null && <small data-testid="globe-ready-time">First imagery ready in {(ready/1000).toFixed(2)} s on this browser.</small>}</aside>}    {atlasOpen&&<AtlasPanel location={location} onClose={()=>{setAtlasOpen(false);setDrawerOpen(true);}} view={atlasView} onView={onAtlasView} overlayStatus={atlasStatus}
       sector={sector} onSector={onSector} onSelect={(point,distance)=>{choose(point);if(distance)setFlight({coordinates:point,distance,serial:++serial.current});}}
-      analysis={analysis} onAnalysis={onAnalysis} analysisMode={analysisMode}/>}
+      analysis={analysis} onAnalysis={onAnalysis} analysisMode={analysisMode} request={atlasRequest}/>}
     {location && !atlasOpen && !layersOpen && <>
 
       {drawerOpen && <aside className="region-drawer globe-dock" aria-label="Selected lunar region">
