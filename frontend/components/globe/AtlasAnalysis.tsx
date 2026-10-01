@@ -56,7 +56,7 @@ export default function AtlasAnalysis({location,dataset,state,onState}:{location
         <text x={0} y={25}>{high.toFixed(0)} m</text><text x={0} y={165}>{low.toFixed(0)} m</text><text x={45} y={190}>0 km</text><text x={455} y={190}>{profile.distance_km.toFixed(2)} km</text>
         {cursor!==null&&points?.[cursor]&&<circle cx={points[cursor]![0]} cy={points[cursor]![1]} r={4}/>}</svg>
       <label>Inspect profile sample<input type="range" min={0} max={profile.samples.length-1} step={1} value={cursor??0} onChange={e=>setCursor(Number(e.target.value))}/></label>
-      {selected&&<p>{selected.distance_km.toFixed(2)} km / {selected.elevation_m===null?'missing elevation':`${selected.elevation_m} m`} / {selected.latitude_deg.toFixed(4)}° / {selected.longitude_deg.toFixed(4)}° E</p>}
+      {selected&&<p className="profile-readout">{selected.distance_km.toFixed(2)} km / {selected.elevation_m===null?'missing elevation':`${selected.elevation_m} m`} / {selected.latitude_deg.toFixed(4)}° / {selected.longitude_deg.toFixed(4)}° E</p>}
       {profile.warnings.map(note=><p key={note}>{note}</p>)}<button onClick={()=>download('lunar-elevation-profile.csv',`# ${profile.source_id} ${profile.version}; ${profile.method}\ndistance_km,latitude_deg,longitude_deg,elevation_m,status\n`+profile.samples.map(value=>[value.distance_km,value.latitude_deg,value.longitude_deg,value.elevation_m??'',value.status].join(',')).join('\n'),'text/csv')}>Export profile CSV</button></figure>}
     {busy&&<p role="status">Calculating native numeric terrain…</p>}{error&&<p role="alert">{error}</p>}
   </section>;

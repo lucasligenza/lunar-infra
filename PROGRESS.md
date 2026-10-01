@@ -11,7 +11,9 @@ fixed atlas chrome. 29 Chromium tests pass, including dock/camera layout checks;
 actual desktop/profile, computed mission and mobile region/map screens reviewed.
 M3: Explore / Analyze / Design / Simulate navigation and explicit contextual
 transitions; location, independent drafts, saved scenarios and playback persist.
-Next: mission-control visual tokens and readable technical typography. Scientific datasets,
+M4: coherent night/panel/elevated palette, locally bundled Geist Sans/Mono,
+readable scientific labels/charts and contrast/focus checks. Next: command palette
+and actual-event activity console. Scientific datasets,
 numerical logic, existing APIs and saved mission formats remain in the preserved scope.
 
 Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
@@ -56,7 +58,14 @@ belongs to Design and temporal inputs, telemetry and playback to Simulate. Exist
 URLs are supported. Draft/revision-conflict and mode-transition browser workflows
 are retained. Validation: 29 browser tests, typecheck and production build.
 Current milestone: refactor: simplify primary mission control navigation.
-Next: visual tokens, locally bundled fonts and technical information readability.
+M3 26fde33 pushed; GitHub CI 36803470839 passed. M2 CI 36802762821 passed.
+M4: centralized interface colors, restrained borders, readable technical values,
+locally bundled/pinned fonts, accessible blue primary actions and reduced-motion
+styles. Actual scientific/category colors and computations remain unchanged.
+Validation: 30 browser tests (including rendered contrast/font/focus checks),
+frontend typecheck and production build; actual atlas/mission/mobile screens reviewed.
+Current milestone: style: implement lunar mission control design system.
+Next: shared command actions and bounded actual-event console.
 
 Phase 4 milestone 1 d1d4dc0 pushed, CI passed: real GLD100 native global terrain, typed catalog, bounded
 acquisition plan, independent atlas API and data-to-UI measurement inspector.
@@ -330,15 +339,16 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed pushed functional milestone: 09c80da, responsive layout repairs.
+Latest confirmed pushed functional milestone: 26fde33, four-activity navigation,
+validated in [GitHub run 36803470839](https://github.com/lucasligenza/lunar-infra/actions/runs/36803470839).
 The Phase 5 audit is validated in
 [GitHub run 36801148539](https://github.com/lucasligenza/lunar-infra/actions/runs/36801148539).
-This milestone records the validated activity navigation and shared context.
+This milestone records the validated mission-control design system.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement Phase 5 M4 visual design from docs/ux-audit.md. New scientific data and
+Implement Phase 5 M5 command palette and activity console from docs/ux-audit.md. New scientific data and
 numerical algorithms are outside this UX assignment. Existing optional atlas data
 availability limits continue to apply.
