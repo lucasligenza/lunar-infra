@@ -49,11 +49,13 @@ def layers(atlas):
             categories=grid.categories,minimum=None,maximum=None,colors=[],tile_size=256,max_level=5,
             sampling='Source polygons rasterized at cell centers; categorical values, no interpolation',
             url_template=f'/atlas/tiles/{identifier}/geology/{{z}}/{{x}}/{{y}}.png'))
-    for identifier,grid in atlas.environment.items():
-        kind='temperature' if grid.source.category=='thermal' else 'illumination'
-        result.append(dict(ENV_STYLES[kind],id=kind,dataset_id=identifier,source_id=grid.source.product_id,
-            version=grid.source.version,angular_spacing_deg=math.degrees(grid.transform.a/1737400),
-            tile_size=256,max_level=5,sampling=grid.method,
+    for identifier in ('solar-visibility','diviner-polar-midnight'):
+        source=atlas.definitions[identifier];grid=atlas.environment.get(identifier)
+        kind='temperature' if source.category=='thermal' else 'illumination'
+        result.append(dict(ENV_STYLES[kind],id=kind,dataset_id=identifier,source_id=source.product_id,
+            version=source.version,angular_spacing_deg=math.degrees(grid.transform.a/1737400) if grid else None,
+            preparation_status='ready' if grid else 'not_prepared',
+            tile_size=256,max_level=5,sampling=grid.method if grid else 'Registered source; no local numeric raster',
             url_template=f'/atlas/tiles/{identifier}/{kind}/{{z}}/{{x}}/{{y}}.png'))
     return result
 

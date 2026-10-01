@@ -1,5 +1,17 @@
 # LunarOS UX audit and Phase 5 plan
 
+## Targeted follow-up, baseline 533f8c7
+
+Actual rendered polar overlays show a tiny, coarse footprint at the destination
+camera distance. HTTP success/decoding was reported as ready even for completely
+transparent tiles; preparation failures removed environmental choices entirely.
+Native raster review confirms some radial Diviner patterns are source values,
+not a reason to smooth or invent data. Geographic fragment mapping and finer
+bounded polar display retain native structures. The local workspace still
+reserves both rails even when no asset is selected. Timeline starts expanded.
+The candidate evidence action leads to Mission, but next steps compete with
+many general controls. See docs/targeted-refactor.md for the four scoped repairs.
+
 ## Baseline evidence
 
 Audited clean `main` at c0c839d with the configured lucasligenza/lunar-infra origin.

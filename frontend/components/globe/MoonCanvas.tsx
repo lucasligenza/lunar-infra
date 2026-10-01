@@ -173,7 +173,7 @@ export default function MoonCanvas(props: Props) {
           renderer.setScissorTest(true);renderer.setScissor(0,0,split,height);scientific.group.visible=false;renderer.render(scene,camera);
           renderer.setScissor(split,0,width-split,height);scientific.group.visible=true;renderer.render(scene,camera);renderer.setScissorTest(false);
         } else renderer.render(scene,camera);
-        dirty=false;
+        scientific.rendered();dirty=false;
         container.dataset.overlayTiles=String(scientific.group.children.length);
         container.dataset.overlayResources=JSON.stringify(scientific.resources());
         container.dataset.draws = String(++draws);

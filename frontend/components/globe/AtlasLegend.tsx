@@ -5,6 +5,6 @@ export default function AtlasLegend({layer}:{layer:AtlasLayer}) {
   return <>{layer.categories?<details className="geology-legend"><summary>{layer.categories.length} geological units / categorical legend</summary><ul>{layer.categories.map(unit=><li key={unit.code}><i style={{background:unit.color}}/><span>{unit.code} / {unit.name}</span></li>)}</ul></details>:
     <div className="atlas-legend" aria-label={`${layer.name} legend`}><div style={{background:`linear-gradient(90deg,${layer.colors.join(',')})`}}/><p><span>{label(layer.minimum)}</span><span>{label(layer.maximum)}</span></p></div>}
     <small>Transparent areas have no supporting data.</small>
-    <details><summary>Layer source</summary><p>{layer.source_id} {layer.version}. Angular spacing equivalent: {layer.angular_spacing_deg.toFixed(5)} degrees. Coloring does not change terrain geometry.</p></details>
+    <details><summary>Layer source</summary><p>{layer.source_id} {layer.version}. {layer.angular_spacing_deg===null?'Local resolution unavailable until preparation.':`Angular spacing equivalent: ${layer.angular_spacing_deg.toFixed(5)} degrees.`} Coloring does not change terrain geometry.</p></details>
   </>;
 }

@@ -1,10 +1,9 @@
 # LunarOS engineering rules
 
-Implement the accepted simplified Moon/Mission experience: scientific overlays,
-Advanced disclosure, validated polar sunlight and bounded Diviner thermal data,
-and explainable preliminary settlement screening. Preserve existing science,
-missions, simulations and navigation. No AI or universal habitability score.
-The new thermal acquisition budget is 300 MB total; preserve explicit unknowns.
+Implement the targeted frontend roadmap in docs/targeted-refactor.md: repair
+scientific overlays, modular map-first workspace, compact playback, and clearer
+settlement-to-mission flow. Preserve existing science, missions, simulations and
+Moon/Mission navigation. No new datasets, numerical models, AI or habitability score.
 Use actual rendered browser review and journey tests.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.

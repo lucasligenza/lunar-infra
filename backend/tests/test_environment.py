@@ -41,3 +41,27 @@ def test_real_solar_overlay_queries_match_original_numeric_cells(tmp_path):
     assert any(layer['dataset_id']=='solar-visibility' for layer in layers(atlas))
     assert next(source for source in atlas.catalog() if source.id=='solar-visibility').overlay_available
     atlas.close()
+
+
+def test_unprepared_layers_are_registered_but_not_reported_as_available(tmp_path):
+    atlas=AtlasStore(tmp_path)
+    environmental=[layer for layer in layers(atlas) if layer['id'] in ('temperature','illumination')]
+    assert len(environmental)==2
+    assert all(layer['preparation_status']=='not_prepared' for layer in environmental)
+    assert all(layer['angular_spacing_deg'] is None for layer in environmental)
+    assert not any(source.overlay_available for source in atlas.catalog())
+
+
+def test_real_environmental_tiles_preserve_blank_coverage_and_source_values(tmp_path):
+    atlas=AtlasStore(polar=TerrainStore());atlas.directory=tmp_path
+    for identifier,kind in [('solar-visibility','illumination'),('diviner-polar-midnight','temperature')]:
+        grid=atlas.environment[identifier]
+        for z,x,y in [(2,0,0),(2,3,3),(5,0,31)]:
+            values=tile_values(grid,kind,z,x,y)
+            with Image.open(BytesIO(render_tile(atlas,identifier,kind,z,x,y))) as image:
+                assert np.array_equal(np.asarray(image)[...,3]>0,np.isfinite(values))
+            assert np.any(np.isfinite(values)) if y==2**z-1 else not np.any(np.isfinite(values))
+        layer=next(layer for layer in layers(atlas) if layer['dataset_id']==identifier)
+        assert layer['preparation_status']=='ready'
+        assert layer['source_id']==grid.source.product_id
+    atlas.close()

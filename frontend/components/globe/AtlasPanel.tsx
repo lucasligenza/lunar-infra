@@ -38,7 +38,9 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const selectedDataset=dataset==='auto'?(catalog.find(value=>value.id==='gld100'&&value.numerical_queries)?.id??'lola-global'):dataset;
   const availableLayers=layers.filter(value=>value.dataset_id===selectedDataset||Boolean(catalog.find(source=>source.id===value.dataset_id&&source.category!=='terrain')));
   const layer=availableLayers.find(value=>value.id===view.layer);
-  useEffect(()=>{if(layer&&view.tileUrl!==layer.url_template)onView({...view,tileUrl:layer.url_template});},[layer?.url_template,view.tileUrl]);
+  useEffect(()=>{if(layer&&(view.tileUrl!==layer.url_template||view.preparation!==(layer.preparation_status??'ready')))onView({...view,tileUrl:layer.url_template,preparation:layer.preparation_status??'ready'});},[layer?.url_template,layer?.preparation_status,view.tileUrl,view.preparation]);
+  const environmental=['temperature','illumination'].includes(view.layer);
+  const quantity=view.layer==='temperature'?point?.temperature:point?.solar_visibility;
   return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>{tab==='sites'?'Settlement suitability':'Scientific overlays'}</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
     <div className="atlas-disclosure"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button>
     {advanced&&<nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>}</div>
@@ -52,12 +54,14 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     {tab==='analysis'&&<AtlasAnalysis location={location} dataset={dataset} state={analysis} onState={onAnalysis}/>}
     <div hidden={tab!=='layers'}>
     <section className="atlas-layer-tools" aria-label="Scientific surface layers">
-      <label>Scientific overlay<select aria-label="Scientific overlay" value={view.layer} onChange={e=>onView({...view,layer:e.target.value})}><option value="none">Imagery only</option>
-        {availableLayers.map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
+      <label>Scientific overlay<select aria-label="Scientific overlay" value={view.layer} onChange={e=>{const next=availableLayers.find(value=>value.id===e.target.value);onView({...view,layer:e.target.value,tileUrl:next?.url_template,preparation:next?.preparation_status??'ready'});}}><option value="none">Imagery only</option>
+        {availableLayers.map(value=><option value={value.id} key={value.id}>{value.name}{value.preparation_status==='not_prepared'?' — not prepared locally':''}</option>)}</select></label>
       {layer&&<><label>Layer opacity {Math.round(view.opacity*100)}%<input aria-label="Scientific layer opacity" type="range" min={0} max={1} step={.05} value={view.opacity} onChange={e=>onView({...view,opacity:Number(e.target.value)})} /></label>
         <AtlasLegend layer={layer}/>
         <p role={overlayStatus.includes('unavailable')?'alert':'status'} data-testid="atlas-overlay-status">{overlayStatus}</p>
         {overlayStatus.includes('unavailable')&&<button onClick={()=>onView({...view,reload:(view.reload??0)+1})}>Retry scientific layer</button>}
+        {environmental&&layer.preparation_status!=='not_prepared'&&<div className="overlay-coverage"><p>{quantity?.status==='unavailable'?'Selected location is outside prepared geographic coverage.':quantity?.status==='nodata'?'Selected location has missing source data.': 'Prepared coverage is a roughly 96 km square around the south pole.'} Transparent areas have no supporting measurements.</p>
+          <button onClick={()=>onSelect({latitude_deg:-90,longitude_deg:0},1.08)}>View prepared south-pole coverage</button></div>}
         <div hidden={!advanced}><label><input type="checkbox" checked={view.compare} onChange={e=>onView({...view,compare:e.target.checked})}/>Compare imagery and science</label>
         {view.compare&&<label>Reveal position<input aria-label="Comparison reveal" type="range" min={.05} max={.95} step={.01} value={view.reveal} onChange={e=>onView({...view,reveal:Number(e.target.value)})}/></label>}</div>
       </>}

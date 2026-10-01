@@ -2,6 +2,31 @@
 
 ## Current development phase
 
+Targeted frontend refactor: [four-milestone plan](docs/targeted-refactor.md).
+Baseline 533f8c7 is on origin/main (prior CI run 36874129533 passed). Clean audit:
+104 Python tests + eight subtests and 49 Chromium journeys pass.
+
+M1 scientific overlay repair is validated locally: 106 Python tests + eight
+subtests; 12 relevant Chromium journeys (nine atlas/workspace plus three
+environmental tests), typecheck and production build. Geographic fragment
+sampling, polar-aware tile bounds and a bounded environmental budget preserve
+finer display detail. Native Diviner patterns/nodata are retained. Confirmed
+defects: complete-level coarsening reduced polar display to a few texture rows;
+decoded transparent HTTP-200 tiles were mislabeled ready. Stale layer endpoints
+are prevented; unprepared sources remain selectable with explicit status. Opacity
+zero, missing selected measurements, loading and failed rendering are distinct.
+Ready requires nontransparent mounted tiles and a subsequent renderer draw.
+Actual polar screenshots and opacity pixel differences were inspected; shader
+errors were checked. Detailed polar framing needs dozens of tiles, so cold
+software-browser loading can exceed 15 seconds; imagery remains interactive and
+progress is visible. Global tiles remain capped at 32; environmental textures at
+96 (~24 MiB uncompressed). No source acquisition or numeric changes.
+
+Active: committing/pushing M1. Latest successful push: 533f8c7.
+Next: modular map-first mission workspace and contextual panels.
+
+The earlier roadmap records below are historical.
+
 Accepted Moon/Mission simplification and settlement screening roadmap:
 [implementation plan](docs/simplification-plan.md). M1-M4 are implemented and
 pushed; M5 final disclosure, polar overlay coverage and regression review is validated locally.
