@@ -32,6 +32,11 @@ test('keyboard commands navigate real destinations, scientific tools and the act
   await dialog.getByRole('combobox').press('Escape');
   await expect(dialog).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Commands', exact: true })).toBeFocused();
+  await page.keyboard.press('Meta+k');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('combobox')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
   await page.getByRole('button', { name: 'Open activity', exact: true }).click();
   const activity = page.getByRole('region', { name: 'System activity' });
   await expect(activity.getByRole('list')).toContainText('[MAP]');

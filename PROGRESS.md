@@ -12,13 +12,12 @@ actual desktop/profile, computed mission and mobile region/map screens reviewed.
 M3: Explore / Analyze / Design / Simulate navigation and explicit contextual
 transitions; location, independent drafts, saved scenarios and playback persist.
 M4: coherent night/panel/elevated palette, locally bundled Geist Sans/Mono,
-readable scientific labels/charts and contrast/focus checks. Next: command palette
-and actual-event activity console. M5: Ctrl/Cmd+K commands share navigation,
+readable scientific labels/charts and contrast/focus checks. M5: Ctrl/Cmd+K commands share navigation,
 layer and saved-simulation actions; console records actual UTC requests/readiness
-and failures, capped at 100 session events. Next: guidance, Help / Settings and
-optional onboarding. M6: six-step dismissible/reopenable walkthrough, Help / Settings,
+and failures, capped at 100 session events. M6: six-step dismissible/reopenable walkthrough, Help / Settings,
 persisted reduced-motion preference and explanatory blocked simulation states.
-Next: final responsive/user-journey review and acceptance documentation. Scientific datasets,
+M7: local responsive/user-journey acceptance passes; final milestone publication
+and GitHub verification remain. See docs/phase5-acceptance.md. Scientific datasets,
 numerical logic, existing APIs and saved mission formats remain in the preserved scope.
 
 Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
@@ -90,6 +89,20 @@ Validation: 33 browser tests, frontend typecheck and production build; actual to
 and mobile settings dialog inspected. Current milestone: feat: add optional
 mission workflow guidance. Next: final responsive/zoom-equivalent and complete
 journey validation, followed by documented Phase 5 acceptance.
+M6 72ab9a9 pushed; GitHub CI 36807276630 passed.
+M7: complete flows A-G and all four activities at 1920x1080, 1440x900, 1366x768,
+1024x768 and 390x844. Actual screenshot review, DOM pointer hit tests and scenario/
+computed-telemetry checks cover selected regions, inspectors and timeline playback.
+Short/zoom-equivalent windows scroll with a sticky header after a map-footer
+occlusion was observed. Separate destination-popup compositing repairs an observed
+dark rectangle on the idle WebGL globe. Responsive SVG axes and precise polar-data/
+saved-state labels pass final validation. Full browser suite: 39 pass (5.1 minutes);
+frontend typecheck and optimized production build pass. Both keyboard modifiers,
+actual transformed axis font size and missing-global/polar-ready distinction pass.
+preserved Python suite: 91 tests plus eight subtests. Native Chrome zoom and physical
+handset testing are not claimed; CSS zoom equivalents and emulated viewports are
+documented in docs/phase5-acceptance.md. Current milestone: test: validate mission
+control layouts and user journeys. Final publication/remote verification pending.
 
 Phase 4 milestone 1 d1d4dc0 pushed, CI passed: real GLD100 native global terrain, typed catalog, bounded
 acquisition plan, independent atlas API and data-to-UI measurement inspector.
@@ -363,16 +376,16 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed pushed functional milestone: 7df7063, commands and actual-event console,
-validated in [GitHub run 36805965898](https://github.com/lucasligenza/lunar-infra/actions/runs/36805965898).
+Latest confirmed pushed functional milestone: 72ab9a9, optional mission guidance,
+validated in [GitHub run 36807276630](https://github.com/lucasligenza/lunar-infra/actions/runs/36807276630).
 The Phase 5 audit is validated in
 [GitHub run 36801148539](https://github.com/lucasligenza/lunar-infra/actions/runs/36801148539).
-This milestone records the validated optional mission guidance.
+This milestone records final mission-control responsive and journey validation.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement Phase 5 M7 final responsive and journey validation from docs/ux-audit.md. New scientific data and
+Publish Phase 5 M7 and confirm fresh GitHub validation. New scientific data and
 numerical algorithms are outside this UX assignment. Existing optional atlas data
 availability limits continue to apply.

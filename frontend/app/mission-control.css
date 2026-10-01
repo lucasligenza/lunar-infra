@@ -28,7 +28,10 @@ input[type=checkbox],input[type=radio],input[type=range] { accent-color:var(--ac
 .source-id { font-size:11px; }
 .quantity-value strong,.selected-coordinate p,.region-coordinate,.source-id,.source-file,.sample-details dd,.legend-values,.atlas-panel dd,.atlas-legend,.telemetry dd,.telemetry > p,.timeline-time,.timeline-summary,.timeline-chart svg text,.elevation-profile svg text,.profile-readout,input[type=number],input[type=datetime-local],textarea { font-family:var(--font-geist-mono),monospace; font-variant-numeric:tabular-nums; }
 .telemetry dl { font-size:12px; gap:12px; }.telemetry dd { margin:0; }.telemetry > p,.telemetry small { font-size:11px; line-height:1.6; }.telemetry-heading span { font-size:11px; }
-.timeline-chart svg text { fill:var(--quiet); font-size:11px; }.timeline-chart h3 { font-size:12px; }.timeline-chart > div { font-size:11px; }
+.timeline-chart svg text { fill:var(--quiet); font-size:12px; }.timeline-chart h3 { font-size:12px; }.timeline-chart > div { font-size:11px; }
+/* SVG text scales with its viewBox. Compensate when charts share laptop width
+   or occupy a narrow task panel, keeping actual rendered axes readable. */
+@media (max-width:1400px) { .timeline-chart svg text { font-size:17px; } }
 .timeline-toolbar label,.timeline-scrub label,.timeline-toolbar select,.timeline-scrub select,.timeline-summary,.timeline-time,.timeline-scrub > span,.input-source-tag { font-size:11px; }
 .timeline-charts { gap:16px; }.timeline-summary { padding-top:8px; }
 .atlas-panel h2,.drawer-title h2 { font-size:19px; }.atlas-panel h3 { font-size:15px; }
@@ -52,6 +55,9 @@ input[type=checkbox],input[type=radio],input[type=range] { accent-color:var(--ac
 .globe-toolbar .search-input-row { flex:1; min-width:0; padding:0; }
 .globe-toolbar .search-input-row input { width:100%; min-width:0; margin:0; border:1px solid var(--border)!important; background:var(--base)!important; padding:8px!important; }
 .destination-results { position:absolute; top:calc(100% + 10px); left:0; width:100%; max-height:min(360px,60dvh); border:1px solid var(--border); background:var(--panel); z-index:var(--z-popover); }
+/* Keep toolbar popovers on their own compositor layer. Chromium otherwise leaves
+   an occlusion rectangle on the idle, demand-rendered WebGL surface. */
+.destination-results,.global-coordinates form { opacity:.999; }
 .global-coordinates { border:0; }
 .global-coordinates summary { padding:8px 4px; white-space:nowrap; }
 .global-coordinates form { position:absolute; top:calc(100% + 10px); left:0; width:100%; padding:16px; background:var(--panel); border:1px solid var(--border); z-index:var(--z-popover); }
@@ -156,3 +162,9 @@ input[type=checkbox],input[type=radio],input[type=range] { accent-color:var(--ac
 .help-content label { display:block; font-size:13px; color:var(--quiet); margin-bottom:16px; }.help-content .checkbox-label { display:flex; gap:8px; align-items:center; }.help-content .tour-progress { color:var(--accent); font:12px var(--font-geist-mono),monospace; }
 html[data-motion=reduce] *,html[data-motion=reduce] *::before,html[data-motion=reduce] *::after { transition:none!important; animation:none!important; scroll-behavior:auto!important; }
 @media (max-width:900px) { .guidance-offer { gap:8px; flex-wrap:wrap; padding:8px 12px; }.guidance-offer > span { flex-basis:100%; }.help-content dl { grid-template-columns:1fr; gap:8px; }.help-content dd { margin-bottom:12px; } }
+/* Very short/zoomed windows use ordinary vertical scrolling rather than clipping
+   the map's navigation into its footer. The global header stays available. */
+@media (max-height:600px) {
+  .explorer,.mode-global.explorer,.atlas-workspace.explorer { min-height:600px; }
+  .mission-header { position:sticky; top:0; z-index:var(--z-popover); }
+}

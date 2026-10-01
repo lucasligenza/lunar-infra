@@ -80,3 +80,24 @@ stay inside the viewport. The tools heading remains visible when forms scroll.
 Rendered review caught a legacy 45% drawer height restriction; it was removed.
 Scientific requests, numeric derivations, scenario revisions and coordinates are
 unchanged. Browser regression checks cover dock separation and panel navigation.
+
+## Final review findings
+
+Four named activities now separate design inputs from simulation results while
+preserving the same mission/location. The header retains context on laptops.
+Technical quantities use bundled monospace fonts and larger labels; ordinary
+descriptions remain sans-serif. Actual-event commands/console and optional Help
+replace ambiguous workflow guidance with reachable, useful actions.
+
+The final 200% zoom-equivalent review found Reset under the map footer. Short
+windows now scroll normally, with the header sticky and enough workspace height
+for map controls. Pointer hit tests confirm the repair. Screenshot review also
+found an open destination popover leaving a dark rectangle on the idle globe;
+separate translucent compositing removes that artifact while retaining demand
+rendering. Both findings were observed in rendered output, not inferred from CSS.
+Laptop chart axes now compensate for SVG scaling, with measured rendered font
+size checks. Header readiness explicitly names polar data; saved-state indication
+requires no unsaved drafts or pending requests.
+
+See [Phase 5 acceptance](phase5-acceptance.md) for complete journey coverage,
+viewport evidence and explicit native-zoom/accessibility validation limits.

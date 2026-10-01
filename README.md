@@ -12,6 +12,8 @@ dismissal and motion preference are stored locally; scenarios remain saved throu
 the backend with revision checks. Simulations require explicit hypothetical input
 series because validated time-resolved lunar illumination is unavailable.
 See the [UX audit](docs/ux-audit.md) and [design system](docs/design-system.md).
+See [Phase 5 acceptance](docs/phase5-acceptance.md) for rendered review, user journeys
+and responsive/accessibility validation limits.
 
 The Lunar Atlas adds global GLD100 elevation/slope, georeferenced scientific color
 layers, cube-sphere sectors, arbitrary area statistics, native elevation profiles

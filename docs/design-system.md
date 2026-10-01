@@ -52,3 +52,9 @@ quantity terminology. Settings respects system motion preference or explicitly
 reduces camera/CSS motion, persists that preference and controls console visibility.
 Unsaved asset drafts explain why simulation saving/running is blocked rather than
 displaying a fictitious in-progress state.
+
+Below 600 CSS pixels in height, the shell permits ordinary vertical scrolling
+with a sticky header. This prevents the map footer from covering camera controls
+in short/zoomed windows. Toolbar popovers use separate translucent compositing
+to avoid occlusion artifacts on the demand-rendered WebGL canvas; their stacking
+remains limited to the deliberate toolbar overlay container.

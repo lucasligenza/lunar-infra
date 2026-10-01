@@ -32,6 +32,7 @@ test('loading, missing global data and failed terrain are explicit and recoverab
   const metadata=await (await request.get('/api/globe')).json();
   await page.route('**/api/globe',route=>route.fulfill({json:{...metadata,available:false}}));
   await page.reload();await expect(page.getByRole('heading',{name:'Global data unavailable',exact:true})).toBeVisible();
+  await expect(page.locator('.header-status [role=status]')).toHaveText('Polar data ready');
   await page.screenshot({path:'../artifacts/phase3-missing-global.png'});
   await page.getByRole('button',{name:'Analyze',exact:true}).click();
   await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
