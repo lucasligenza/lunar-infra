@@ -64,6 +64,7 @@ input[type=checkbox],input[type=radio],input[type=range] { accent-color:var(--ac
 .globe-dock, .globe-layout > .atlas-panel { position:relative; inset:auto; margin:0; width:var(--dock-width); min-width:0; min-height:0; border:0; border-left:1px solid var(--border); border-radius:0; background:var(--panel); box-shadow:none; z-index:var(--z-controls); }
 .globe-dock { overflow:auto; padding:20px; max-height:none; scrollbar-width:thin; }
 .tool-rail-title { position:sticky; top:0; background:var(--panel); z-index:var(--z-controls); }
+.tool-rail-title button { width:auto; height:auto; min-width:54px; flex-shrink:0; }
 .display-settings > header { display:flex; justify-content:space-between; gap:12px; margin-bottom:24px; align-items:center; }
 .display-settings h2 { font-size:18px; }.display-settings label { display:flex; gap:10px; margin:20px 0; }.display-settings p,.display-settings small { display:block; color:var(--quiet); line-height:1.7; margin:16px 0; }
 .globe-layout > .atlas-panel { padding:0; overflow:hidden; display:grid; grid-template-rows:auto auto minmax(0,1fr); }
@@ -205,6 +206,9 @@ html[data-motion=reduce] *,html[data-motion=reduce] *::before,html[data-motion=r
 .candidate-result > button { width:100%; text-align:left; font-family:var(--font-geist-mono),monospace; line-height:1.5; }
 .candidate-result > button[aria-pressed=true] { border-color:var(--accent); background:var(--elevated); }
 .candidate-result p { margin:8px 0; }
+.candidate-next-step { padding:12px 0; margin:12px 0; border-block:1px solid var(--border); }
+.candidate-next-step > button { width:100%; margin:8px 0; }.candidate-next-step > small { display:block; color:var(--quiet); line-height:1.6; }
+.mission-site-handoff { border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:12px; }.mission-site-handoff strong { font-family:var(--font-geist-mono),monospace; font-weight:500; }
 .settlement-panel details { margin:12px 0; }
 .display-settings .global-coordinates form { position:static; width:auto; padding:0; background:none; border:0; }
 .display-settings .global-coordinates label { display:grid; gap:6px; }
@@ -229,5 +233,7 @@ html[data-motion=reduce] *,html[data-motion=reduce] *::before,html[data-motion=r
 }
 @media (max-width:900px) {
   .mission-workspace[data-tools-open=true],.mission-workspace[data-inspector-open=true] { display:block; }
+  /* Tools navigation already opens the complete tool set on narrow screens. */
+  .workspace-toolbar > button:is([aria-label="Expand tools"],[aria-label="Close mission tools"],[aria-label="Show all mission tools"]) { display:none; }
   .context-panel-content { overflow:auto; }.mission-workspace > .context-rail { overflow:hidden; }
 }

@@ -17,12 +17,23 @@ See the [UX audit](docs/ux-audit.md) and [design system](docs/design-system.md).
 See [Phase 5 acceptance](docs/phase5-acceptance.md) for rendered review, user journeys
 and responsive/accessibility validation limits.
 
-Mission starts with a map-first viewport. **Mission tools** opens scenarios and
-infrastructure; selecting an asset opens its inspector. Closing a panel restores
+Mission starts with a map-first viewport. **Saved missions**, **Add infrastructure**
+and **Simulation inputs** open focused tools; **Advanced tools** (or the mobile
+**Tools** tab) exposes the complete workspace. Selecting an asset opens its
+inspector. Closing a panel restores
 the map width and retains drafts. Simulation playback starts compact, with UTC
 time, play/pause, scrubbing, battery reserve and interval-average power. **Expand
 details** reveals bounded charts, mission energy totals and provenance. Power is
 in kW; stored and accumulated energy is in kWh. No values are invented for playback.
+
+From **Overlays**, use **Find settlement sites**, select a candidate and inspect
+**Why this candidate?**. **Create mission at selected location** opens the creation
+form at those exact coordinates. Creating it opens the infrastructure catalog;
+place a habitat on valid terrain, edit it in the inspector, then **Configure
+simulation**. Saved missions remain directly accessible without repeating screening.
+Screening is preliminary protected-outpost comparison, not a safety certification
+or universal habitability score. New candidate selection does not move an existing
+mission. Average solar visibility does not supply temporal mission power inputs.
 
 The Lunar Atlas adds global GLD100 elevation/slope, georeferenced scientific color
 layers, cube-sphere sectors, arbitrary area statistics, native elevation profiles
@@ -64,7 +75,7 @@ the native 0.25 degree LOLA overview. See [global data](docs/global-data.md) for
 source integrity, coverage and the distinction between visualization and analysis.
 The atlas additionally obtains the pinned 133 MB GLD100 global 32 ppd product,
 preserving native values and PDS special codes. `--plan` reports acquisition/disk
-requirements, and `--offline` reuses verified source files. Open **Lunar atlas**
+requirements, and `--offline` reuses verified source files. Open **Overlays**
 on the globe to inspect terrain from selectable registered global sources and
 search the scientific catalog. Discovered products are labeled separately from
 prepared numerical sources. See [Phase 4 plan](docs/phase4-plan.md).

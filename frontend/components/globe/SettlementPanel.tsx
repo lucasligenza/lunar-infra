@@ -6,6 +6,7 @@ import type {Candidate} from '../../types/suitability';
 export default function SettlementPanel({state,location,onSelect,onMission}:{state:SettlementState;location:GlobeLocation|null;onSelect:(point:Candidate)=>void;onMission:()=>void}) {
   const {report,settings,setSettings,loading,error}=state;
   const groups=[...new Set(report?.candidates.map(candidate=>candidate.evidence_group)??[])];
+  const selected=report?.candidates.find(candidate=>location?.latitude_deg===candidate.latitude_deg&&location?.longitude_deg===candidate.longitude_deg);
   return <section aria-label="Settlement suitability" className="settlement-panel">
     <p>Compare nearby areas for a protected human outpost. Every site needs life support and shielding.</p>
     <form onSubmit={event=>{event.preventDefault();if(location)void state.search(location);}}>
@@ -23,6 +24,9 @@ export default function SettlementPanel({state,location,onSelect,onMission}:{sta
     {error&&<p role="alert">{error}</p>}
     {report&&<><p data-testid="candidate-search-context">Within {report.request.area.radius_km} km of {report.request.area.latitude_deg.toFixed(3)}° / {report.request.area.longitude_deg.toFixed(3)}° E.</p>
       <p>Promising tradeoffs, compared within matching data coverage. No universal habitability score.</p>
+      <div className="candidate-next-step"><strong>{selected?'Candidate selected':'Choose a candidate below'}</strong><p>{selected?'Review its supporting evidence, then start a mission at these coordinates.':'Inspect a candidate to compare terrain, average sunlight and missing evidence.'}</p>
+        <button className="primary-button" onClick={onMission} disabled={!selected}>Create mission at selected location</button>
+        <small>Preliminary screening only. Power playback uses hypothetical temporal input; average solar visibility is not an eclipse forecast.</small></div>
       {report.warnings.map(warning=><p className="warning" key={warning}>{warning}</p>)}
       {!report.candidates.length&&<p>No supported candidate neighborhoods. Try a larger area or a different terrain dataset.</p>}
       {groups.map(group=><section key={group} aria-label={group.includes('terrain-only')?'Terrain-only candidates':'Terrain and sunlight candidates'}>
@@ -34,7 +38,6 @@ export default function SettlementPanel({state,location,onSelect,onMission}:{sta
         </article>)}
       </section>)}
       <details><summary>Method and sources</summary>{report.assumptions.map(note=><p key={note}>{note}</p>)}<p>{report.model_version}; {report.evaluated_centers} sampled centers. Colored outlines locate neighborhoods, not approved settlement boundaries.</p>{report.sources.map(source=><p key={source.id}><a href={source.source_url} target="_blank" rel="noreferrer">{source.name}</a> / {source.version}</p>)}</details>
-      <button onClick={onMission} disabled={!report.candidates.some(candidate=>location?.latitude_deg===candidate.latitude_deg&&location?.longitude_deg===candidate.longitude_deg)}>Create mission at selected location</button>
     </>}
   </section>;
 }

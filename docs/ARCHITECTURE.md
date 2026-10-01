@@ -162,6 +162,17 @@ control remains outside that area. Chart power is kW; whole-mission energy total
 are kWh. All values use the same stored Python simulation result as the inspector.
 On small screens expanded charts occupy a task pane; collapsing restores the map.
 
+Settlement handoff uses the existing shared lunar location. A focused mission
+creation panel shows its coordinates and evidence qualification; no scenario is
+created or repositioned until the user submits the existing API action. Only a
+successful creation opens the infrastructure catalog. Saved missions, placement
+and simulation inputs have direct contextual actions; Advanced opens the complete
+tool set. Disclosure uses hidden mounted sections, preserving draft ownership and
+revision checks. Simulation inspection suppresses duplicate site panels while
+showing calculated telemetry; terrain evidence remains available in Design/Moon.
+The new-mission name draft is separate from the open scenario's name, preventing
+candidate creation from enabling a rename/save action on the previous mission.
+
 Scientific rendering reads numeric-derived PNGs independently of point queries.
 Alpha is checked before tiles can be reported as rendered, and readiness follows
 a renderer draw. Environmental metadata reports local preparation explicitly.

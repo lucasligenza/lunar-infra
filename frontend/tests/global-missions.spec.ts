@@ -16,6 +16,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await expect(page.getByTestId('atlas-sunlight')).toHaveText('Unavailable here');
     await page.getByRole('button',{name:'Close atlas',exact:true}).click();
     await page.getByRole('button',{name:'Design a mission here',exact:true}).click();
+    await missionInspector(page);
     const sample=await(await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47')).json();
     await expect(page.getByTestId('global-mission-elevation')).toHaveText(sample.elevation.value.toFixed(1));
     await expect(page.getByRole('complementary',{name:'Global site inspector'})).toContainText('WAC_GLD100_E000N1800_032P');
@@ -90,8 +91,12 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await page.reload();
     await missionTools(page);
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
-    await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
     await expect(page.getByRole('region',{name:'Mission timeline'})).toBeVisible();
+    await expect(page.getByTestId('telemetry-demand')).toHaveText(run.result.intervals[0].demand_kw.toFixed(2));
+    await page.getByRole('button',{name:'Return to mission design',exact:true}).click();
+    await missionInspector(page);
+    await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
+    await openActivity(page,'Simulate');
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
     await page.setViewportSize({width:390,height:844});
     await expect.poll(async()=>Number(await host.getAttribute('data-draws'))).toBeGreaterThan(2);
@@ -110,6 +115,7 @@ test('global mission and regional atlas remain usable when the polar cache is un
   await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
   await page.getByRole('button',{name:'Design a mission here',exact:true}).click();
+  await missionInspector(page);
   await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
   await missionTools(page);
   await expect(page.getByRole('button',{name:'Create scenario at selected site',exact:true})).toBeEnabled();

@@ -147,5 +147,16 @@ scrubber. Expanded charts have a bounded body and a pinned collapse action.
 Desktop/laptop screenshots show the map retaining most height when compact.
 An initial mobile screenshot exposed a blank compact Timeline task pane; the
 revised narrow layout retains the map until chart details are expanded. The
+compact flex item also needed explicit width/min-width to keep all controls in
+the phone viewport; screenshot review and hit/bounding-box checks verified it.
 selected interval and playback speed persist through collapse. Power is labeled
 interval-average kW, with mission energy totals separately identified as kWh.
+
+The settlement CTA previously sat below the whole evidence list, and switching
+to Mission offered simulation configuration before a mission existed. The new
+handoff shows candidate selection and its next action above the evidence groups,
+then opens a coordinate-qualified creation form. Infrastructure follows a
+successful save; simulation configuration opens its actual input form. Saved
+missions have a direct action. Basic tools disclose one task; Advanced retains
+all earlier controls. The simulation inspector no longer repeats the site
+inspector below calculated telemetry. No screening formula or power model changed.

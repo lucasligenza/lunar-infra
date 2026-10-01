@@ -38,7 +38,8 @@ found during review retained the previous environmental tile URL when selecting
 terrain in Mission; registered metadata now synchronizes the URL and a browser
 regression verifies the correct slope request and rendering.
 
-M2 pushed as 411d323; GitHub regression status is being checked.
+M2 pushed as 411d323. GitHub run 36925142251 passed the full scientific,
+typecheck/build and 51-browser regression suite.
 
 M3 compact playback is validated locally: 11 simulation/draft/navigation/responsive
 browser journeys pass, followed by all six responsive checks after an observed
@@ -51,8 +52,31 @@ playback settings. Actual desktop/laptop/mobile screenshots were inspected;
 mobile keeps the map when compact and uses a task pane for expanded charts.
 The Python engine and stored simulation format are unchanged.
 
-Active: committing/pushing M3. Latest successful push: 411d323.
-Next: clearer settlement evidence, mission creation, infrastructure and run actions.
+M3 pushed as 2b0e8b5. GitHub run 36926566298 passed fresh acquisition,
+scientific/API validation, typecheck/build and all 51 browser journeys.
+
+M4 settlement-to-mission flow is validated locally. Candidate selection exposes
+the next action and coordinate-qualified mission creation; a successful creation
+opens infrastructure, and Configure simulation opens actual input controls.
+Saved missions remain directly accessible. Basic tools show one task, while
+Advanced retains the full tool set and mounted drafts. New-mission names have
+an independent draft, so preparing another candidate does not rename or move an
+existing mission. The inspector shows calculated telemetry without a duplicate
+site panel; site evidence remains in Design/Moon. Existing polar environment
+options also remain represented in the global mission selector.
+
+Final scientific/API regression: 106 Python tests + eight subtests pass (63.75 s).
+The full Chromium run passed 50/51; the remaining navigation test pressed Enter
+while a save disabled its command. The helper now waits for the actual command
+to become enabled; all 11 affected draft/navigation/settlement journeys pass,
+including old-scenario immutability and separate name-draft checks. Typecheck and
+production build pass. Actual handoff, habitat and calculated-playback screenshots
+were inspected, along with all five viewport sizes and expanded controls. Review
+also fixed a clipped tools Close button, with a bounds/text-width regression.
+No datasets, screening math, simulator, persistence API or renderer were replaced.
+
+Active: committing/pushing M4, then checking the fresh full GitHub regression.
+Latest successful push: 2b0e8b5. Next: final acceptance record; no extra feature work.
 
 The earlier roadmap records below are historical.
 

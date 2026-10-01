@@ -3,7 +3,11 @@ import { expect, type Page } from '@playwright/test';
 export async function openActivity(page:Page, name:string) {
   await page.keyboard.press('Control+k');
   const search=page.getByRole('combobox',{name:'Search commands'});
-  await search.fill(`Open ${name}`); await search.press('Enter');
+  await search.fill(`Open ${name}`);
+  // Saving can temporarily disable navigation. Wait for the actual command,
+  // rather than press Enter while its backing request is still in flight.
+  await expect(page.getByRole('option',{name:`Open ${name}`,exact:false})).toHaveAttribute('aria-disabled','false');
+  await search.press('Enter');
   await expect(page.getByRole('dialog',{name:'Command palette'})).not.toBeVisible();
   if(name==='Simulate'&&!await page.getByRole('region',{name:'Mission timeline'}).isVisible())await missionTools(page);
 }
@@ -11,6 +15,8 @@ export async function missionTools(page:Page) {
   await expect(page.locator('.local-shell')).toBeVisible();
   const mobile=page.getByRole('navigation',{name:'Workspace navigation'});
   if(await mobile.isVisible()){await mobile.getByRole('link',{name:'Tools',exact:true}).click();return;}
+  const all=page.getByRole('button',{name:'Show all mission tools',exact:true});
+  if(await all.isVisible())await all.click();
   const button=page.getByRole('button',{name:'Expand tools',exact:true});
   if(await button.isVisible())await button.click();
   await expect(page.getByRole('complementary',{name:'Exploration tools'})).toBeVisible();

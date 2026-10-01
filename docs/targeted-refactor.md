@@ -23,3 +23,26 @@ for fully transparent camera tiles. Existing browser assertions tested readiness
 not actual color visibility. Permanent tool/inspector rails compete with the map;
 Timeline initializes expanded. Baseline: 104 Python tests plus eight subtests pass.
 Browser baseline and subsequent rendered reviews are recorded in PROGRESS.md.
+
+## Changed files
+
+- Scientific rendering/registration: `backend/app/services/atlas_tiles.py`,
+  `backend/tests/test_environment.py`, `frontend/lib/atlas-render.ts`,
+  `frontend/types/atlas.ts`, `frontend/components/globe/MoonCanvas.tsx`,
+  `AtlasPanel.tsx`, `AtlasLegend.tsx` and `MissionMoon.tsx` in the same globe folder.
+- Workspace/playback/flow: `frontend/components/Explorer.tsx`,
+  `frontend/components/globe/SettlementPanel.tsx`, and
+  `frontend/components/mission/MissionWorkspace.tsx`, `ScenarioControls.tsx`,
+  `InfrastructureCatalog.tsx`, `Timeline.tsx`.
+- Layout: `frontend/app/globals.css`, `mission-control.css`, `exploration.css`.
+- Browser regressions under `frontend/tests`: `commands.spec.ts`,
+  `environment.spec.ts`, `explorer.spec.ts`, `global-missions.spec.ts`,
+  `globe-usability.spec.ts`, `layout.spec.ts`, `mission-regressions.spec.ts`,
+  `missions.spec.ts`, `modes.spec.ts`, `responsive.spec.ts`, `settlement.spec.ts`,
+  `simulation.spec.ts`, and shared `workspace.ts`.
+- Documentation: `AGENTS.md`, `README.md`, `PROGRESS.md`,
+  `docs/ARCHITECTURE.md`, `docs/ux-audit.md`, and this plan.
+
+The existing GlobalExplorer, OpenLayers map, thermal ingestion, API contracts,
+scenario hooks, revision handling and Python simulation engine are retained.
+Raw data, generated rasters, screenshots, test traces and local databases are ignored.

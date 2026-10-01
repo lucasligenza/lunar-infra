@@ -43,6 +43,10 @@ test('mission workspace gives closed panels back to the map and selects one cont
       if(width>900)expect(box.width).toBeGreaterThan(width*.9);
       await page.screenshot({path:`../artifacts/targeted-map-first-${width}.png`});
       await missionTools(page);
+      const close=page.getByRole('button',{name:'Collapse tools',exact:true});
+      const closeBox=(await close.boundingBox())!,toolsBox=(await page.getByRole('complementary',{name:'Exploration tools'}).boundingBox())!;
+      expect(closeBox.x+closeBox.width).toBeLessThanOrEqual(toolsBox.x+toolsBox.width+1);
+      expect(await close.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
       await page.getByRole('button',{name:`Open scenario: ${scenario.name}`,exact:true}).click();
       await page.getByRole('button',{name:'Select asset: Layout habitat',exact:true}).click();
       await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
