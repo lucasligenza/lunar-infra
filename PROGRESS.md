@@ -2,6 +2,21 @@
 
 ## Current development phase
 
+
+Active: accepted Moon/Mission simplification and settlement screening roadmap
+(docs/simplification-plan.md). M1 shell and Advanced disclosure are implemented:
+only two primary workspaces, collapsed destinations/console, optional help and
+preserved original 2D analysis, scenarios and playback. Validation: 39 Chromium
+journeys passed in 5.3 minutes across five viewports and zoom-equivalent layouts;
+91 scientific/API tests pass, typecheck passes. Actual opening desktop screenshot
+reviewed; panels and responsive mission screenshots captured by browser tests.
+Production build passes. M1 is ready for its ordinary commit/push. Latest successful pushed commit: 919d16f.
+Next: reusable projected overlays and validated polar solar visibility.
+Thermal acquisition: official 213 MB Diviner local-time product and labels acquired
+within approved 300 MB total; numeric integration remains in progress. No new
+suitability recommendations are claimed yet. Known limitation: no actual temporal
+solar mission input; candidate screening will not establish human/construction safety.
+
 Phase 5 is complete: lunar mission-control UX and design overhaul. Scope and observed baseline
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
 tests pass; actual production screens and all five requested viewport sizes reviewed.

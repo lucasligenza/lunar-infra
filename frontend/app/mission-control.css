@@ -168,3 +168,15 @@ html[data-motion=reduce] *,html[data-motion=reduce] *::before,html[data-motion=r
   .explorer,.mode-global.explorer,.atlas-workspace.explorer { min-height:600px; }
   .mission-header { position:sticky; top:0; z-index:var(--z-popover); }
 }
+
+/* Simple workspaces: supporting tools are disclosed, never competing docks. */
+.utility-menu { position:relative; font-size:12px; }
+.utility-menu summary { cursor:pointer; white-space:nowrap; padding:8px; }
+.utility-menu > div { position:absolute; right:0; top:100%; min-width:160px; display:grid; gap:6px; padding:10px; background:var(--panel); border:1px solid var(--border); z-index:var(--z-popover); }
+.mission-tasks { display:flex; justify-content:center; gap:8px; padding:6px; border-bottom:1px solid var(--border); }
+.mission-tasks button[aria-pressed=true] { background:var(--elevated); border-color:var(--accent); }
+.atlas-disclosure { padding:0 18px 10px; }
+.atlas-disclosure > button { font-size:12px; }
+.atlas-disclosure .atlas-tabs { padding:10px 0 0; }
+.global-introduction h2 { font-size:24px; }
+@media (max-width:600px) { .mission-header .mode-navigation { grid-row:1; grid-column:2; width:auto; }.mission-header .header-status { grid-row:2; grid-column:1/-1; justify-content:start; }.mission-header .mission-context { display:none; }.mission-header .utility-menu { grid-row:2; grid-column:2; justify-self:end; } }

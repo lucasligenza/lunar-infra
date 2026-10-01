@@ -1,8 +1,9 @@
+import {openActivity,openDestinations,closeDestinations} from './workspace';
 import {test,expect} from '@playwright/test';
 
 test('orbital drag, pan, keyboard selection, zoom bounds and idle rendering work',async({page})=>{
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('4k imagery / LOLA terrain ready');
-  await page.getByRole('button',{name:'Close destinations',exact:true}).click();
+  await closeDestinations(page);
   const host=page.getByTestId('moon-canvas'), canvas=page.getByLabel('Interactive 3D Moon',{exact:true});
   const before=await host.getAttribute('data-camera');const box=(await canvas.boundingBox())!;
   await page.mouse.move(box.x+box.width*.55,box.y+box.height*.55);await page.mouse.down();
@@ -34,7 +35,7 @@ test('loading, missing global data and failed terrain are explicit and recoverab
   await page.reload();await expect(page.getByRole('heading',{name:'Global data unavailable',exact:true})).toBeVisible();
   await expect(page.locator('.header-status [role=status]')).toHaveText('Polar data ready');
   await page.screenshot({path:'../artifacts/phase3-missing-global.png'});
-  await page.getByRole('button',{name:'Analyze',exact:true}).click();
+  await openActivity(page, 'Analyze');
   await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
   const width=(await page.getByTestId('terrain-map').boundingBox())!.width;
   await page.getByRole('button',{name:'Hide inspector',exact:true}).click();
@@ -43,7 +44,7 @@ test('loading, missing global data and failed terrain are explicit and recoverab
   await page.screenshot({path:'../artifacts/phase3-regional-panels-closed.png'});
   await page.getByRole('button',{name:'Expand tools',exact:true}).click();
   await page.getByRole('button',{name:'Show inspector',exact:true}).click();
-  await page.getByRole('button',{name:'Explore',exact:true}).click();
+  await openActivity(page, 'Explore');
   await page.unroute('**/api/globe');
   await page.route('**/api/globe/elevation.bin',route=>route.fulfill({status:503,body:'Unavailable'}));
   await page.getByRole('button',{name:'Retry global data',exact:true}).click();
@@ -61,6 +62,7 @@ test('global panels stay usable on laptop and mobile viewports',async({page})=>{
   await expect(page.getByRole('button',{name:'Open destinations',exact:true})).toBeVisible();
   await page.screenshot({path:'../artifacts/phase3-mobile-globe.png'});
   await page.getByRole('button',{name:'Open destinations',exact:true}).click();
+  await openDestinations(page);
   await page.getByRole('button',{name:/^Shackleton crater/}).click();
   await expect(page.getByTestId('local-coverage')).toHaveText('240 m south-pole grid');
   const search=(await page.locator('.destination-search').boundingBox())!, drawer=(await page.getByRole('complementary',{name:'Selected lunar region'}).boundingBox())!;
@@ -69,7 +71,7 @@ test('global panels stay usable on laptop and mobile viewports',async({page})=>{
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
   await page.screenshot({path:'../artifacts/phase3-mobile-selected.png'});
   await page.getByRole('button',{name:'Close region details',exact:true}).click();
-  await page.getByRole('button',{name:'Globe layers',exact:true}).click();
+  await page.getByRole('button',{name:'Display',exact:true}).click();
   await expect(page.getByRole('checkbox',{name:'Lunar graticule',exact:true})).toBeInViewport();
   console.log(await page.getByTestId('globe-ready-time').textContent());
   await page.screenshot({path:'../artifacts/phase3-mobile-layers.png'});

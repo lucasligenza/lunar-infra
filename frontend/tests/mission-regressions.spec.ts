@@ -1,3 +1,4 @@
+import {openActivity} from './workspace';
 import { test, expect } from "@playwright/test";
 
 test("independent drafts survive saves and stale revisions cannot overwrite server state", async ({ page, request }) => {
@@ -10,9 +11,9 @@ test("independent drafts survive saves and stale revisions cannot overwrite serv
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
     await page.getByRole("button", { name: "Select asset: Habitat", exact: true }).click();
     await page.getByLabel("Continuous demand (kW)", { exact: true }).fill("12");
-    await page.getByRole("button", { name: "Simulate", exact: true }).click();
+    await openActivity(page, 'Simulate');
     await page.getByLabel("Time step (seconds)", { exact: true }).fill("1800");
-    await page.getByRole("button", { name: "Design", exact: true }).click();
+    await openActivity(page, 'Design');
     await page.getByLabel("Scenario name", { exact: true }).fill(`${name} renamed`);
     await page.getByRole("button", { name: "Save scenario", exact: true }).click();
     await expect(page.getByLabel("Continuous demand (kW)", { exact: true })).toHaveValue("12");

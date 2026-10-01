@@ -18,6 +18,8 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const [point,setPoint]=useState<AtlasPoint|null>(null),[error,setError]=useState<string|null>(null),[loading,setLoading]=useState(false);
   const [query,setQuery]=useState('');
   const [tab,setTab]=useState(analysisMode?'analysis':'layers');
+  const [advanced,setAdvanced]=useState(analysisMode);
+  useEffect(()=>{if(request&&request.tab!=='layers')setAdvanced(true);},[request]);
   useEffect(()=>{if(analysisMode)setTab('analysis');},[analysisMode]);
   useEffect(()=>{if(request)setTab(request.tab);},[request]);
   useEffect(()=>{const abort=new AbortController();
@@ -32,12 +34,13 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const source=catalog.find(value=>value.id===point?.dataset_id);
   const selectedDataset=dataset==='auto'?(catalog.find(value=>value.id==='gld100'&&value.numerical_queries)?.id??'lola-global'):dataset;
   const layer=layers.find(value=>(value.dataset_id===selectedDataset||value.id==='geology')&&value.id===view.layer);
-  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>Lunar atlas</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
-    <nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>
-    <div className="atlas-content"><p className="atlas-description">Scientific coverage, native measurements and source provenance.</p>
+  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>Scientific overlays</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
+    <div className="atlas-disclosure"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button>
+    {advanced&&<nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>}</div>
+    <div className="atlas-content"><p className="atlas-description">Color the Moon with real scientific data.</p>
     {tab==='regions'&&<AtlasRegions location={location} sector={sector} onSector={onSector} onSelect={onSelect}/>}
     <div hidden={tab==='regions'||tab==='catalog'}>
-    <label>Terrain dataset<select aria-label="Atlas terrain dataset" value={dataset} onChange={e=>onView({...view,dataset:e.target.value})}>
+    <label hidden={!advanced}>Terrain dataset<select aria-label="Atlas terrain dataset" value={dataset} onChange={e=>onView({...view,dataset:e.target.value})}>
       <option value="auto">Best prepared global terrain</option>{catalog.filter(value=>value.category==='terrain'&&value.pixels_per_degree&&value.numerical_queries).map(value=><option key={value.id} value={value.id}>{value.name}</option>)}
     </select></label>
     {tab==='analysis'&&<AtlasAnalysis location={location} dataset={dataset} state={analysis} onState={onAnalysis}/>}
@@ -49,19 +52,19 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
         <AtlasLegend layer={layer}/>
         <p role={overlayStatus.includes('unavailable')?'alert':'status'} data-testid="atlas-overlay-status">{overlayStatus}</p>
         {overlayStatus.includes('unavailable')&&<button onClick={()=>onView({...view,reload:(view.reload??0)+1})}>Retry scientific layer</button>}
-        <label><input type="checkbox" checked={view.compare} onChange={e=>onView({...view,compare:e.target.checked})}/>Compare imagery and science</label>
-        {view.compare&&<label>Reveal position<input aria-label="Comparison reveal" type="range" min={.05} max={.95} step={.01} value={view.reveal} onChange={e=>onView({...view,reveal:Number(e.target.value)})}/></label>}
+        <div hidden={!advanced}><label><input type="checkbox" checked={view.compare} onChange={e=>onView({...view,compare:e.target.checked})}/>Compare imagery and science</label>
+        {view.compare&&<label>Reveal position<input aria-label="Comparison reveal" type="range" min={.05} max={.95} step={.01} value={view.reveal} onChange={e=>onView({...view,reveal:Number(e.target.value)})}/></label>}</div>
       </>}
     </section>
     {!location&&<p>Select the lunar surface or a destination to inspect its native data.</p>}
     {loading&&<p role="status">Loading native terrain…</p>}{error&&<p role="alert">{error}</p>}
     {point&&<section aria-label="Atlas terrain inspection"><p className="region-coordinate">{point.latitude_deg.toFixed(5)}° latitude / {point.longitude_deg.toFixed(5)}° E</p>
       <dl><dt>Elevation</dt><dd data-testid="atlas-elevation">{point.elevation.value===null?'Missing data':`${point.elevation.value.toLocaleString('en-US')} m`}</dd>
-      <dt>Source</dt><dd>{point.elevation.source_id} {point.elevation.version}</dd><dt>Native spacing at sampled latitude</dt><dd>{point.elevation.spacing_north_m.toFixed(1)} m north / {point.elevation.spacing_east_m.toFixed(1)} m east</dd>
-      <dt>Sampling</dt><dd>{point.elevation.method}</dd><dt>Derived slope</dt><dd data-testid="atlas-slope">{point.slope.value===null?'Missing stencil':`${point.slope.value.toFixed(3)}°`}</dd>
-      <dt>Slope support</dt><dd>{point.slope.support_north_m.toFixed(1)} m north / {point.slope.support_east_m.toFixed(1)} m east</dd><dt>Terrain provenance</dt><dd>{point.terrain_source}</dd></dl>
+      <dt hidden={!advanced}>Source</dt><dd hidden={!advanced}>{point.elevation.source_id} {point.elevation.version}</dd><dt hidden={!advanced}>Native spacing at sampled latitude</dt><dd hidden={!advanced}>{point.elevation.spacing_north_m.toFixed(1)} m north / {point.elevation.spacing_east_m.toFixed(1)} m east</dd>
+      <dt hidden={!advanced}>Sampling</dt><dd hidden={!advanced}>{point.elevation.method}</dd><dt>Derived slope</dt><dd data-testid="atlas-slope">{point.slope.value===null?'Missing stencil':`${point.slope.value.toFixed(3)}°`}</dd>
+      <dt hidden={!advanced}>Slope support</dt><dd hidden={!advanced}>{point.slope.support_north_m.toFixed(1)} m north / {point.slope.support_east_m.toFixed(1)} m east</dd><dt hidden={!advanced}>Terrain provenance</dt><dd hidden={!advanced}>{point.terrain_source}</dd></dl>
       {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
-      <div className="geologic-inspection" aria-label="Geological interpretation"><h3>Geological interpretation</h3>
+      <div hidden={view.layer!=='geology'&&!advanced} className="geologic-inspection" aria-label="Geological interpretation"><h3>Geological interpretation</h3>
         {point.geology?<><p data-testid="atlas-geology">{point.geology.category?`${point.geology.category.code} / ${point.geology.category.name}`:'Missing mapped class'}</p>
           <p>{point.geology.source_id} {point.geology.version} / 1:5,000,000 source map; categorical grid 16 ppd.</p>
           <details><summary>Geology source and interpretation</summary><p>{point.geology.category?.description}</p><p>{point.geology.category?.interpretation}</p>

@@ -1,3 +1,4 @@
+import {openActivity,openDestinations,utilities} from './workspace';
 import { test, expect, type Locator, type Page } from '@playwright/test';
 
 async function reachable(control: Locator) {
@@ -13,7 +14,7 @@ async function reachable(control: Locator) {
 async function header(page: Page, width: number) {
   await page.evaluate(() => window.scrollTo(0, 0));
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-  for (const label of ['Explore', 'Analyze', 'Design', 'Simulate', 'Commands', 'Activity', 'Help']) {
+  for (const label of ['Moon', 'Mission']) {
     await reachable(page.getByRole('button', { name: label, exact: true }));
   }
 }
@@ -37,14 +38,15 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
     try {
       await page.goto('/'); await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
       await header(page, width);
-      if (width <= 900) await page.getByRole('button', { name: 'Open destinations', exact: true }).click();
+      await openDestinations(page);
+  await openDestinations(page);
       await page.getByRole('button', { name: /^Shackleton crater/ }).click();
       await expect(page.getByTestId('local-coverage')).toHaveText('240 m south-pole grid');
       await page.screenshot({ path: `../artifacts/phase5-final-selection-${width}.png` });
       await page.getByRole('button', { name: 'Close region details', exact: true }).click();
       await reachable(page.getByRole('button', { name: 'Reset globe', exact: true }));
       await page.screenshot({ path: `../artifacts/phase5-final-explore-${width}.png` });
-      await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+      await openActivity(page, 'Analyze');
       await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
       await pane(page, 'Inspector', width);
       await expect(page.getByTestId('elevation-value')).toBeVisible();
@@ -52,7 +54,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await pane(page, 'Map', width);
       await reachable(page.getByRole('button', { name: 'Reset map view', exact: true }));
       await page.screenshot({ path: `../artifacts/phase5-final-analyze-${width}.png` });
-      await page.getByRole('button', { name: 'Design', exact: true }).click();
+      await openActivity(page, 'Design');
       await pane(page, 'Tools', width);
       await page.getByRole('button', { name: `Open scenario: ${name}`, exact: true }).click();
       await page.getByRole('button', { name: 'Select asset: QA habitat', exact: true }).click();
@@ -61,7 +63,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await pane(page, 'Map', width);
       await header(page, width);
       await page.screenshot({ path: `../artifacts/phase5-final-design-${width}.png` });
-      await page.getByRole('button', { name: 'Simulate', exact: true }).click();
+      await openActivity(page, 'Simulate');
       await pane(page, 'Tools', width);
       const result = page.waitForResponse(response => response.url().endsWith('/simulations') && response.request().method() === 'POST');
       await page.getByRole('button', { name: 'Run simulation', exact: true }).click();
@@ -82,7 +84,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await slider.press('Home'); await page.getByRole('button', { name: 'Play mission', exact: true }).click();
       await expect.poll(() => slider.inputValue()).not.toBe('0');
       await page.getByRole('button', { name: 'Pause playback', exact: true }).click();
-      await page.getByRole('button', { name: 'Design', exact: true }).click();
+      await openActivity(page, 'Design');
       await pane(page, 'Tools', width);
       await expect(page.getByRole('button', { name: `Open scenario: ${name}`, exact: true })).toHaveAttribute('aria-pressed', 'true');
       const stored = await (await request.get(`/api/scenarios/${scenario.id}`)).json();
@@ -105,6 +107,7 @@ test('125 and 200 percent zoom-equivalent CSS viewports retain accessible naviga
     await page.screenshot({ path: `../artifacts/phase5-zoom-before-${scale}.png`, fullPage: true });
     await reachable(page.getByRole('button', { name: 'Reset map view', exact: true }));
     await page.screenshot({ path: `../artifacts/phase5-zoom-equivalent-${scale}.png`, fullPage: true });
+  await utilities(page);
     await page.getByRole('button', { name: 'Commands', exact: true }).click();
     await expect(page.getByRole('combobox', { name: 'Search commands' })).toBeFocused();
     await reachable(page.getByRole('button', { name: 'Close command palette', exact: true }));

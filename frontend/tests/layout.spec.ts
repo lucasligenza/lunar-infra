@@ -1,8 +1,10 @@
+import {openActivity,openDestinations} from './workspace';
 import { test, expect } from '@playwright/test';
 
 test('context docks own space and mobile task navigation keeps controls reachable', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);
   await page.getByRole('button', { name: /^Shackleton crater/ }).click();
   const viewport = page.locator('.globe-viewport');
   const drawer = page.getByRole('complementary', { name: 'Selected lunar region' });
@@ -14,7 +16,7 @@ test('context docks own space and mobile task navigation keeps controls reachabl
   await page.screenshot({ path: '../artifacts/phase5-layout-mobile-region.png' });
   await page.getByRole('button', { name: 'Close region details', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Reset globe', exact: true })).toBeInViewport();
-  await page.getByRole('button', { name: 'Analyze', exact: true }).click();
+  await openActivity(page, 'Analyze');
   const navigation = page.getByRole('navigation', { name: 'Workspace navigation' });
   await navigation.getByRole('link', { name: 'Tools', exact: true }).click();
   await page.getByRole('button', { name: 'Inspect location', exact: true }).click();

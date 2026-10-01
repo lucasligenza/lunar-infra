@@ -1,3 +1,4 @@
+import {openDestinations,regionAdvanced} from './workspace';
 import { test, expect } from '@playwright/test';
 
 function luminance(value: string) {
@@ -12,14 +13,15 @@ test('mission-control text, actions and technical typography remain readable', a
   await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator('body')).toHaveCSS('font-family', /Geist/);
+  await openDestinations(page);
   await page.getByRole('button', { name: /^Shackleton crater/ }).click();
-  const primary = page.getByRole('button', { name: 'Analyze this region', exact: true });
+  const primary = page.getByRole('button', { name: 'View scientific overlays', exact: true });
   const colors = await primary.evaluate(element => {
     const style = getComputedStyle(element); return [style.color, style.backgroundColor];
   });
   const [a, b] = colors.map(luminance);
   expect((Math.max(a, b) + .05) / (Math.min(a, b) + .05)).toBeGreaterThanOrEqual(4.5);
-  await primary.click();
+  await regionAdvanced(page); await page.getByRole('button',{name:'Analyze this region',exact:true}).click();
   await expect(page.getByTestId('elevation-value')).toBeVisible();
   await expect(page.getByTestId('elevation-value')).toHaveCSS('font-family', /GeistMono/);
   await page.getByRole('button', { name: 'Create mission here', exact: true }).focus();

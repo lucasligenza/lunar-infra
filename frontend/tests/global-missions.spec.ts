@@ -1,3 +1,4 @@
+import {openActivity,openDestinations} from './workspace';
 import {test,expect} from '@playwright/test';
 import {lunarCoordinate} from '../lib/globe';
 import type {SimulationRun} from '../types/simulation';
@@ -8,6 +9,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
   try {
     await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);
     await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
     await page.getByRole('button',{name:'Design a mission here',exact:true}).click();
     const sample=await(await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47')).json();
@@ -30,6 +32,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
       await expect(page.getByRole('button',{name:'Cancel placement',exact:true})).toHaveCount(0);
       await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
     }
+  await openDestinations(page);
     await page.getByRole('button',{name:/^Select asset: habitat /i}).click();
     await page.getByLabel('Asset name',{exact:true}).fill('Atlas habitat');
     await page.getByLabel('Continuous demand (kW)',{exact:true}).fill('9');
@@ -53,7 +56,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await page.locator('.mission-layer-status summary').click();
     await expect(page.locator('.mission-layer-status')).toContainText('30 deg');
     await page.locator('.mission-layer-status summary').click();
-    await page.getByRole('button',{name:'Simulate',exact:true}).click();
+    await openActivity(page, 'Simulate');
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();
     const result=page.waitForResponse(r=>r.url().endsWith('/simulations')&&r.request().method()==='POST');
     await page.getByRole('button',{name:'Run simulation',exact:true}).click();
@@ -64,11 +67,11 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready');
     await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
     await page.screenshot({path:'../artifacts/phase4-global-mission.png'});
-    await page.getByRole('button',{name:'Explore',exact:true}).click();
+    await openActivity(page, 'Explore');
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-    await page.getByRole('button',{name:'Analyze',exact:true}).click();
+    await openActivity(page, 'Analyze');
     await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toBeVisible();
-    await page.getByRole('button',{name:'Simulate',exact:true}).click();
+    await openActivity(page, 'Simulate');
     await expect(page.getByRole('slider',{name:'Mission interval'})).toHaveValue(String(run.result.intervals.length-1));
     await page.reload();
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
@@ -89,12 +92,13 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
 test('global mission and regional atlas remain usable when the polar cache is unavailable',async({page})=>{
   await page.route('**/api/regions',route=>route.fulfill({json:[]}));
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
   await page.getByRole('button',{name:'Design a mission here',exact:true}).click();
   await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
   await expect(page.getByRole('button',{name:'Create scenario at selected site',exact:true})).toBeEnabled();
   await expect(page.getByRole('alert').filter({hasText:'No prepared region'})).toHaveCount(0);
-  await page.getByRole('button',{name:'Analyze',exact:true}).click();
+  await openActivity(page, 'Analyze');
   await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toBeVisible();
   await expect(page.getByTestId('terrain-map')).toHaveCount(0);
 });

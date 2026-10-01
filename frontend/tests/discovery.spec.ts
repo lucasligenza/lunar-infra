@@ -1,3 +1,4 @@
+import {atlasAdvanced} from './workspace';
 import {test,expect} from '@playwright/test';
 
 test('catalog previews real acquisition budgets and handles bounded metadata discovery and source failure',async({page})=>{
@@ -12,7 +13,8 @@ test('catalog previews real acquisition budgets and handles bounded metadata dis
         files:[{url:'https://pds.nasa.gov/test.tab',bytes:156211313,md5:null,media_type:'text/plain'}]}]}});
   });
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
+  await atlasAdvanced(page);
   await page.getByRole('button',{name:'Catalog',exact:true}).click();
   const search=page.getByRole('searchbox',{name:'Search science datasets'});
   await search.fill('GLD100');await page.locator('.atlas-catalog > details > summary').click();

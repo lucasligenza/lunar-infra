@@ -1,11 +1,13 @@
+import {utilities} from './workspace';
 import { test, expect } from '@playwright/test';
 
 test('optional walkthrough dismisses, remembers, reopens and offers functional settings', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   const offer = page.getByRole('region', { name: 'First-time guidance' });
-  await expect(offer).toBeVisible();
-  await page.getByRole('button', { name: 'Quick walkthrough', exact: true }).click();
+  await expect(offer).toHaveCount(0);
+  await utilities(page); await page.getByRole('button',{name:'Help',exact:true}).click();
+  await page.getByRole('button',{name:'Walkthrough',exact:true}).click();
   const dialog = page.getByRole('dialog', { name: 'LunarOS help and settings' });
   await expect(dialog).toContainText('Step 1 / 6');
   for (let step = 2; step <= 6; step++) {
@@ -16,6 +18,7 @@ test('optional walkthrough dismisses, remembers, reopens and offers functional s
   await page.screenshot({ path: '../artifacts/phase5-walkthrough.png' });
   await dialog.getByRole('button', { name: 'Finish walkthrough', exact: true }).click();
   await expect(offer).toHaveCount(0); await page.reload(); await expect(offer).toHaveCount(0);
+  await utilities(page);
   await page.getByRole('button', { name: 'Help', exact: true }).click();
   await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -29,6 +32,7 @@ test('optional walkthrough dismisses, remembers, reopens and offers functional s
   await page.keyboard.press('Escape'); await expect(dialog).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Help', exact: true })).toBeFocused();
   await page.reload(); await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduce');
+  await utilities(page);
   await page.getByRole('button', { name: 'Help', exact: true }).click();
   await dialog.getByRole('button', { name: 'Walkthrough', exact: true }).click();
   await expect(dialog).toContainText('Step 1 / 6');

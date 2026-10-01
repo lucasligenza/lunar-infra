@@ -1,3 +1,4 @@
+import {openActivity,openDestinations,closeDestinations,atlasAdvanced,regionAdvanced} from './workspace';
 import {test,expect} from '@playwright/test';
 import {SphereGeometry,PerspectiveCamera} from 'three';
 import {tileGeometry,geographicTile,visibleTiles} from '../lib/atlas-render';
@@ -37,8 +38,9 @@ test('failed scientific tiles retain native queries and retry with bounded rende
   let failing=true;
   await page.route('**/api/atlas/tiles/**',route=>failing?route.fulfill({status:503,body:'Synthetic tile protocol failure'}):route.continue());
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);
   await page.getByRole('button',{name:/^Tycho crater/}).click();
-  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   const destination=(await(await request.get('/api/destinations')).json()).find((place:any)=>place.id==='tycho');
   const sample=await(await request.get(`/api/atlas/inspect?latitude=${destination.coordinates.latitude_deg}&longitude=${destination.coordinates.longitude_deg}`)).json();
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${sample.elevation.value.toLocaleString('en-US')} m`);
@@ -57,24 +59,27 @@ test('failed scientific tiles retain native queries and retry with bounded rende
 
 test('atlas queries original GLD100 across regions and switches verified datasets',async({page,request})=>{
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
-  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   const sample=await (await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47')).json();
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${sample.elevation.value.toLocaleString('en-US')} m`);
   await expect(page.getByRole('complementary',{name:'Lunar atlas'})).toContainText('WAC_GLD100_E000N1800_032P');
+  await atlasAdvanced(page);
   await page.getByRole('combobox',{name:'Atlas terrain dataset'}).selectOption('lola-global');
   const lola=await (await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47&dataset=lola-global')).json();
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${lola.elevation.value.toLocaleString('en-US')} m`);
   await page.getByText('Measurement metadata',{exact:true}).click();
   await expect(page.getByRole('region',{name:'Atlas terrain inspection'}).getByText('MEAN EARTH/POLAR AXIS OF DE421',{exact:true})).toBeVisible();
   await page.screenshot({path:'../artifacts/phase4-elevation-slice.png'});
+  await atlasAdvanced(page);
   await page.getByRole('button',{name:'Catalog',exact:true}).click();
   await page.getByRole('searchbox',{name:'Search science datasets'}).fill('mineralogy');
   await page.getByText('Moon Mineralogy Mapper observations',{exact:true}).click();
   await expect(page.getByText('Numerical queries unavailable; 3D overlay unavailable',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Close atlas',exact:true}).click();
-  await page.getByRole('button',{name:'Close destinations',exact:true}).click();
-  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  await closeDestinations(page);
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   await page.setViewportSize({width:390,height:844});
   await expect(page.getByRole('button',{name:'Close atlas',exact:true})).toBeInViewport();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
@@ -83,15 +88,16 @@ test('atlas queries original GLD100 across regions and switches verified dataset
 test('scientific layers follow the 3D surface with legends opacity and synchronized reveal',async({page,request})=>{
   test.setTimeout(90000);
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-  await page.getByRole('button',{name:'Close destinations',exact:true}).click();
+  await closeDestinations(page);
   const host=page.getByTestId('moon-canvas'),terrain=await host.getAttribute('data-terrain');
-  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('elevation');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await expect(page.getByRole('region',{name:'Scientific surface layers'})).toContainText('12,000 m');
   await expect.poll(async()=>Number(await host.getAttribute('data-overlay-tiles'))).toBeGreaterThan(0);
   await page.getByRole('slider',{name:'Scientific layer opacity',exact:true}).fill('0.5');
   await expect(page.getByRole('slider',{name:'Scientific layer opacity',exact:true})).toHaveValue('0.5');
+  await atlasAdvanced(page);
   await page.getByRole('checkbox',{name:'Compare imagery and science',exact:true}).check();
   await page.getByRole('slider',{name:'Comparison reveal',exact:true}).fill('0.65');
   await expect(page.locator('.atlas-reveal')).toHaveAttribute('style',/65%/);
@@ -112,7 +118,9 @@ test('scientific layers follow the 3D surface with legends opacity and synchroni
 
 test('sectors favorites arbitrary regions profiles and mode state use actual numeric atlas output',async({page,request})=>{
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
+  await regionAdvanced(page);
   await page.getByRole('button',{name:'Analyze this region',exact:true}).click();
   const analysis=page.getByRole('region',{name:'Regional atlas analysis'});
   await expect(analysis).toContainText('0.67000° / 23.47000° E');
@@ -126,23 +134,27 @@ test('sectors favorites arbitrary regions profiles and mode state use actual num
   await expect(page.getByRole('button',{name:'Close atlas',exact:true})).toBeInViewport();
   const exported=page.waitForEvent('download');await page.getByRole('button',{name:'Export profile CSV',exact:true}).click();expect((await exported).suggestedFilename()).toBe('lunar-elevation-profile.csv');
   await page.screenshot({path:'../artifacts/phase4-regional-profile.png'});
-  await page.getByRole('button',{name:'Explore',exact:true}).click();
-  await page.getByRole('button',{name:'Analyze',exact:true}).click();
+  await openActivity(page, 'Explore');
+  await openActivity(page, 'Analyze');
   await expect(page.getByTestId('area-elevation')).toHaveText([expected.elevation.minimum,expected.elevation.mean,expected.elevation.maximum].map((value:number)=>value.toFixed(1)).join(' · ')+' m');
+  await atlasAdvanced(page);
   await page.getByRole('button',{name:'Regions',exact:true}).click();
   await page.getByRole('combobox',{name:'Sector depth',exact:true}).selectOption('1');
   await expect(page.locator('.sector-overview button')).toHaveCount(24);
   await page.getByRole('combobox',{name:'Hemisphere',exact:true}).selectOption('far');
+  await openDestinations(page);
   await page.getByRole('button',{name:/^Far sector 1.1.1/}).click();
   await expect.poll(()=>page.getByTestId('moon-canvas').getAttribute('data-sector-boundaries')).not.toBe('0');
   await page.getByRole('textbox',{name:'Favorite name',exact:true}).fill('Far-side study');
   await page.getByRole('button',{name:'Save selected location',exact:true}).click();
   await expect(page.getByRole('button',{name:'Far-side study',exact:true})).toBeVisible();
   await page.screenshot({path:'../artifacts/phase4-sectors.png'});
-  await page.getByRole('button',{name:'Explore',exact:true}).click();
+  await openActivity(page, 'Explore');
   await page.reload();await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();await page.getByRole('button',{name:'Regions',exact:true}).click();
+  await page.getByRole('button',{name:'Overlays',exact:true}).click(); await atlasAdvanced(page);
+  await page.getByRole('button',{name:'Regions',exact:true}).click();
   await page.getByRole('button',{name:'Far-side study',exact:true}).click();
+  await atlasAdvanced(page);
   await page.getByRole('button',{name:'Analysis',exact:true}).click();
   await page.getByRole('combobox',{name:'Analysis area',exact:true}).selectOption('box');
   await page.getByLabel('south (°)',{exact:true}).fill('-1');await page.getByLabel('north (°)',{exact:true}).fill('1');
@@ -162,18 +174,20 @@ test('analysis radius outlines use lunar great-circle geometry across seam and p
 
 test('USGS geology colors the Moon with original categorical legend and source-linked interpretation',async({page,request})=>{
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
-  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   const point=await (await request.get('/api/atlas/inspect?latitude=.67&longitude=23.47')).json();
   await expect(page.getByTestId('atlas-geology')).toHaveText(`${point.geology.category.code} / ${point.geology.category.name}`);
   await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('geology');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await page.getByText('49 geological units / categorical legend',{exact:true}).click();
   await expect(page.locator('.geology-legend li')).toHaveCount(49);
-  await page.getByRole('button',{name:'Close destinations',exact:true}).click();
+  await closeDestinations(page);
   await page.getByRole('button',{name:'Reset globe',exact:true}).click();
   await expect.poll(async()=>Number((await page.getByTestId('moon-canvas').getAttribute('data-camera'))!.split(',')[0])).toBeGreaterThan(3);
   await page.screenshot({path:'../artifacts/phase4-geology-globe.png'});
+  await atlasAdvanced(page);
   await page.getByRole('button',{name:'Catalog',exact:true}).click();await page.getByRole('searchbox',{name:'Search science datasets'}).fill('geology');
   await page.getByText('Unified Geologic Map of the Moon',{exact:true}).click();
   await expect(page.getByRole('complementary',{name:'Lunar atlas'})).toContainText('Numerical source available');

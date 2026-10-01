@@ -35,12 +35,12 @@ function errorText(error: unknown): string {
 }
 
 export default function Explorer() {
-  const [paletteOpen,setPaletteOpen]=useState(false),[consoleVisible,setConsoleVisible]=useState(true);
+  const [paletteOpen,setPaletteOpen]=useState(false),[consoleVisible,setConsoleVisible]=useState(false);
   const [helpOpen,setHelpOpen]=useState(false),[helpInitial,setHelpInitial]=useState<'help'|'tour'>('help');
-  const [guideOffer,setGuideOffer]=useState(false),[motion,setMotion]=useState<'system'|'reduce'>('system'),[preferencesReady,setPreferencesReady]=useState(false);
-  useEffect(()=>{try{setGuideOffer(localStorage.getItem('lunaros.walkthrough.dismissed.v1')!=='1');setMotion(localStorage.getItem('lunaros.motion.v1')==='reduce'?'reduce':'system');}catch{}finally{setPreferencesReady(true);}},[]);
+  const [motion,setMotion]=useState<'system'|'reduce'>('system'),[preferencesReady,setPreferencesReady]=useState(false);
+  useEffect(()=>{try{setMotion(localStorage.getItem('lunaros.motion.v1')==='reduce'?'reduce':'system');}catch{}finally{setPreferencesReady(true);}},[]);
   useEffect(()=>{document.documentElement.dataset.motion=motion;if(preferencesReady){try{localStorage.setItem('lunaros.motion.v1',motion);}catch{}}},[motion,preferencesReady]);
-  function dismissGuide(){setGuideOffer(false);try{localStorage.setItem('lunaros.walkthrough.dismissed.v1','1');}catch{}}
+  function dismissGuide(){try{localStorage.setItem('lunaros.walkthrough.dismissed.v1','1');}catch{}}
   function openHelp(tour=false){setHelpInitial(tour?'tour':'help');setHelpOpen(true);}
   const [destinations,setDestinations]=useState<Destination[]>([]);
   const [atlasRequest,setAtlasRequest]=useState<{tab:string;serial:number}|null>(null);
@@ -207,7 +207,8 @@ export default function Explorer() {
       ready={scenario.active ? !working && !assetDirty && !missionDirty && scenarioName === scenario.active.name : Boolean(region)} busy={working} onMode={switchMode} onCommands={()=>setPaletteOpen(true)} onActivity={()=>setConsoleVisible(true)} onHelp={()=>openHelp()}
       status={scenario.active ? scenario.busy ? 'Saving…' : simulation.busy ? 'Running simulation…' : assetDirty ? 'Unsaved asset changes' : missionDirty ? 'Unsaved simulation inputs' : scenarioName !== scenario.active.name ? 'Unsaved name' : `Saved / revision ${scenario.active.revision}` : region ? 'Polar data ready' : loading ? 'Loading polar data' : 'Polar data unavailable'}
       onSave={scenario.active?()=>void scenario.patch({name:scenarioName}):undefined} canSave={Boolean(scenario.active&&scenarioName!==scenario.active.name&&scenarioName.trim())}/>
-    {guideOffer&&<section className="guidance-offer" aria-label="First-time guidance"><span>New to LunarOS? Six steps from orbit to a mission.</span><button onClick={()=>openHelp(true)}>Quick walkthrough</button><button onClick={dismissGuide}>Dismiss guidance</button></section>}
+
+    {missionContext&&<nav className="mission-tasks" aria-label="Mission tasks"><button aria-pressed={mode==='mission'} onClick={()=>switchMode('mission')}>Design</button><button aria-pressed={mode==='simulation'} onClick={()=>switchMode('simulation')}>Simulate</button></nav>}
     {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
       atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
       atlasRequest={atlasRequest} navigationRequest={navigationRequest} onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
@@ -322,7 +323,7 @@ export default function Explorer() {
     </div>
     <ActivityConsole visible={consoleVisible} onDismiss={()=>setConsoleVisible(false)}/>
     <HelpPanel open={helpOpen} initial={helpInitial} onClose={()=>{setHelpOpen(false);dismissGuide();}} motion={motion} onMotion={setMotion}
-      consoleVisible={consoleVisible} onConsole={setConsoleVisible} onTips={()=>{try{localStorage.removeItem('lunaros.walkthrough.dismissed.v1');}catch{}setGuideOffer(true);setHelpOpen(false);}}/>
+      consoleVisible={consoleVisible} onConsole={setConsoleVisible} onTips={()=>openHelp(true)}/>
     <CommandPalette open={paletteOpen} onClose={()=>setPaletteOpen(false)} commands={commands}/>
   </main>;
 }

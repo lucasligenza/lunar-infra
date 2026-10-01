@@ -19,7 +19,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const [metadata,setMetadata] = useState<GlobeMetadata|null>(null), [destinations,setDestinations] = useState<Destination[]>([]);
   const [error,setError] = useState<string|null>(null), [reload,setReload] = useState(0);
   const [destinationError,setDestinationError] = useState<string|null>(null), [destinationsLoading,setDestinationsLoading] = useState(true);
-  const [query,setQuery] = useState(''), [searchOpen,setSearchOpen] = useState(()=>window.innerWidth>=800), [layersOpen,setLayersOpen] = useState(false);
+  const [query,setQuery] = useState(''), [searchOpen,setSearchOpen] = useState(false), [layersOpen,setLayersOpen] = useState(false);
   const [texture,setTexture] = useState(true), [grid,setGrid] = useState(false);
   const [selected,setSelected] = useState<Destination|null>(null), [inspection,setInspection] = useState<GlobeInspection|null>(null), [inspecting,setInspecting] = useState(false);
   const [inspectionError,setInspectionError] = useState<string|null>(null), [drawerOpen,setDrawerOpen] = useState(true);
@@ -55,7 +55,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const destination = selected ?? destinations.find(place=>place.coordinates.latitude_deg===location?.latitude_deg && place.coordinates.longitude_deg===location?.longitude_deg) ?? null;
   function choose(point:GlobeLocation, destination:Destination|null=null) {
     onSelect(point);setSelected(destination);setDrawerOpen(true);setLayersOpen(false);
-    if(window.innerWidth<=900) setSearchOpen(false);
+    setSearchOpen(false);
     setFlight({coordinates:point,distance:destination?.camera_distance_radii ?? 1.6,serial:++serial.current});
   }
   const results = destinations.filter(place=>`${place.name} ${place.id}`.toLowerCase().includes(query.toLowerCase()));
@@ -73,8 +73,8 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <label>Globe latitude (°)<input required type="number" step="any" min={-90} max={90} value={lat} onChange={e=>setLat(e.target.value)} /></label>
         <label>Globe longitude (° E)<input required type="number" step="any" min={-180} max={360} value={lon} onChange={e=>setLon(e.target.value)} /></label><button type="submit">Fly to coordinates</button></form></details>
     </div>
-    <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);setAtlasOpen(false);setDrawerOpen(false);}}>Globe layers</button>
-      <button aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);}}>Lunar atlas</button>
+    <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);setAtlasOpen(false);setDrawerOpen(false);}}>Display</button>
+      <button aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);}}>Overlays</button>
       {onLocal&&<button onClick={onLocal}>2D polar analysis</button>}
 
     </div>
@@ -89,7 +89,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
       <div className="globe-loading" role={error || metadata ? 'alert':'status'}><h2>{error || metadata ? 'Global data unavailable':'Preparing the lunar view'}</h2>
         <p>{error ?? (metadata ? 'Prepare the global NASA data and restart the API. The regional scientific map remains available.' : 'Loading verified global data metadata…')}</p>
         {(error || metadata) && <button onClick={()=>setReload(value=>value+1)}>Retry global data</button>}</div>}
-    {!location && <div className="global-introduction"><h2>Explore the Moon</h2><p>One world. Two hemispheres.<br/>A path from discovery to mission design.</p><span>Drag to orbit · scroll to approach · click to select</span></div>}
+    {!location && <div className="global-introduction"><h2>Explore the Moon</h2><p>Choose a scientific overlay.<br/>Select a location to look closer.</p><span>Drag to orbit · scroll to approach · click to select</span></div>}
     {atlasView.layer!=='none'&&!atlasOpen&&<button className="atlas-active" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>{atlasView.layer} / {atlasView.dataset==='auto'?'best prepared terrain':atlasView.dataset}</button>}
       </div>
       {layersOpen && <aside className="globe-dock display-settings" aria-label="Globe display settings"><header><h2>Display settings</h2><button onClick={()=>setLayersOpen(false)}>Close display settings</button></header><label><input type="checkbox" checked={texture} onChange={e=>setTexture(e.target.checked)} />NASA color visualization</label>
@@ -110,10 +110,10 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
           <dt>Source</dt><dd>{inspection.elevation.source_id} {inspection.elevation.version}</dd><dt>Sampling</dt><dd>Containing 0.25° pixel</dd>
           <dt>Local analysis</dt><dd data-testid="local-coverage">{inspection.local_analysis?'240 m south-pole grid':inspection.local_status.replaceAll('_',' ')}</dd></dl>
           <p className="coverage-note">{inspection.local_analysis?'Prepared 240 m elevation, slope and average solar visibility are available.':'Global atlas elevation and derived slope are available at their supporting grid resolution. Prepared polar illumination is unavailable here.'}</p>
-          <button className="primary-button" onClick={()=>onMode('regional')}>Analyze this region</button>
+          <button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>View scientific overlays</button>
           <button disabled={inspection.elevation.status!=='ok'} onClick={()=>onMode('mission')}>Design a mission here</button>
-          <p className="temporal-note">Real-data mission playback unavailable. Temporal profiles are hypothetical.</p></>}
-        <details><summary>Scientific sources</summary><p>Global imagery is a visualization product, not a measurement. Local and global elevation have different sampling footprints.</p>
+          </>}
+        <details><summary>Advanced</summary><button onClick={()=>onMode('regional')}>Analyze this region</button><p>Global imagery is a visualization product, not a measurement. Local and global elevation have different sampling footprints.</p>
           {metadata?.source_urls.map(url=><a key={url} href={url} target="_blank" rel="noreferrer">{url.includes('svs')?'NASA visualization source':'NASA LOLA archive'}</a>)}
           {destination && <><a href={destination.source_url} target="_blank" rel="noreferrer">Destination coordinate source</a><p>{destination.coordinate_note}</p></>}
         </details>
