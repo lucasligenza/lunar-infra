@@ -188,3 +188,14 @@ brightness-temperature climatology (2009-2019), cropped to about 96 km around th
 pole. It does not provide current temperature, thermal extrema or a mission time
 series. Source records, checksums, native grid validation and nodata are preserved.
 The Moon workspace exposes Overlays; Advanced retains the full catalog and tools.
+
+### Find promising settlement sites
+
+In **Moon**, choose an overlay and a location, then **Find settlement sites**.
+Compare nearby neighborhoods, select a candidate, read its evidence, and create
+a mission at that location. The default search is 25 km; Screening settings expose
+the radius, neighborhood size, terrain dataset and editable slope threshold.
+Terrain-only results remain separate from results supported by average sunlight.
+No universal habitability score is calculated: human safety, life support and
+construction feasibility require further analysis. See the
+[screening method and limitations](docs/settlement-screening.md).

@@ -3,13 +3,16 @@ import {useEffect,useState} from 'react';
 import {fetchScientific} from '../../lib/api';
 import type {AtlasDataset,AtlasPoint,AtlasView,AtlasLayer,AtlasSector,AtlasAnalysisState,DiscoveryProvider} from '../../types/atlas';
 import type {GlobeLocation} from '../../types/globe';
+import SettlementPanel from './SettlementPanel';
+import type {SettlementState} from '../../lib/useSettlement';
 import AtlasRegions from './AtlasRegions';
 import AtlasAnalysis from './AtlasAnalysis';
 import AtlasLegend from './AtlasLegend';
 import DatasetDiscovery from './DatasetDiscovery';
 import DatasetAcquisition from './DatasetAcquisition';
 
-export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false,request}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
+export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false,request,settlement,onMission}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
+  settlement:SettlementState;onMission:()=>void;
   request?:{tab:string;serial:number}|null;
   sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;onSelect:(location:GlobeLocation,distance?:number)=>void;analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean}) {
   const [catalog,setCatalog]=useState<AtlasDataset[]>([]),[layers,setLayers]=useState<AtlasLayer[]>([]);
@@ -19,7 +22,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const [query,setQuery]=useState('');
   const [tab,setTab]=useState(analysisMode?'analysis':'layers');
   const [advanced,setAdvanced]=useState(analysisMode);
-  useEffect(()=>{if(request&&request.tab!=='layers')setAdvanced(true);},[request]);
+  useEffect(()=>{if(request&&request.tab!=='layers'&&request.tab!=='sites')setAdvanced(true);},[request]);
   useEffect(()=>{if(analysisMode)setTab('analysis');},[analysisMode]);
   useEffect(()=>{if(request)setTab(request.tab);},[request]);
   useEffect(()=>{const abort=new AbortController();
@@ -36,12 +39,13 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const availableLayers=layers.filter(value=>value.dataset_id===selectedDataset||Boolean(catalog.find(source=>source.id===value.dataset_id&&source.category!=='terrain')));
   const layer=availableLayers.find(value=>value.id===view.layer);
   useEffect(()=>{if(layer&&view.tileUrl!==layer.url_template)onView({...view,tileUrl:layer.url_template});},[layer?.url_template,view.tileUrl]);
-  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>Scientific overlays</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
+  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>{tab==='sites'?'Settlement suitability':'Scientific overlays'}</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
     <div className="atlas-disclosure"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button>
     {advanced&&<nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>}</div>
-    <div className="atlas-content"><p className="atlas-description">Color the Moon with real scientific data.</p>
+    <div className="atlas-content">
+    {tab==='sites'?<><button onClick={()=>setTab('layers')}>Back to overlays</button><SettlementPanel state={settlement} location={location} onSelect={candidate=>onSelect(candidate,1.08)} onMission={onMission}/></>:<><p className="atlas-description">Color the Moon with real scientific data.</p>
     {tab==='regions'&&<AtlasRegions location={location} sector={sector} onSector={onSector} onSelect={onSelect}/>}
-    <div hidden={tab==='regions'||tab==='catalog'}>
+    <div hidden={tab==='regions'||tab==='catalog'||tab==='sites'}>
     <label hidden={!advanced}>Terrain dataset<select aria-label="Atlas terrain dataset" value={dataset} onChange={e=>onView({...view,dataset:e.target.value})}>
       <option value="auto">Best prepared global terrain</option>{catalog.filter(value=>value.category==='terrain'&&value.pixels_per_degree&&value.numerical_queries).map(value=><option key={value.id} value={value.id}>{value.name}</option>)}
     </select></label>
@@ -58,6 +62,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
         {view.compare&&<label>Reveal position<input aria-label="Comparison reveal" type="range" min={.05} max={.95} step={.01} value={view.reveal} onChange={e=>onView({...view,reveal:Number(e.target.value)})}/></label>}</div>
       </>}
     </section>
+    {location&&<button className="primary-button" onClick={()=>setTab('sites')}>Find settlement sites</button>}
     {!location&&<p>Select the lunar surface or a destination to inspect its native data.</p>}
     {loading&&<p role="status">Loading native terrain…</p>}{error&&<p role="alert">{error}</p>}
     {point&&<section aria-label="Atlas terrain inspection"><p className="region-coordinate">{point.latitude_deg.toFixed(5)}° latitude / {point.longitude_deg.toFixed(5)}° E</p>
@@ -89,7 +94,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
         {['pds_equirectangular','range_zip_geology','diviner_polar_table'].includes(value.adapter)&&<DatasetAcquisition dataset={value.id}/>}
         {providers.filter(provider=>provider.dataset_id===value.id).map(provider=><DatasetDiscovery key={provider.id} provider={provider}/>)}
       </details>)}
-    </section>
+    </section></>}
     </div>
   </aside>;
 }

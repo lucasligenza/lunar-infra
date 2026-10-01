@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState,useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { fetchScientific } from '../../lib/api';
+import type {SettlementState} from '../../lib/useSettlement';
 import AtlasPanel from './AtlasPanel';
 import type { AtlasView,AtlasSector,AtlasAnalysisState } from '../../types/atlas';
 import type { Asset } from '../../types/mission';
@@ -9,11 +10,12 @@ import type { CameraState, Destination, GlobeInspection, GlobeLocation, GlobeMet
 import {areaBoundary} from '../../lib/atlas-area';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
 
-export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest }: {
+export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest,settlement }: {
   location: GlobeLocation | null; assets: Asset[]; base: GlobeLocation | null; camera: CameraState | null;
   onCamera:(state:CameraState)=>void; onSelect:(location:GlobeLocation)=>void; onCoverage:(coverage:GlobeInspection)=>void; onMode:(mode:Mode)=>void;
   atlasView:AtlasView;onAtlasView:(view:AtlasView)=>void;sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;
   analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean;onLocal?:()=>void;
+  settlement:SettlementState;
   atlasRequest?:{tab:string;serial:number}|null;navigationRequest?:{coordinates:GlobeLocation;distance:number;serial:number}|null;
 }) {
   const [metadata,setMetadata] = useState<GlobeMetadata|null>(null), [destinations,setDestinations] = useState<Destination[]>([]);
@@ -27,11 +29,13 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const [ready,setReady] = useState<number|null>(null), [lat,setLat] = useState('0'), [lon,setLon] = useState('0');
   const serial = useRef(0);
   const [atlasOpen,setAtlasOpen]=useState(false);
+  const [panelRequest,setPanelRequest]=useState<{tab:string;serial:number}|null>(null);
+  useEffect(()=>{if(atlasRequest)setPanelRequest(atlasRequest);},[atlasRequest]);
   useEffect(()=>{if(atlasRequest){setAtlasOpen(true);setLayersOpen(false);setDrawerOpen(false);setSearchOpen(false);}},[atlasRequest]);
   useEffect(()=>{if(navigationRequest){setFlight(navigationRequest);setDrawerOpen(true);setAtlasOpen(false);setLayersOpen(false);setSearchOpen(false);}},[navigationRequest]);
   useEffect(()=>{const narrow=window.matchMedia('(max-width: 900px)');const closeSearch=()=>{if(narrow.matches)setSearchOpen(false);};narrow.addEventListener('change',closeSearch);return()=>narrow.removeEventListener('change',closeSearch);},[]);
   const [atlasStatus,setAtlasStatus]=useState('Scientific overlay hidden');
-  const boundaries=useMemo(()=>[...(sector?[sector.boundary]:[]),...(location&&analysisMode?[areaBoundary(location,analysis)]:[]),...(analysis.profile?[analysis.profile.samples]:[])],[sector,location,analysisMode,analysis]);
+  const boundaries=useMemo(()=>[...(sector?[sector.boundary]:[]),...(location&&analysisMode?[areaBoundary(location,analysis)]:[]),...(analysis.profile?[analysis.profile.samples]:[]),...(settlement.report?.candidates.map(point=>areaBoundary(point,{...analysis,radius:String(point.radius_km),kind:'circle'}))??[])],[sector,location,analysisMode,analysis,settlement.report]);
   useEffect(()=>{if(analysisMode){setAtlasOpen(true);setDrawerOpen(false);setSearchOpen(false);}},[analysisMode]);
   useEffect(()=>{
     const abort = new AbortController(); setError(null);setDestinationError(null);setDestinationsLoading(true);
@@ -54,7 +58,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   },[location]);
   const destination = selected ?? destinations.find(place=>place.coordinates.latitude_deg===location?.latitude_deg && place.coordinates.longitude_deg===location?.longitude_deg) ?? null;
   function choose(point:GlobeLocation, destination:Destination|null=null) {
-    onSelect(point);setSelected(destination);setDrawerOpen(true);setLayersOpen(false);
+    onSelect({latitude_deg:point.latitude_deg,longitude_deg:point.longitude_deg});setSelected(destination);setDrawerOpen(true);setLayersOpen(false);
     setSearchOpen(false);
     setFlight({coordinates:point,distance:destination?.camera_distance_radii ?? 1.6,serial:++serial.current});
   }
@@ -74,7 +78,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <label>Globe longitude (° E)<input required type="number" step="any" min={-180} max={360} value={lon} onChange={e=>setLon(e.target.value)} /></label><button type="submit">Fly to coordinates</button></form></details>
     </div>
     <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);setAtlasOpen(false);setDrawerOpen(false);}}>Display</button>
-      <button aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);}}>Overlays</button>
+      <button aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);setPanelRequest({tab:'layers',serial:++serial.current});}}>Overlays</button>
       {onLocal&&<button onClick={onLocal}>2D polar analysis</button>}
 
     </div>
@@ -97,7 +101,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <p>Imagery up to 4096 × 2048; terrain source 0.25°; display mesh 1°. Local analysis: 240 m where prepared.</p>
         {ready!==null && <small data-testid="globe-ready-time">First imagery ready in {(ready/1000).toFixed(2)} s on this browser.</small>}</aside>}    {atlasOpen&&<AtlasPanel location={location} onClose={()=>{setAtlasOpen(false);setDrawerOpen(true);}} view={atlasView} onView={onAtlasView} overlayStatus={atlasStatus}
       sector={sector} onSector={onSector} onSelect={(point,distance)=>{choose(point);if(distance)setFlight({coordinates:point,distance,serial:++serial.current});}}
-      analysis={analysis} onAnalysis={onAnalysis} analysisMode={analysisMode} request={atlasRequest}/>}
+      analysis={analysis} onAnalysis={onAnalysis} analysisMode={analysisMode} request={panelRequest} settlement={settlement} onMission={()=>onMode('mission')}/>}
     {location && !atlasOpen && !layersOpen && <>
 
       {drawerOpen && <aside className="region-drawer globe-dock" aria-label="Selected lunar region">
@@ -111,6 +115,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
           <dt>Local analysis</dt><dd data-testid="local-coverage">{inspection.local_analysis?'240 m south-pole grid':inspection.local_status.replaceAll('_',' ')}</dd></dl>
           <p className="coverage-note">{inspection.local_analysis?'Prepared 240 m elevation, slope and average solar visibility are available.':'Global atlas elevation and derived slope are available at their supporting grid resolution. Prepared polar illumination is unavailable here.'}</p>
           <button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>View scientific overlays</button>
+          <button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);setPanelRequest({tab:'sites',serial:++serial.current});}}>Find settlement sites</button>
           <button disabled={inspection.elevation.status!=='ok'} onClick={()=>onMode('mission')}>Design a mission here</button>
           </>}
         <details><summary>Advanced</summary><button onClick={()=>onMode('regional')}>Analyze this region</button><p>Global imagery is a visualization product, not a measurement. Local and global elevation have different sampling footprints.</p>

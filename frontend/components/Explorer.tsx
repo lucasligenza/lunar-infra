@@ -20,6 +20,7 @@ import type { Dataset, LayerId, Region, Site } from "../types/scientific";
 import type { Mode, GlobeLocation, CameraState, GlobeInspection, Destination } from '../types/globe';
 import { toPolar } from '../lib/lunar';
 import type {AtlasView,AtlasSector,AtlasAnalysisState,AtlasPoint} from '../types/atlas';
+import {useSettlement} from '../lib/useSettlement';
 import MissionMoon from './globe/MissionMoon';
 import AtlasSiteInspector from './panels/AtlasSiteInspector';
 const GlobalExplorer = dynamic(()=>import('./globe/GlobalExplorer'), { ssr:false });
@@ -79,6 +80,7 @@ export default function Explorer() {
   const [mobilePane,setMobilePane]=useState<'map'|'tools'|'inspector'|'timeline'>('map');
   const [narrow,setNarrow]=useState(false);
   useEffect(()=>{const media=window.matchMedia('(max-width: 900px)');const update=()=>setNarrow(media.matches);update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
+  const settlement=useSettlement();
   const scenario = useScenario(true);
   const [scenarioName, setScenarioName] = useState("South-pole outpost");
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
@@ -211,7 +213,7 @@ export default function Explorer() {
     {missionContext&&<nav className="mission-tasks" aria-label="Mission tasks"><button aria-pressed={mode==='mission'} onClick={()=>switchMode('mission')}>Design</button><button aria-pressed={mode==='simulation'} onClick={()=>switchMode('simulation')}>Simulate</button></nav>}
     {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
       atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
-      atlasRequest={atlasRequest} navigationRequest={navigationRequest} onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
+      settlement={settlement} atlasRequest={atlasRequest} navigationRequest={navigationRequest} onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
     {unsupportedSelection && <section className="unsupported-region" aria-label="Local coverage unavailable"><h2>Local analysis unavailable here</h2><p>The selected location remains {location?.latitude_deg.toFixed(5)}° latitude / {location?.longitude_deg.toFixed(5)}° E. {coverage?.local_status==='unavailable'?'Prepared polar datasets are not loaded. Run the polar pipeline and restart the API.':coverage?.local_status==='nodata'?'The selected terrain cell has missing elevation. Choose a location with valid data.':'Prepared 240 m terrain and infrastructure placement cover the south-pole footprint only.'}</p>
       <button onClick={()=>switchMode('global')}>Return to selected global location</button>
       <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}

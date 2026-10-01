@@ -180,3 +180,14 @@ html[data-motion=reduce] *,html[data-motion=reduce] *::before,html[data-motion=r
 .atlas-disclosure .atlas-tabs { padding:10px 0 0; }
 .global-introduction h2 { font-size:24px; }
 @media (max-width:600px) { .mission-header .mode-navigation { grid-row:1; grid-column:2; width:auto; }.mission-header .header-status { grid-row:2; grid-column:1/-1; justify-content:start; }.mission-header .mission-context { display:none; }.mission-header .utility-menu { grid-row:2; grid-column:2; justify-self:end; } }
+
+.settlement-panel { font-size:13px; line-height:1.65; }
+.settlement-panel h3 { font-size:18px; margin:16px 0 8px; }
+.settlement-panel h4 { color:var(--quiet); font-size:12px; margin:20px 0 8px; }
+.settlement-panel label { display:grid; gap:6px; margin:10px 0; }
+.settlement-panel form > button { width:100%; margin:12px 0; }
+.candidate-result { border-top:1px solid var(--border); padding:12px 0; }
+.candidate-result > button { width:100%; text-align:left; font-family:var(--font-geist-mono),monospace; line-height:1.5; }
+.candidate-result > button[aria-pressed=true] { border-color:var(--accent); background:var(--elevated); }
+.candidate-result p { margin:8px 0; }
+.settlement-panel details { margin:12px 0; }

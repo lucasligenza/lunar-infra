@@ -1,0 +1,10 @@
+import type {GlobeLocation} from './globe';
+import type {AtlasDataset,AtlasQuantity} from './atlas';
+export type SettlementSettings={radius:string;neighborhood:string;slope:string;dataset:string};
+export type Candidate=GlobeLocation&{id:string;radius_km:number;dataset_id:string;source_id:string;version:string;spacing_m:number;
+  valid_terrain_fraction:number;low_slope_fraction:number;low_slope_area_km2:number;mean_slope_deg:number;
+  solar_visibility:number|null;solar_valid_fraction:number;temperature_at_center:AtlasQuantity|null;
+  evidence_group:string;tradeoff_front:number;reasons:string[];unknowns:string[]};
+export type SuitabilityReport={model_version:string;request:{area:GlobeLocation&{radius_km:number};max_slope_deg:number};
+  candidates:Candidate[];evaluated_centers:number;supported_candidates:number;search_spacing_km:number;
+  assumptions:string[];warnings:string[];sources:AtlasDataset[]};

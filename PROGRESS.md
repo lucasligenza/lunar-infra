@@ -50,6 +50,26 @@ journeys; typecheck passes. Settlement work is in progress
 and is deliberately excluded from this repair commit. Latest confirmed push: 8c9e663;
 latest confirmed green CI milestone: c5ff8d7.
 
+Repair pushed: 6af53c3. Fresh Linux
+[GitHub run 36869298031](https://github.com/lucasligenza/lunar-infra/actions/runs/36869298031)
+passed NASA acquisition, 96 Python tests, frontend typecheck/build and all 41
+Chromium journeys. Both previous failures are resolved by the ordinary follow-up
+commit; published history is preserved. Feature implementation has resumed.
+
+M4 settlement screening: functional typed `/atlas/suitability` API, area-weighted
+native terrain neighborhoods, explicit missing evidence, source-specific terrain/
+sunlight tradeoff groups, editable assumptions and a bounded deterministic search.
+Moon shows candidate neighborhoods, reasons and unknowns; selection can create a
+saved mission and run existing explicitly hypothetical simulation/playback.
+Validation: 103 Python tests and eight subtests pass (58.6 seconds); seven new
+Chromium checks pass (1.4 minutes), including real candidate-to-saved-mission/
+calculated-playback integration, loading/error recovery and five viewport layouts.
+The prior 41-browser regression suite passed with the initial feature integration.
+Typecheck and production build pass; candidate evidence and responsive screenshots
+captured, with desktop evidence and mobile task-panel layout reviewed. No universal human habitability or safety claim.
+Latest confirmed push and green CI: 6af53c3. Next: final disclosure/overlay polish
+and complete regression and remote verification.
+
 Phase 5 is complete: lunar mission-control UX and design overhaul. Scope and observed baseline
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
 tests pass; actual production screens and all five requested viewport sizes reviewed.

@@ -159,3 +159,11 @@ against the independently gridded LOLA products. Omitted bins remain nodata.
 The table has no sample counts or uncertainty/quality columns; very low brightness
 values are unqualified source values and do not establish independently verified
 physical temperature minima. Thermal evidence is descriptive in settlement screening.
+
+## Settlement screening
+
+The [screening method](settlement-screening.md) documents area weighting, valid
+coverage, source-specific tradeoff groups and the bounded sampled search.
+The editable slope threshold is an assumption; absent sunlight remains unknown.
+Temperature is descriptive and does not rank thermal habitability. No universal
+human habitability score or construction-safety determination is provided.

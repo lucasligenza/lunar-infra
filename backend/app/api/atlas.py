@@ -1,3 +1,5 @@
+from backend.app.models.suitability import SuitabilityRequest,SuitabilityReport
+from backend.app.services.suitability import screen
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
@@ -88,3 +90,9 @@ def inspect(request:Request,
         if 'usgs-geology' in atlas.classifications:sample.geology=atlas.classifications['usgs-geology'].sample(longitude,latitude)
         return sample
     except ValueError as error:raise HTTPException(503,detail=str(error))
+
+
+@router.post('/suitability',response_model=SuitabilityReport)
+def settlement_screening(body:SuitabilityRequest,request:Request):
+    try:return screen(request.app.state.atlas,body)
+    except ValueError as error:raise HTTPException(422,detail=str(error))
