@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {openDestinations,openActivity} from './workspace';
+import {missionTools,openDestinations,openActivity} from './workspace';
 import type {SuitabilityReport} from '../types/suitability';
 
 async function openFinder(page:import('@playwright/test').Page,destination='Shackleton crater') {
@@ -30,17 +30,20 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     await page.screenshot({path:'../artifacts/simple-settlement-evidence.png'});
     await page.getByRole('button',{name:'Create mission at selected location',exact:true}).click();
     await expect(page.getByTestId('elevation-value')).toBeVisible();
+    await missionTools(page);
     await page.getByLabel('Scenario name',{exact:true}).fill(name);
     const creation=page.waitForResponse(result=>result.url().endsWith('/scenarios')&&result.request().method()==='POST');
     await page.getByRole('button',{name:'Create scenario at selected site',exact:true}).click();
     const scenario=await(await creation).json();id=scenario.id;
     expect(scenario.site.latitude_deg).toBeCloseTo(candidate.latitude_deg,4);expect(scenario.site.longitude_deg).toBeCloseTo(candidate.longitude_deg,4);
+    await missionTools(page);
     await page.getByRole('button',{name:'Place habitat',exact:true}).click();
     const map=page.getByTestId('terrain-map'),box=(await map.boundingBox())!;await map.click({position:{x:box.width*.55,y:box.height*.45}});
     await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
     await openActivity(page,'Simulate');
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();
     const simulation=page.waitForResponse(result=>result.url().endsWith('/simulations')&&result.request().method()==='POST');
+    await missionTools(page);
     await page.getByRole('button',{name:'Run simulation',exact:true}).click();
     const run=await(await simulation).json();
     await expect(page.getByTestId('telemetry-demand')).toHaveText(run.result.intervals[0].demand_kw.toFixed(2));

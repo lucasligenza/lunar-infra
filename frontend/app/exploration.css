@@ -86,8 +86,6 @@
 .globe-loading h2 { font-size:21px; margin-bottom:12px; }
 .globe-loading p, .globe-render-error p { color:var(--quiet); line-height:1.7; margin-bottom:16px; }
 .inspector-toggle { position:absolute; bottom:52px; right:20px; z-index:2; border:1px solid var(--border); background:var(--panel); padding:8px 12px; border-radius:4px; font-size:12px; }
-.inspector-collapsed .workspace { grid-template-columns:250px minmax(0,1fr); }
-.inspector-collapsed .workspace.tools-collapsed { grid-template-columns:48px minmax(0,1fr); }
 .inspector-collapsed .context-rail { display:none; }
 .mode-regional .scenario-controls, .mode-regional .asset-catalog, .mode-regional .mission-inputs, .mode-regional .mission-timeline { display:none; }
 .tool-section > summary { font-size:13px; }
@@ -112,7 +110,6 @@
   .floating-instrument { width:260px; }
   .atlas-panel { top:14px; left:14px; right:14px; bottom:132px; width:auto; z-index:4; }
   .global-explorer:has(.floating-instrument) .region-drawer-toggle { display:none; }
-  .inspector-collapsed .workspace, .inspector-collapsed .workspace.tools-collapsed { grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto!important; transition:none!important; } }
 

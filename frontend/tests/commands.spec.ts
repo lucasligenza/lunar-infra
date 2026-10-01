@@ -1,4 +1,4 @@
-import {utilities} from './workspace';
+import {missionTools,utilities} from './workspace';
 import { test, expect } from '@playwright/test';
 
 test('keyboard commands navigate real destinations, scientific tools and the activity console', async ({ page }) => {
@@ -66,6 +66,7 @@ test('run command consumes a saved explicit profile and console reports actual s
     illumination_kind: 'custom_hypothetical', illumination_label: 'Explicit UI integration test profile', illumination_factors: [1, 0] } } })).json();
   try {
     await page.goto('/?mode=mission');
+    await missionTools(page);
     await page.getByRole('button', { name: `Open scenario: ${name}`, exact: true }).click();
     await page.keyboard.press('Control+k');
     await page.getByRole('combobox', { name: 'Search commands' }).fill('Run current simulation');

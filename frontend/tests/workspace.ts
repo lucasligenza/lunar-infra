@@ -5,6 +5,21 @@ export async function openActivity(page:Page, name:string) {
   const search=page.getByRole('combobox',{name:'Search commands'});
   await search.fill(`Open ${name}`); await search.press('Enter');
   await expect(page.getByRole('dialog',{name:'Command palette'})).not.toBeVisible();
+  if(name==='Simulate'&&!await page.getByRole('region',{name:'Mission timeline'}).isVisible())await missionTools(page);
+}
+export async function missionTools(page:Page) {
+  await expect(page.locator('.local-shell')).toBeVisible();
+  const mobile=page.getByRole('navigation',{name:'Workspace navigation'});
+  if(await mobile.isVisible()){await mobile.getByRole('link',{name:'Tools',exact:true}).click();return;}
+  const button=page.getByRole('button',{name:'Expand tools',exact:true});
+  if(await button.isVisible())await button.click();
+  await expect(page.getByRole('complementary',{name:'Exploration tools'})).toBeVisible();
+}
+export async function missionInspector(page:Page) {
+  const mobile=page.getByRole('navigation',{name:'Workspace navigation'});
+  if(await mobile.isVisible()){await mobile.getByRole('link',{name:'Inspector',exact:true}).click();return;}
+  const button=page.getByRole('button',{name:'Show inspector',exact:true});
+  if(await button.isVisible())await button.click();
 }
 export async function openDestinations(page:Page) {
   const open=page.getByRole('button',{name:'Open destinations',exact:true});
@@ -29,6 +44,7 @@ export async function utilities(page:Page) {
   if(await details.getAttribute('open')===null)await details.locator('summary').click();
 }
 export async function simulationAdvanced(page:Page) {
+  await missionTools(page);
   const details=page.locator('.simulation-advanced');
   if(await details.getAttribute('open')===null)await details.locator('summary').click();
 }

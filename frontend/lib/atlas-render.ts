@@ -94,6 +94,7 @@ export class ScientificOverlay {
   private controller=new AbortController();private active=0;private view:AtlasView|null=null;private cameraKey='';private disposed=false;private revision=0;private presented=false;
   constructor(private base:THREE.SphereGeometry,private invalidate:()=>void,private status:(value:string)=>void) {}
   configure(view:AtlasView) {
+    if(view.tileUrl&&!view.tileUrl.includes(`/${view.layer}/`))view={...view,tileUrl:undefined};
     if(this.view?.dataset!==view.dataset||this.view?.layer!==view.layer||this.view?.reload!==view.reload||this.view?.tileUrl!==view.tileUrl||this.view?.preparation!==view.preparation) {
       this.controller.abort();this.controller=new AbortController();this.revision++;this.pending.clear();this.queue=[];this.wanted.clear();this.cameraKey='';
       this.failed.clear();this.presented=false;

@@ -22,8 +22,24 @@ software-browser loading can exceed 15 seconds; imagery remains interactive and
 progress is visible. Global tiles remain capped at 32; environmental textures at
 96 (~24 MiB uncompressed). No source acquisition or numeric changes.
 
-Active: committing/pushing M1. Latest successful push: 533f8c7.
-Next: modular map-first mission workspace and contextual panels.
+M1 pushed as 9e59aaa. GitHub run 36921099219 passed fresh scientific acquisition,
+Python regressions, all 50 browser journeys, typecheck and production build.
+
+M2 modular map-first workspace is validated locally. MissionWorkspace owns layout;
+ScenarioControls and InfrastructureCatalog own their visual sections. Root hooks,
+scenario state and API contracts are retained. Closed panels reserve no rail;
+tools and inspectors are contextual and mutually exclusive, with mounted drafts
+preserved. Five screen sizes (1920, 1440, 1366, 1024 and 390 pixels wide) and
+125%/200% zoom-equivalent layouts pass. Actual desktop/laptop/mobile screenshots
+were inspected. The 51-test regression run passed 45 cases; six old journeys
+needed explicit panel opening and all pass in the 10-case follow-up, including
+new bounding-box checks. Typecheck and production build pass. A continuity defect
+found during review retained the previous environmental tile URL when selecting
+terrain in Mission; registered metadata now synchronizes the URL and a browser
+regression verifies the correct slope request and rendering.
+
+Active: committing/pushing M2. Latest successful push: 9e59aaa.
+Next: compact simulation timeline with bounded details and explicit kW/kWh labels.
 
 The earlier roadmap records below are historical.
 

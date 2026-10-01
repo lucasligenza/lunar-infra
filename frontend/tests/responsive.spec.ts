@@ -1,4 +1,4 @@
-import {openActivity,openDestinations,utilities} from './workspace';
+import {missionInspector,missionTools,openActivity,openDestinations,utilities} from './workspace';
 import { test, expect, type Locator, type Page } from '@playwright/test';
 
 async function reachable(control: Locator) {
@@ -20,6 +20,8 @@ async function header(page: Page, width: number) {
 }
 async function pane(page: Page, label: 'Map' | 'Tools' | 'Inspector' | 'Timeline', width: number) {
   if (width <= 900) await page.getByRole('navigation', { name: 'Workspace navigation' }).getByRole('link', { name: label, exact: true }).click();
+  else if(label==='Tools')await missionTools(page);
+  else if(label==='Inspector')await missionInspector(page);
 }
 
 for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 768], [390, 844]]) {
@@ -56,6 +58,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await page.screenshot({ path: `../artifacts/phase5-final-analyze-${width}.png` });
       await openActivity(page, 'Design');
       await pane(page, 'Tools', width);
+      await missionTools(page);
       await page.getByRole('button', { name: `Open scenario: ${name}`, exact: true }).click();
       await page.getByRole('button', { name: 'Select asset: QA habitat', exact: true }).click();
       await expect(page.getByLabel('Continuous demand (kW)', { exact: true })).toHaveValue('8');
@@ -66,6 +69,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await openActivity(page, 'Simulate');
       await pane(page, 'Tools', width);
       const result = page.waitForResponse(response => response.url().endsWith('/simulations') && response.request().method() === 'POST');
+      await missionTools(page);
       await page.getByRole('button', { name: 'Run simulation', exact: true }).click();
       const run = await (await result).json();
       await pane(page, 'Timeline', width);

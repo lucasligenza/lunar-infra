@@ -1,4 +1,4 @@
-import {openActivity,openDestinations,regionAdvanced,simulationAdvanced} from './workspace';
+import {missionInspector,missionTools,openActivity,openDestinations,regionAdvanced,simulationAdvanced} from './workspace';
 import {test,expect} from '@playwright/test';
 import { lunarCoordinate } from '../lib/globe';
 
@@ -23,7 +23,9 @@ test('global selection connects to local science and preserves mission drafts, a
     await expect(page.getByTestId('elevation-value')).toHaveText(local.elevation.value.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1}));
     await page.screenshot({path:'../artifacts/phase3-regional-connected.png'});
     await openActivity(page, 'Design');
+    await missionTools(page);
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
+    await missionTools(page);
     await page.getByRole('button',{name:'Select asset: Research habitat',exact:true}).click();
     await page.getByLabel('Continuous demand (kW)',{exact:true}).fill('9');
     await openActivity(page, 'Simulate');
@@ -51,9 +53,11 @@ test('global selection connects to local science and preserves mission drafts, a
     await simulationAdvanced(page);
     await page.getByLabel('Time step (seconds)',{exact:true}).fill('3600');
     await openActivity(page, 'Design');
+    await missionInspector(page);
     await page.getByRole('button',{name:'Save asset',exact:true}).click();
     await expect(page.getByRole('button',{name:'Save asset',exact:true})).toBeDisabled();
     await openActivity(page, 'Simulate');
+    await missionTools(page);
     await page.getByRole('button',{name:'Run simulation',exact:true}).click();
     await expect(page.getByTestId('telemetry-generation')).toHaveText('20.00');
     await page.getByRole('slider',{name:'Mission interval'}).press('End');

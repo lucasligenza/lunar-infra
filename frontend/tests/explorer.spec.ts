@@ -1,3 +1,4 @@
+import {missionInspector,missionTools} from './workspace';
 import { test, expect } from "@playwright/test";
 import { toPolar, toGeographic } from "../lib/lunar";
 import type { Site } from "../types/scientific";
@@ -27,18 +28,22 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
+  await page.getByRole("button",{name:"Show inspector",exact:true}).click();
   await expect(page.getByText("Select a location", { exact: true })).toBeVisible();
+  await missionTools(page);
   await page.getByRole("button", { name: "Collapse tools" }).click();
-  await expect(page.getByRole("region", { name: "Scientific layers" })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Scientific layers" })).not.toBeVisible();
   await page.getByRole("button", { name: "Expand tools" }).click();
   await expect(page.getByRole("region", { name: "Scientific layers" })).toBeVisible();
   await page.getByLabel("Latitude (°)", { exact: true }).fill("-89.5");
   await page.getByLabel("Longitude (° E)", { exact: true }).fill("0");
   const expected: Site = await (await request.get("/api/sites/inspect?latitude=-89.5&longitude=0")).json();
+  await missionTools(page);
   await page.getByRole("button", { name: "Inspect location" }).click();
   await expect(page.getByTestId("elevation-value")).toHaveText(formatted(expected.elevation.value!));
   await expect(page.getByTestId("slope-value")).toHaveText(formatted(expected.slope.value!));
   await expect(page.getByTestId("illumination-value")).toHaveText(formatted(expected.solar_visibility.value!, true));
+  await missionTools(page);
   for (const name of ["Local slope", "Solar visibility", "Elevation"]) {
     await page.getByRole("radio", { name }).check();
     await expect(page.getByRole("radio", { name })).toBeChecked();
@@ -60,9 +65,11 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
   const clicked: Site = await (await clickedResponse).json();
   await expect(page.getByTestId("elevation-value")).toHaveText(formatted(clicked.elevation.value!));
   await expect(page.getByTestId("selected-coordinate")).toContainText(Math.abs(clicked.coordinates.latitude_deg).toFixed(5));
+  await missionTools(page);
   await expect(page.getByRole("checkbox", { name: "Lunar coordinate grid" })).toBeChecked();
   await page.getByRole("checkbox", { name: "Lunar coordinate grid" }).uncheck();
   await expect(page.getByRole("checkbox", { name: "Lunar coordinate grid" })).not.toBeChecked();
+  await missionInspector(page);
   await page.locator(".data-sources summary").filter({ hasText: "LDEM_75S_240M" }).click();
   await expect(page.getByRole("link", { name: "NASA source: ldem_75s_240m.lbl" })).toBeVisible();
   await page.screenshot({ path: "../artifacts/lunaros-desktop.png", fullPage: true });
@@ -72,9 +79,12 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
 test("outside-region queries clear stale measurements", async ({ page }) => {
   await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
+  await missionTools(page);
   await page.getByRole("button", { name: "Inspect location" }).click();
   await expect(page.getByTestId("elevation-value")).toBeVisible();
+  await missionTools(page);
   await page.getByLabel("Latitude (°)", { exact: true }).fill("-80");
+  await missionTools(page);
   await page.getByRole("button", { name: "Inspect location" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "Location unavailable" })).toContainText("outside the prepared");
   await expect(page.getByTestId("elevation-value")).toHaveCount(0);
@@ -98,6 +108,7 @@ test("mobile map and coordinate form remain usable", async ({ page }) => {
   const controls = await page.getByRole("region", { name: "Scientific layers" }).boundingBox();
   const coordinates = await page.getByRole("heading", { name: "Inspect by coordinates" }).boundingBox();
   expect(controls!.y + controls!.height).toBeLessThan(coordinates!.y);
+  await missionTools(page);
   await page.getByRole("button", { name: "Inspect location" }).click();
   await expect(page.getByTestId("elevation-value")).toBeVisible();
   const width = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: window.innerWidth }));

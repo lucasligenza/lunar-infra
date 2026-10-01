@@ -17,7 +17,8 @@ export default function MissionMoon({location,assets,base,scenarioId,selectedAss
   useEffect(()=>{const abort=new AbortController();setError(null);fetchScientific<GlobeMetadata>('/globe',abort.signal).then(value=>{if(!abort.signal.aborted){setMetadata(value);if(!value.available)setError('Prepared global imagery and terrain are unavailable. Run the global pipeline and retry.');}}).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
     fetchScientific<AtlasLayer[]>('/atlas/layers',abort.signal).then(setLayers).catch(()=>{});return ()=>abort.abort();},[reload]);
   useEffect(()=>{const coordinates=base??location;if(coordinates)setFlight({coordinates,distance:1.18,serial:++serial.current});},[scenarioId]);
-  const layer=layers.find(layer=>layer.id===view.layer&&(layer.id==='geology'||layer.dataset_id===view.dataset||(view.dataset==='auto'&&layer.dataset_id===(layers.some(value=>value.dataset_id==='gld100')?'gld100':'lola-global'))));
+  const layer=layers.find(layer=>layer.id===view.layer&&(['geology','temperature','illumination'].includes(layer.id)||layer.dataset_id===view.dataset||(view.dataset==='auto'&&layer.dataset_id===(layers.some(value=>value.dataset_id==='gld100')?'gld100':'lola-global'))));
+  useEffect(()=>{if(layer&&(view.tileUrl!==layer.url_template||view.preparation!==(layer.preparation_status??'ready')))onView({...view,tileUrl:layer.url_template,preparation:layer.preparation_status??'ready'});},[layer?.url_template,layer?.preparation_status,view.tileUrl,view.preparation]);
   return <div className="mission-moon">{metadata?.available?<MoonCanvas metadata={metadata} location={location} assets={assets} base={base} flight={flight}
     selectedAssetId={selectedAssetId} placementActive={placing} onAssetSelect={onAssetSelect} onSelect={point=>onSelect(point.longitude_deg,point.latitude_deg)}
     texture={true} grid={false} camera={camera} onCamera={onCamera} onReady={()=>{}} atlas={view} onAtlasStatus={setOverlayStatus}/>:

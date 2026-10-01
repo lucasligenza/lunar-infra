@@ -147,6 +147,22 @@ tile renderer chooses a complete visible level within its bounded texture budget
 including at poles, rather than discarding longitude wedges.
 
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
+
+The targeted workspace refactor extracts `MissionWorkspace` (layout ownership),
+`ScenarioControls` and `InfrastructureCatalog`. Explorer retains the existing
+scenario/simulation hooks and geographic state. One contextual panel resizes the
+map; tools and inspectors stay mounted while hidden so input drafts survive.
+Mobile task navigation selects a full-width panel. The inspector has one outer
+scroll container instead of nested scientific/asset scroll areas.
+
+Scientific rendering reads numeric-derived PNGs independently of point queries.
+Alpha is checked before tiles can be reported as rendered, and readiness follows
+a renderer draw. Environmental metadata reports local preparation explicitly.
+Fragment coordinates use the same lunar graphics-axis permutation as markers;
+polar tile extents account for longitude convergence. Global cache budget stays
+32 tiles, with up to 96 for bounded environmental views (~24 MiB RGBA). Original
+nodata and real radial source patterns are retained; texture colors never provide
+numeric measurements.
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)
 - [FastAPI testing](https://fastapi.tiangolo.com/tutorial/testing/)

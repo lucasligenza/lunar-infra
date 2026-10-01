@@ -1,4 +1,4 @@
-import {openActivity,openDestinations} from './workspace';
+import {openActivity,openDestinations,missionTools} from './workspace';
 import { test, expect } from '@playwright/test';
 
 test('context docks own space and mobile task navigation keeps controls reachable', async ({ page }) => {
@@ -28,4 +28,33 @@ test('context docks own space and mobile task navigation keeps controls reachabl
   await expect(page.getByRole('button', { name: 'Open inspector', exact: true })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: '../artifacts/phase5-layout-mobile-map.png' });
+});
+
+test('mission workspace gives closed panels back to the map and selects one contextual inspector',async({page,request})=>{
+  const location={latitude_deg:-89.5,longitude_deg:0};
+  const scenario=await(await request.post('/api/scenarios',{data:{name:`Workspace ${Date.now()}`,site:location,assets:[{kind:'habitat',name:'Layout habitat',location}]}})).json();
+  try {
+    await page.goto('/?mode=mission');await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
+    for(const [width,height] of [[1920,1080],[1440,900],[1366,768],[1024,768],[390,844]]) {
+      await page.setViewportSize({width,height});
+      const nav=page.getByRole('navigation',{name:'Workspace navigation'});
+      if(width<=900)await nav.getByRole('link',{name:'Map',exact:true}).click();
+      const map=page.locator('.map-workspace'),box=(await map.boundingBox())!;
+      if(width>900)expect(box.width).toBeGreaterThan(width*.9);
+      await page.screenshot({path:`../artifacts/targeted-map-first-${width}.png`});
+      await missionTools(page);
+      await page.getByRole('button',{name:`Open scenario: ${scenario.name}`,exact:true}).click();
+      await page.getByRole('button',{name:'Select asset: Layout habitat',exact:true}).click();
+      await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
+      await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+      if(width>900) {
+        const terrain=(await map.boundingBox())!,inspector=(await page.locator('.context-rail').boundingBox())!;
+        expect(terrain.x+terrain.width).toBeLessThanOrEqual(inspector.x+1);expect(terrain.width).toBeGreaterThan(width*.65);
+      }
+      await page.screenshot({path:`../artifacts/targeted-inspector-${width}.png`});
+      await page.getByRole('button',{name:'Close inspector',exact:true}).click();
+      if(width>900)expect((await map.boundingBox())!.width).toBeGreaterThan(width*.9);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    }
+  }finally{const current=await(await request.get(`/api/scenarios/${scenario.id}`)).json();await request.delete(`/api/scenarios/${scenario.id}?revision=${current.revision}`);}
 });
