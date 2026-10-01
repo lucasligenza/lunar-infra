@@ -37,6 +37,19 @@ build/typecheck pass. Actual thermal overlay screenshot reviewed. CI prepares th
 bounded product for fresh-data validation. Latest successful push: a5d6e22.
 Next: explainable regional settlement candidate screening and mission transition.
 
+CI repair: both a5d6e22 and 8c9e663 pushed successfully, but their GitHub Actions
+runs failed on the same global-mission browser selector. The new nested Layer
+source disclosure made `.mission-layer-status summary` ambiguous. NASA acquisition,
+Python science/API tests, typecheck and build passed on both fresh Linux runs;
+39/40 and 40/41 browser tests passed respectively. The repair targets the direct
+summary child and asserts it is unique, retaining the complete placement, save,
+simulation and playback journey. Full local browser validation and a new remote
+run will be recorded before resuming feature pushes. All 41 local Chromium tests
+now pass (5.9 minutes), including the repaired global mission and five viewport
+journeys; typecheck passes. Settlement work is in progress
+and is deliberately excluded from this repair commit. Latest confirmed push: 8c9e663;
+latest confirmed green CI milestone: c5ff8d7.
+
 Phase 5 is complete: lunar mission-control UX and design overhaul. Scope and observed baseline
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
 tests pass; actual production screens and all five requested viewport sizes reviewed.

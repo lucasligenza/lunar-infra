@@ -53,9 +53,11 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     }
     await page.getByRole('combobox',{name:'Global mission surface',exact:true}).selectOption('slope');
     await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready');
-    await page.locator('.mission-layer-status summary').click();
+    const overlayDisclosure=page.locator('.mission-layer-status > summary');
+    await expect(overlayDisclosure).toHaveCount(1);
+    await overlayDisclosure.click();
     await expect(page.locator('.mission-layer-status')).toContainText('30 deg');
-    await page.locator('.mission-layer-status summary').click();
+    await overlayDisclosure.click();
     await openActivity(page, 'Simulate');
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();
     const result=page.waitForResponse(r=>r.url().endsWith('/simulations')&&r.request().method()==='POST');
