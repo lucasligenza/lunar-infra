@@ -66,7 +66,7 @@ retain access to the scientific map, tools, inspector and computed timeline.
 
 Global exploration uses a separate bounded NASA preparation command and service.
 Its coarse native elevation supports global inspection without expanding local
-construction analysis. Three.js loads only in the active global view; 1k imagery
+construction analysis. Three.js loads only in an active 3D viewport; 1k imagery
 precedes 4k, and a fixed 1-degree mesh samples the verified 0.25-degree DEM. No
 high-resolution planetary streaming engine or hosted account is required.
 

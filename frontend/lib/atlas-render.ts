@@ -60,11 +60,13 @@ export class ScientificOverlay {
   group=new THREE.Group();
   private tiles=new Map<string,Tile>();private wanted=new Set<string>();private queue:{key:string;z:number;x:number;y:number}[]=[];
   private pending=new Map<string,number>();
+  private failed=new Set<string>();
   private controller=new AbortController();private active=0;private view:AtlasView|null=null;private cameraKey='';private disposed=false;private revision=0;
   constructor(private base:THREE.SphereGeometry,private invalidate:()=>void,private status:(value:string)=>void) {}
   configure(view:AtlasView) {
-    if(this.view?.dataset!==view.dataset||this.view?.layer!==view.layer) {
+    if(this.view?.dataset!==view.dataset||this.view?.layer!==view.layer||this.view?.reload!==view.reload) {
       this.controller.abort();this.controller=new AbortController();this.revision++;this.pending.clear();this.queue=[];this.wanted.clear();this.cameraKey='';
+      this.failed.clear();
       for(const tile of this.tiles.values())this.disposeTile(tile);this.tiles.clear();
     }
     this.view=view;this.group.visible=view.layer!=='none';
@@ -79,6 +81,7 @@ export class ScientificOverlay {
     const candidates=visibleTiles(camera,z);
     const roots=[{key:'0/0/0',z:0,x:0,y:0},{key:'0/1/0',z:0,x:1,y:0}];
     const chosen=[...roots,...candidates];this.wanted=new Set(chosen.map(tile=>tile.key));
+    for(const key of this.failed)if(!this.wanted.has(key))this.failed.delete(key);
     this.queue=chosen.filter(tile=>!this.tiles.has(tile.key)&&!this.pending.has(tile.key));
     // Keep roots as a complete fallback. Switch levels together, so opacity is
     // applied once rather than accumulating parent and child colors.
@@ -89,7 +92,8 @@ export class ScientificOverlay {
     const complete=details.length>0&&details.every(key=>this.tiles.has(key));
     for(const tile of this.tiles.values())tile.mesh.visible=this.wanted.has(tile.key)&&(complete?tile.z>0:tile.z===0);
     const loading=[...this.wanted].filter(key=>!this.tiles.has(key)).length;
-    this.status(loading?`Loading scientific tiles (${loading})`:`Scientific overlay ready / level ${complete?this.tiles.get(details[0])!.z:0}`);
+    this.status([...this.failed].some(key=>this.wanted.has(key))?'Scientific tiles unavailable. Retry the layer; native queries remain separate.':
+      loading?`Loading scientific tiles (${loading})`:`Scientific overlay ready / level ${complete?this.tiles.get(details[0])!.z:0}`);
     this.invalidate();
   }
   private pump() {
@@ -106,13 +110,14 @@ export class ScientificOverlay {
         if(view.layer==='geology'){texture.minFilter=THREE.NearestFilter;texture.magFilter=THREE.NearestFilter;texture.generateMipmaps=false;}
         const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,opacity:this.view!.opacity,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
         const mesh=new THREE.Mesh(tileGeometry(this.base,tile.z,tile.x,tile.y),material);mesh.renderOrder=5;this.group.add(mesh);
-        this.tiles.set(tile.key,{...tile,mesh,bitmap});this.visibility();
+        this.tiles.set(tile.key,{...tile,mesh,bitmap});this.failed.delete(tile.key);this.visibility();
         if(this.tiles.size>32)for(const item of this.tiles.values())if(!this.wanted.has(item.key)){this.disposeTile(item);this.tiles.delete(item.key);if(this.tiles.size<=32)break;}
-      }).catch(()=>{if(!signal.aborted&&!this.disposed)this.status('Scientific tiles unavailable; retry by reselecting the layer. Native queries remain separate.');})
-        .finally(()=>{this.active--;if(this.pending.get(tile.key)===revision)this.pending.delete(tile.key);this.pump();});
+      }).catch(()=>{if(!signal.aborted&&!this.disposed&&revision===this.revision&&this.wanted.has(tile.key)){this.failed.add(tile.key);this.visibility();}})
+        .finally(()=>{this.active--;if(this.pending.get(tile.key)===revision)this.pending.delete(tile.key);this.pump();this.invalidate();});
     }
   }
   rebuild() {for(const tile of this.tiles.values()){tile.mesh.geometry.dispose();tile.mesh.geometry=tileGeometry(this.base,tile.z,tile.x,tile.y);}this.invalidate();}
+  resources() {return {retained_tiles:this.tiles.size,visible_tiles:[...this.tiles.values()].filter(tile=>tile.mesh.visible).length,active_requests:this.active,queued_requests:this.queue.length};}
   private disposeTile(tile:Tile) {this.group.remove(tile.mesh);tile.mesh.geometry.dispose();const material=tile.mesh.material as THREE.MeshBasicMaterial;material.map?.dispose();material.dispose();tile.bitmap.close();}
   dispose() {this.disposed=true;this.controller.abort();for(const tile of this.tiles.values())this.disposeTile(tile);this.tiles.clear();}
 }

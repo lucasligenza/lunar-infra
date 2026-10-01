@@ -109,6 +109,6 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         </details>
       </aside>}
     </>}
-    <footer className="globe-attribution"><a href="https://svs.gsfc.nasa.gov/4720/" target="_blank" rel="noreferrer">NASA’s Scientific Visualization Studio</a><span>Moon / ME-PA DE421</span></footer>
+    <footer className="globe-attribution"><a href="https://svs.gsfc.nasa.gov/4720/" target="_blank" rel="noreferrer">NASA’s Scientific Visualization Studio</a><span>LOLA geometry / ME-PA DE421</span></footer>
   </section>;
 }

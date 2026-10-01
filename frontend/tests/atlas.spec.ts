@@ -33,6 +33,28 @@ test('close-up camera includes surface tiles whose centers are outside the viewp
   }
 });
 
+test('failed scientific tiles retain native queries and retry with bounded rendering resources',async({page,request})=>{
+  let failing=true;
+  await page.route('**/api/atlas/tiles/**',route=>failing?route.fulfill({status:503,body:'Synthetic tile protocol failure'}):route.continue());
+  await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await page.getByRole('button',{name:/^Tycho crater/}).click();
+  await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();
+  const destination=(await(await request.get('/api/destinations')).json()).find((place:any)=>place.id==='tycho');
+  const sample=await(await request.get(`/api/atlas/inspect?latitude=${destination.coordinates.latitude_deg}&longitude=${destination.coordinates.longitude_deg}`)).json();
+  await expect(page.getByTestId('atlas-elevation')).toHaveText(`${sample.elevation.value.toLocaleString('en-US')} m`);
+  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('slope');
+  await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific tiles unavailable');
+  await expect(page.getByTestId('atlas-elevation')).toHaveText(`${sample.elevation.value.toLocaleString('en-US')} m`);
+  failing=false;await page.getByRole('button',{name:'Retry scientific layer',exact:true}).click();
+  await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
+  const host=page.getByTestId('moon-canvas');
+  await expect.poll(async()=>JSON.parse((await host.getAttribute('data-overlay-resources'))!).active_requests).toBe(0);
+  const resources=JSON.parse((await host.getAttribute('data-overlay-resources'))!);
+  expect(resources.retained_tiles).toBeLessThanOrEqual(32);expect(resources.visible_tiles).toBeGreaterThan(0);
+  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('none');
+  await expect.poll(async()=>Number(await host.getAttribute('data-overlay-tiles'))).toBe(0);
+});
+
 test('atlas queries original GLD100 across regions and switches verified datasets',async({page,request})=>{
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
@@ -44,7 +66,7 @@ test('atlas queries original GLD100 across regions and switches verified dataset
   const lola=await (await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47&dataset=lola-global')).json();
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${lola.elevation.value.toLocaleString('en-US')} m`);
   await page.getByText('Measurement metadata',{exact:true}).click();
-  await expect(page.getByRole('complementary',{name:'Lunar atlas'}).getByText('MEAN EARTH/POLAR AXIS OF DE421',{exact:true})).toBeVisible();
+  await expect(page.getByRole('region',{name:'Atlas terrain inspection'}).getByText('MEAN EARTH/POLAR AXIS OF DE421',{exact:true})).toBeVisible();
   await page.screenshot({path:'../artifacts/phase4-elevation-slice.png'});
   await page.getByRole('button',{name:'Catalog',exact:true}).click();
   await page.getByRole('searchbox',{name:'Search science datasets'}).fill('mineralogy');

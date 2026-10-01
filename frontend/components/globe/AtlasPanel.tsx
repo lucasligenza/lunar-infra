@@ -45,7 +45,8 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
         {layers.filter(value=>value.dataset_id===selectedDataset||value.id==='geology').map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
       {layer&&<><label>Layer opacity {Math.round(view.opacity*100)}%<input aria-label="Scientific layer opacity" type="range" min={0} max={1} step={.05} value={view.opacity} onChange={e=>onView({...view,opacity:Number(e.target.value)})} /></label>
         <AtlasLegend layer={layer}/>
-        <p role="status" data-testid="atlas-overlay-status">{overlayStatus}</p>
+        <p role={overlayStatus.includes('unavailable')?'alert':'status'} data-testid="atlas-overlay-status">{overlayStatus}</p>
+        {overlayStatus.includes('unavailable')&&<button onClick={()=>onView({...view,reload:(view.reload??0)+1})}>Retry scientific layer</button>}
         <label><input type="checkbox" checked={view.compare} onChange={e=>onView({...view,compare:e.target.checked})}/>Compare imagery and science</label>
         {view.compare&&<label>Reveal position<input aria-label="Comparison reveal" type="range" min={.05} max={.95} step={.01} value={view.reveal} onChange={e=>onView({...view,reveal:Number(e.target.value)})}/></label>}
       </>}

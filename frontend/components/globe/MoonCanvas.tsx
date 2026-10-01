@@ -173,9 +173,11 @@ export default function MoonCanvas(props: Props) {
         } else renderer.render(scene,camera);
         dirty=false;
         container.dataset.overlayTiles=String(scientific.group.children.length);
+        container.dataset.overlayResources=JSON.stringify(scientific.resources());
         container.dataset.draws = String(++draws);
         container.dataset.camera = camera.position.toArray().join(',');
         container.dataset.renderCalls = String(renderer.info.render.calls);
+        container.dataset.gpuResources = JSON.stringify(renderer.info.memory);
         container.dataset.markers = JSON.stringify(markers.children.map(object=>({position:object.position.toArray(),scale:object.scale.x,pixels:object.userData.pixelRadius,assetId:object.userData.assetId})));
       }
       frame = requestAnimationFrame(render);

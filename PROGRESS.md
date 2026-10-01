@@ -96,7 +96,7 @@ global workflow availability from the polar cache. Full suite now contains 26
 browser tests; its final all-at-once run follows in the acceptance slice.
 Next: reusable bounded PDS collection discovery and final atlas acceptance.
 
-Milestone 6: verified collection registry and reusable PDS metadata discovery.
+Milestone 6 48b0166 pushed: verified collection registry and reusable PDS metadata discovery.
 Requests cap at 20 records / 2 MiB, validate collection membership and file-size
 associations, and retain SHA-256/UTC/source snapshots. The catalog browses original
 labels, periods, indexed bounds and files; acquisition-budget controls start no
@@ -107,6 +107,24 @@ Validation: three bounded discovery/cache/API unit tests and the Chromium catalo
 error/retry/budget/mobile workflow pass; typecheck and production build pass.
 Existing atlas/scenario scientific definitions are preserved. Next: final rendered
 review, resource/latency observations, missing-overlay recovery and acceptance.
+
+Milestone 7: final atlas acceptance and overlay failure recovery. Failed tile
+requests retain an explicit error and retry action while independent native
+measurements remain usable. Actual request/tile/GPU counters expose bounded
+resources; retry and disposal are covered by a browser regression. Final rendered
+desktop/laptop/mobile atlas profiles and controls were inspected. Floating controls
+now composite separately from WebGL after screenshots revealed dark painting
+artifacts beneath the drawer and camera controls; reviewed renders no longer show
+those artifacts. No continuous redraw or larger terrain download was introduced.
+Full local validation: 91 Python tests plus eight subtests and 28 Chromium tests
+pass. Final compositing change has 12 focused browser/visual checks and six further
+global mission/mode/recovery checks; all pass. Final typecheck and production build
+pass. Remote acceptance follows publication. See docs/phase4-acceptance.md for complete
+functional coverage, source limits and measured warm-cache latency/resource counts.
+The first discovery CI run (36793305496) failed one overbroad CRS text selector
+after catalog metadata expanded; its other 26 browser tests and scientific/build
+checks passed. The selector now targets the measurement inspector. No tests are
+disabled or bypassed. Next: publish validated final atlas acceptance.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -261,11 +279,14 @@ Git writes and outbound networking require elevated execution in this environmen
 ## Latest successful commit
 
 Latest confirmed published milestone: 861ff94 (GitHub run 36792355155 succeeded).
-Current milestone: feat: add bounded PDS scientific data discovery.
+Latest published commit: 48b0166; initial CI selector failure is corrected locally.
+Current milestone: fix: finalize atlas rendering and failure recovery.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Complete Phase 4 milestones in docs/phase4-plan.md, preserving all earlier science
-and mission workflows. Next slice adds bounded provider discovery and final atlas verification.
+Publish the acceptance milestone and verify fresh
+GitHub acquisition/scientific/browser validation. Optional thermal, mineralogical,
+resource and gravity numerical adapters remain explicitly unavailable; no additional
+scope is started automatically.

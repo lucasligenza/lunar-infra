@@ -8,8 +8,8 @@ import type {Asset} from '../../types/mission';
 import AtlasLegend from './AtlasLegend';
 const MoonCanvas=dynamic(()=>import('./MoonCanvas'),{ssr:false});
 
-export default function MissionMoon({location,assets,base,scenarioId,selectedAssetId,placing,camera,onCamera,onSelect,onAssetSelect,view}:{location:GlobeLocation|null;assets:Asset[];base:GlobeLocation|null;
-  scenarioId:string|null;selectedAssetId:string|null;placing:boolean;camera:CameraState|null;onCamera:(state:CameraState)=>void;onSelect:(longitude:number,latitude:number)=>void;onAssetSelect:(id:string)=>void;view:AtlasView}) {
+export default function MissionMoon({location,assets,base,scenarioId,selectedAssetId,placing,camera,onCamera,onSelect,onAssetSelect,view,onView}:{location:GlobeLocation|null;assets:Asset[];base:GlobeLocation|null;
+  scenarioId:string|null;selectedAssetId:string|null;placing:boolean;camera:CameraState|null;onCamera:(state:CameraState)=>void;onSelect:(longitude:number,latitude:number)=>void;onAssetSelect:(id:string)=>void;view:AtlasView;onView:(view:AtlasView)=>void}) {
   const [metadata,setMetadata]=useState<GlobeMetadata|null>(null),[error,setError]=useState<string|null>(null),[reload,setReload]=useState(0);
   const [flight,setFlight]=useState<{coordinates:GlobeLocation;distance:number;serial:number}|null>(null),[overlayStatus,setOverlayStatus]=useState('');
   const serial=useRef(0);
@@ -23,6 +23,7 @@ export default function MissionMoon({location,assets,base,scenarioId,selectedAss
     texture={true} grid={false} camera={camera} onCamera={onCamera} onReady={()=>{}} atlas={view} onAtlasStatus={setOverlayStatus}/>:
     <div className="globe-loading" role={error?'alert':'status'}>{error??'Loading global mission terrain…'}{error&&<button onClick={()=>setReload(value=>value+1)}>Retry mission terrain</button>}</div>}
     {location&&<button className="mission-fly" onClick={()=>setFlight({coordinates:location,distance:1.18,serial:++serial.current})}>Fly to selected site</button>}
-    {view.layer!=='none'&&<details className="mission-layer-status"><summary>{view.layer} / {overlayStatus}</summary>{layer?<AtlasLegend layer={layer}/>:<p>Layer is unavailable. Prepare its registered source or select NASA imagery.</p>}</details>}
+    {view.layer!=='none'&&<details className="mission-layer-status"><summary>{view.layer} / {overlayStatus}</summary>{layer?<AtlasLegend layer={layer}/>:<p>Layer is unavailable. Prepare its registered source or select NASA imagery.</p>}
+      {overlayStatus.includes('unavailable')&&<button onClick={()=>onView({...view,reload:(view.reload??0)+1})}>Retry scientific layer</button>}</details>}
   </div>;
 }

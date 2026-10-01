@@ -17,6 +17,7 @@
 .unsupported-region button { background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:12px; margin:6px 10px 6px 0; }
 .global-explorer { flex:1; min-height:0; position:relative; overflow:hidden; background:#080c11; }
 .moon-stage, .moon-canvas { position:absolute; inset:0; }
+.moon-stage { isolation:isolate; z-index:0; }
 .moon-canvas canvas { display:block; width:100%; height:100%; touch-action:none; }
 .destination-search { position:absolute; top:24px; left:24px; width:290px; border:1px solid var(--border); border-radius:6px; background:#111923f5; box-shadow:0 12px 30px #0004; }
 .destination-search > label { display:block; padding:16px 16px 0; font-size:12px; color:var(--quiet); }
@@ -39,7 +40,9 @@
 .global-introduction span { display:block; color:#8596a5; font-size:12px; margin-top:20px; }
 .global-layer-controls { position:absolute; left:24px; bottom:48px; z-index:3; }
 .global-layer-controls > button + button { margin-left:6px; }
-.atlas-panel { position:absolute; top:24px; right:24px; bottom:110px; width:340px; background:#111923fa; border:1px solid var(--border); border-radius:6px; padding:20px; overflow:auto; scrollbar-width:thin; }
+.atlas-panel { position:absolute; top:24px; right:24px; bottom:110px; width:340px; background:#111923fa; border:1px solid var(--border); border-radius:6px; padding:20px; overflow:auto; scrollbar-width:thin; z-index:4; contain:paint; isolation:isolate; }
+/* Composite floating controls separately from the demand-rendered WebGL surface. */
+.atlas-panel, .camera-controls { opacity:.999; }
 .atlas-panel header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .atlas-panel h2 { font-size:22px; font-weight:500; } .atlas-panel h3 { font-size:16px; margin:20px 0 12px; }
 .atlas-panel p { font-size:12px; color:var(--quiet); line-height:1.6; margin:12px 0; }

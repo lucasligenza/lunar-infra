@@ -144,11 +144,14 @@ GitHub Actions repeats these checks and downloads the pinned data on a fresh Lin
 runner. See [Phase 1](docs/phase1-acceptance.md) and
 [Phase 2](docs/phase2-acceptance.md) and [Phase 3](docs/phase3-acceptance.md)
 acceptance evidence for test coverage and rendered visual review.
+The [Phase 4 acceptance record](docs/phase4-acceptance.md) describes global atlas
+coverage, additional geology, browser review and measured performance limits.
 
 The 240 m terrain grid supports regional exploration, not landing-hazard analysis.
 The global 0.25° elevation source is approximately 7.58 km per pixel at the equator;
 its display mesh uses 1° spacing and the visualization texture reaches 4096 × 2048.
-Higher global detail is not streamed by this implementation. Global visual selection
+Scientific coloring loads progressively from native 32 ppd GLD100 cells, about
+948 m equatorial spacing; geometry remains coarse. Global visual selection
 is suitable for navigation; construction-scale conclusions need finer verified data.
 Solar visibility is a modeled long-term frequency over approximately 18.6 years,
 not current sunlight or electrical power. See the scientific limitations below.

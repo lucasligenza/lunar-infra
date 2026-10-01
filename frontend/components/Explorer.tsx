@@ -242,7 +242,7 @@ export default function Explorer() {
         {mode==='regional'&&<button className="atlas-local-toggle" onClick={()=>{if(!location)setLocation({latitude_deg:-89.5,longitude_deg:0});setAtlasRegional(true);}}>3D atlas analysis</button>}
         {globalMissionView?<MissionMoon location={location} assets={scenarioInView?scenario.active?.assets??[]:[]} base={scenarioInView?scenario.active?.site??null:null}
           scenarioId={scenarioInView?scenario.active?.id??null:null} selectedAssetId={selectedAssetId} placing={Boolean(placement)} camera={camera} onCamera={setCamera}
-          onSelect={(lon,lat)=>void mapSelect(lon,lat)} onAssetSelect={id=>{if(!working)selectAsset(id);}} view={atlasView}/>:
+          onSelect={(lon,lat)=>void mapSelect(lon,lat)} onAssetSelect={id=>{if(!working)selectAsset(id);}} view={atlasView} onView={setAtlasView}/>:
           region && layer && <TerrainMap region={region} layer={layer} site={site} grid={grid}
           onSelect={(lon, lat) => void mapSelect(lon, lat)} onPointer={setPointer}
           assets={scenario.active?.assets} baseSite={scenario.active?.site} selectedAssetId={selectedAssetId}
