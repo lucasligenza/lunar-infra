@@ -3,8 +3,12 @@
 ## Current development phase
 
 Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
-Scope and baseline are documented in docs/phase4-plan.md. No AI is included.
-AI and optimization remain excluded. See docs/phase3-plan.md.
+Core acceptance is complete locally and on GitHub, with fresh NASA/USGS acquisition,
+91 Python tests plus eight subtests, 28 Chromium tests, typecheck and production build.
+All seven implementation milestones are committed and pushed. See
+docs/phase4-acceptance.md for actual rendered review, performance observations and
+explicit optional dataset limitations. No AI or optimization is included.
+Scope and baseline are documented in docs/phase4-plan.md.
 Phase 3 acceptance is verified locally and on GitHub, including actual rendered
 review and the production build. See docs/phase3-acceptance.md for coverage limits.
 Phase 2 acceptance checks pass locally and on GitHub with fresh NASA acquisition.
@@ -108,7 +112,7 @@ error/retry/budget/mobile workflow pass; typecheck and production build pass.
 Existing atlas/scenario scientific definitions are preserved. Next: final rendered
 review, resource/latency observations, missing-overlay recovery and acceptance.
 
-Milestone 7: final atlas acceptance and overlay failure recovery. Failed tile
+Milestone 7 747bc46 pushed, CI passed (run 36796269865): final atlas acceptance and overlay failure recovery. Failed tile
 requests retain an explicit error and retry action while independent native
 measurements remain usable. Actual request/tile/GPU counters expose bounded
 resources; retry and disposal are covered by a browser regression. Final rendered
@@ -119,12 +123,17 @@ those artifacts. No continuous redraw or larger terrain download was introduced.
 Full local validation: 91 Python tests plus eight subtests and 28 Chromium tests
 pass. Final compositing change has 12 focused browser/visual checks and six further
 global mission/mode/recovery checks; all pass. Final typecheck and production build
-pass. Remote acceptance follows publication. See docs/phase4-acceptance.md for complete
+pass. Three additional optimized-production browser workflows pass; actual geology
+and mission desktop/mobile renders were reviewed. GitHub run 36796269865 passed
+fresh pinned acquisition, all 91 tests/eight subtests, typecheck/build and all 28
+browser tests without skips. See docs/phase4-acceptance.md for complete
 functional coverage, source limits and measured warm-cache latency/resource counts.
 The first discovery CI run (36793305496) failed one overbroad CRS text selector
 after catalog metadata expanded; its other 26 browser tests and scientific/build
 checks passed. The selector now targets the measurement inspector. No tests are
-disabled or bypassed. Next: publish validated final atlas acceptance.
+disabled or bypassed; the final fresh run verifies the correction. Phase 4 core
+acceptance is complete. The local production app and scientific API are running
+at http://127.0.0.1:3000 and http://127.0.0.1:8000 at handoff.
 
 Phase 3 milestone 1 a07b772 pushed: audit and renderer/data investigation complete. Baseline
 69 tests plus eight subtests and 10 browser tests pass; existing UI screenshots
@@ -245,6 +254,19 @@ and acceptance evidence. Documentation handoff records confirmed remote validati
 
 ## Dataset integration status
 
+- WAC_GLD100_E000N1800_032P v1.4: pinned native 5760 x 11520 PDS grid,
+  32 ppd, approximately 948 m equatorial cells. Special/null codes preserved;
+  derived physical-distance slopes, numerical queries/statistics/profiles and
+  progressive 3D coloring are ready. WAC coverage is supplemented by LOLA polar
+  fill; observation dates and surveyed inter-frame registration remain unspecified.
+- Unified_Geologic_Map_of_the_Moon_GIS_v2 (2020 v2): eight pinned members from
+  the original USGS archive, 12,247 source polygons, 49 interpretive units and
+  original classification colors/descriptions. Categorical 16 ppd queries/3D layer
+  are ready; Moon 2000 source projection and Iohs/Ios description discrepancy retained.
+- Diviner GCP: 18 real collection products discovered from verified PDS labels,
+  with bounded metadata snapshots and original file sizes/checksums. Temperature
+  values are not acquired or integrated; PDS3/PDS4 axis/calibration validation remains.
+  Mineralogical, resource and gravity adapters are also explicitly unavailable.
 - LDEM_4 V3.0: preserved native global 1440 x 720 int16 grid, 0.25 degrees,
   DN * 0.5 m on the same lunar sphere/frame. Global inspection and coverage API
   validate separately from the polar store. Observations 2009-2016.
@@ -274,19 +296,23 @@ Time-dependent NASA illumination is not integrated, so real-data mission playbac
 is unavailable. Energy runs use explicitly labeled hypothetical factors; the model
 omits thermal coupling, degradation and spatial shading. See scientific-assumptions.md
 and docs/energy-model.md. SQLite scenarios/results are local and excluded from Git.
+Thermal/mineralogical/resource/gravity numerical layers are not prepared. Verified
+provider metadata is discoverable without implying those measurements are available.
+Geology is interpretation at 1:5,000,000 map scale, not proof of extractable resources.
 Git writes and outbound networking require elevated execution in this environment.
 
 ## Latest successful commit
 
-Latest confirmed published milestone: 861ff94 (GitHub run 36792355155 succeeded).
-Latest published commit: 48b0166; initial CI selector failure is corrected locally.
-Current milestone: fix: finalize atlas rendering and failure recovery.
+Latest confirmed functional milestone: 747bc46, pushed and fully validated in
+[GitHub run 36796269865](https://github.com/lucasligenza/lunar-infra/actions/runs/36796269865).
+This documentation milestone records its acceptance and integration status.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Publish the acceptance milestone and verify fresh
-GitHub acquisition/scientific/browser validation. Optional thermal, mineralogical,
-resource and gravity numerical adapters remain explicitly unavailable; no additional
-scope is started automatically.
+No required Phase 4 implementation remains. Optional thermal, mineralogical,
+resource and gravity numerical adapters require selected product/axis/calibration
+validation; time-resolved illumination requires a verified temporal source. These
+availability limits are recorded rather than substituted with synthetic observations.
+Await the next user-prioritized development assignment.

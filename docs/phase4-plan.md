@@ -50,6 +50,14 @@ while investigating the PDS archive. Do not weaken TLS validation or invent data
 Every functioning slice updates PROGRESS.md and is tested, committed and pushed.
 Avoid giant downloads, new server infrastructure, AI and optimization.
 
+## Delivery status
+
+All core atlas milestones are implemented, incrementally pushed and verified with
+fresh scientific acquisition on GitHub. See [acceptance evidence](phase4-acceptance.md)
+and PROGRESS.md. Geology supplies the additional numerical science category;
+Diviner metadata discovery works, while thermal/mineralogical/resource/gravity
+numerical adapters and validated temporal illumination remain unavailable.
+
 ## Interface direction
 
 Retain the space/instrument/cyan palette and Segoe UI/Bahnschrift hierarchy.

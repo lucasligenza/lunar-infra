@@ -3,6 +3,9 @@
 Phase 4 adds real global terrain analysis and scientific layers to the existing
 Three.js globe. Polar science, SQLite scenarios, the Python energy engine and
 playback remain. No AI or optimization is included.
+Core acceptance is verified locally and in [GitHub run 36796269865](https://github.com/lucasligenza/lunar-infra/actions/runs/36796269865)
+for published functional commit `747bc46`: fresh acquisition, 91 tests plus eight
+subtests, frontend typecheck/build and all 28 browser tests passed without skips.
 
 ## Functional coverage
 
@@ -41,6 +44,9 @@ protocol fixtures supply no thermal values. Separately, live NASA requests retur
 18 Diviner GCP products, and their real catalog interface was visually reviewed.
 Final frontend typecheck and production build pass. After the final rendering fix,
 12 focused browser/visual checks and six global mission/mode/recovery checks pass.
+Three further workflows against the optimized production frontend verify native
+queries/source changes, USGS geology and saved global mission placement/playback.
+The production same-origin health and atlas inspection endpoints return real data.
 
 Final screenshots at 1440 x 1000, 1280 x 800 and 390 x 844 show readable profiles,
 scrollable atlas content and unobstructed camera controls. The review found dark
