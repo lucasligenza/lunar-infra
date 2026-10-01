@@ -31,8 +31,8 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const selectedDataset=dataset==='auto'?(catalog.find(value=>value.id==='gld100'&&value.numerical_queries)?.id??'lola-global'):dataset;
   const layer=layers.find(value=>(value.dataset_id===selectedDataset||value.id==='geology')&&value.id===view.layer);
   return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>Lunar atlas</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
-    <p className="atlas-description">Scientific coverage, native measurements and source provenance.</p>
     <nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>
+    <div className="atlas-content"><p className="atlas-description">Scientific coverage, native measurements and source provenance.</p>
     {tab==='regions'&&<AtlasRegions location={location} sector={sector} onSector={onSector} onSelect={onSelect}/>}
     <div hidden={tab==='regions'||tab==='catalog'}>
     <label>Terrain dataset<select aria-label="Atlas terrain dataset" value={dataset} onChange={e=>onView({...view,dataset:e.target.value})}>
@@ -81,5 +81,6 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
         {providers.filter(provider=>provider.dataset_id===value.id).map(provider=><DatasetDiscovery key={provider.id} provider={provider}/>)}
       </details>)}
     </section>
+    </div>
   </aside>;
 }

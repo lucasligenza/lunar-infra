@@ -26,6 +26,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   const [ready,setReady] = useState<number|null>(null), [lat,setLat] = useState('0'), [lon,setLon] = useState('0');
   const serial = useRef(0);
   const [atlasOpen,setAtlasOpen]=useState(false);
+  useEffect(()=>{const narrow=window.matchMedia('(max-width: 900px)');const closeSearch=()=>{if(narrow.matches)setSearchOpen(false);};narrow.addEventListener('change',closeSearch);return()=>narrow.removeEventListener('change',closeSearch);},[]);
   const [atlasStatus,setAtlasStatus]=useState('Scientific overlay hidden');
   const boundaries=useMemo(()=>[...(sector?[sector.boundary]:[]),...(location&&analysisMode?[areaBoundary(location,analysis)]:[]),...(analysis.profile?[analysis.profile.samples]:[])],[sector,location,analysisMode,analysis]);
   useEffect(()=>{if(analysisMode){setAtlasOpen(true);setDrawerOpen(false);setSearchOpen(false);}},[analysisMode]);
@@ -50,22 +51,16 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   },[location]);
   const destination = selected ?? destinations.find(place=>place.coordinates.latitude_deg===location?.latitude_deg && place.coordinates.longitude_deg===location?.longitude_deg) ?? null;
   function choose(point:GlobeLocation, destination:Destination|null=null) {
-    onSelect(point);setSelected(destination);setDrawerOpen(true);
-    if(window.innerWidth<800) setSearchOpen(false);
+    onSelect(point);setSelected(destination);setDrawerOpen(true);setLayersOpen(false);
+    if(window.innerWidth<=900) setSearchOpen(false);
     setFlight({coordinates:point,distance:destination?.camera_distance_radii ?? 1.6,serial:++serial.current});
   }
   const results = destinations.filter(place=>`${place.name} ${place.id}`.toLowerCase().includes(query.toLowerCase()));
   return <section className="global-explorer" aria-label="Global lunar explorer">
-    {metadata?.available ? <MoonCanvas metadata={metadata} location={location} flight={flight} assets={assets} base={base}
-      texture={texture} grid={grid} camera={camera} onCamera={onCamera} onReady={setReady} atlas={atlasView} onAtlasStatus={setAtlasStatus}
-      boundaries={boundaries}
-      onSelect={point=>{onSelect(point);setSelected(null);setDrawerOpen(true);}} /> :
-      <div className="globe-loading" role={error || metadata ? 'alert':'status'}><h2>{error || metadata ? 'Global data unavailable':'Preparing the lunar view'}</h2>
-        <p>{error ?? (metadata ? 'Prepare the global NASA data and restart the API. The regional scientific map remains available.' : 'Loading verified global data metadata…')}</p>
-        {(error || metadata) && <button onClick={()=>setReload(value=>value+1)}>Retry global data</button>}</div>}
+    <div className="globe-toolbar">
     <div className="destination-search">
       <label htmlFor="destination-query">Find a lunar destination</label>
-      <div className="search-input-row"><input id="destination-query" type="search" placeholder="Crater, pole or landing region" value={query} onFocus={()=>setSearchOpen(true)} onChange={event=>{setQuery(event.target.value);setSearchOpen(true);}} />
+      <div className="search-input-row"><input id="destination-query" type="search" placeholder="Crater, pole or landing region" value={query} onFocus={()=>{setSearchOpen(true);if(window.innerWidth<900){setAtlasOpen(false);setLayersOpen(false);setDrawerOpen(false);}}} onChange={event=>{setQuery(event.target.value);setSearchOpen(true);}} />
         <button onClick={()=>setSearchOpen(value=>!value)} aria-expanded={searchOpen} aria-label={searchOpen?'Close destinations':'Open destinations'}>{searchOpen?'−':'+'}</button></div>
       {searchOpen && <div className="destination-results" aria-label="Lunar destinations">{results.map(place=><button key={place.id} onClick={()=>choose(place.coordinates,place)} aria-pressed={selected?.id===place.id}>
         <span>{place.name}</span><small>{Math.abs(place.coordinates.latitude_deg).toFixed(2)}° {place.coordinates.latitude_deg<0?'S':'N'} / {place.coordinates.longitude_defined===false?'pole':`${place.coordinates.longitude_deg.toFixed(2)}° E`}</small></button>)}
@@ -75,22 +70,34 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <label>Globe latitude (°)<input required type="number" step="any" min={-90} max={90} value={lat} onChange={e=>setLat(e.target.value)} /></label>
         <label>Globe longitude (° E)<input required type="number" step="any" min={-180} max={360} value={lon} onChange={e=>setLon(e.target.value)} /></label><button type="submit">Fly to coordinates</button></form></details>
     </div>
-    {!location && <div className="global-introduction"><h2>Explore the Moon</h2><p>One world. Two hemispheres.<br/>A path from discovery to mission design.</p><span>Drag to orbit · scroll to approach · click to select</span></div>}
-    <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);if(window.innerWidth<800) setDrawerOpen(false);}}>Globe layers</button>
+    <div className="global-layer-controls"><button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);setAtlasOpen(false);setDrawerOpen(false);}}>Globe layers</button>
       <button aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);}}>Lunar atlas</button>
       {onLocal&&<button onClick={onLocal}>2D polar analysis</button>}
-      {layersOpen && <div className="floating-instrument"><label><input type="checkbox" checked={texture} onChange={e=>setTexture(e.target.checked)} />NASA color visualization</label>
+
+    </div>
+      {location && !atlasOpen && !layersOpen && <button className="region-drawer-toggle" onClick={()=>setDrawerOpen(value=>!value)} aria-expanded={drawerOpen}>{drawerOpen?'Close region details':'Open region details'}</button>}
+    </div>
+    <div className="globe-layout">
+      <div className="globe-viewport">
+    {metadata?.available ? <MoonCanvas metadata={metadata} location={location} flight={flight} assets={assets} base={base}
+      texture={texture} grid={grid} camera={camera} onCamera={onCamera} onReady={setReady} atlas={atlasView} onAtlasStatus={setAtlasStatus}
+      boundaries={boundaries}
+      onSelect={point=>{onSelect(point);setSelected(null);setDrawerOpen(true);setLayersOpen(false);}} /> :
+      <div className="globe-loading" role={error || metadata ? 'alert':'status'}><h2>{error || metadata ? 'Global data unavailable':'Preparing the lunar view'}</h2>
+        <p>{error ?? (metadata ? 'Prepare the global NASA data and restart the API. The regional scientific map remains available.' : 'Loading verified global data metadata…')}</p>
+        {(error || metadata) && <button onClick={()=>setReload(value=>value+1)}>Retry global data</button>}</div>}
+    {!location && <div className="global-introduction"><h2>Explore the Moon</h2><p>One world. Two hemispheres.<br/>A path from discovery to mission design.</p><span>Drag to orbit · scroll to approach · click to select</span></div>}
+    {atlasView.layer!=='none'&&!atlasOpen&&<button className="atlas-active" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>{atlasView.layer} / {atlasView.dataset==='auto'?'best prepared terrain':atlasView.dataset}</button>}
+      </div>
+      {layersOpen && <aside className="globe-dock display-settings" aria-label="Globe display settings"><header><h2>Display settings</h2><button onClick={()=>setLayersOpen(false)}>Close display settings</button></header><label><input type="checkbox" checked={texture} onChange={e=>setTexture(e.target.checked)} />NASA color visualization</label>
         <label><input type="checkbox" checked={grid} onChange={e=>setGrid(e.target.checked)} />Lunar graticule</label><p>True-scale LOLA relief. Display lighting is fixed, not modeled sunlight.</p>
         <p>Imagery up to 4096 × 2048; terrain source 0.25°; display mesh 1°. Local analysis: 240 m where prepared.</p>
-        {ready!==null && <small data-testid="globe-ready-time">First imagery ready in {(ready/1000).toFixed(2)} s on this browser.</small>}</div>}
-    </div>
-    {atlasOpen&&<AtlasPanel location={location} onClose={()=>{setAtlasOpen(false);setDrawerOpen(true);}} view={atlasView} onView={onAtlasView} overlayStatus={atlasStatus}
+        {ready!==null && <small data-testid="globe-ready-time">First imagery ready in {(ready/1000).toFixed(2)} s on this browser.</small>}</aside>}    {atlasOpen&&<AtlasPanel location={location} onClose={()=>{setAtlasOpen(false);setDrawerOpen(true);}} view={atlasView} onView={onAtlasView} overlayStatus={atlasStatus}
       sector={sector} onSector={onSector} onSelect={(point,distance)=>{choose(point);if(distance)setFlight({coordinates:point,distance,serial:++serial.current});}}
       analysis={analysis} onAnalysis={onAnalysis} analysisMode={analysisMode}/>}
-    {atlasView.layer!=='none'&&!atlasOpen&&<button className="atlas-active" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>{atlasView.layer} / {atlasView.dataset==='auto'?'best prepared terrain':atlasView.dataset}</button>}
-    {location && !atlasOpen && <>
-      <button className="region-drawer-toggle" onClick={()=>setDrawerOpen(value=>!value)} aria-expanded={drawerOpen}>{drawerOpen?'Close region details':'Open region details'}</button>
-      {drawerOpen && <aside className="region-drawer" aria-label="Selected lunar region">
+    {location && !atlasOpen && !layersOpen && <>
+
+      {drawerOpen && <aside className="region-drawer globe-dock" aria-label="Selected lunar region">
         <div className="drawer-title"><span className="selection-dot"/><h2>{destination?.name ?? 'Selected location'}</h2></div>
         <p className="region-coordinate" data-testid="global-coordinate">{Math.abs(location.latitude_deg).toFixed(5)}° {location.latitude_deg<0?'S':'N'} / {Math.abs(location.latitude_deg)===90?'longitude undefined':`${location.longitude_deg.toFixed(5)}° E`}</p>
         {destination && <p>{destination.description}</p>}
@@ -109,6 +116,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         </details>
       </aside>}
     </>}
+    </div>
     <footer className="globe-attribution"><a href="https://svs.gsfc.nasa.gov/4720/" target="_blank" rel="noreferrer">NASA’s Scientific Visualization Studio</a><span>LOLA geometry / ME-PA DE421</span></footer>
   </section>;
 }

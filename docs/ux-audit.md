@@ -65,3 +65,18 @@ Terminal influence comes from actionable commands and real timestamped events.
 
 Each working slice is validated, explicitly staged, committed and pushed. This
 phase changes UX only: no new science, simulation math, AI or dataset acquisition.
+
+## Structural repairs
+
+The globe now has a normal-flow toolbar, flexible visualization and one dock.
+Display settings, atlas and location details share that dock. Desktop docks own
+their width; narrow screens use a full task panel with a visible close action.
+Search closes when entering the narrow layout. The atlas has a fixed header/tabs
+and a separately scrolling body, so profile/export actions scroll below chrome.
+
+The local workspace owns a toolbar above its viewport. Mobile Map, Tools,
+Inspector and Timeline controls select one reachable task panel. Camera controls
+stay inside the viewport. The tools heading remains visible when forms scroll.
+Rendered review caught a legacy 45% drawer height restriction; it was removed.
+Scientific requests, numeric derivations, scenario revisions and coordinates are
+unchanged. Browser regression checks cover dock separation and panel navigation.

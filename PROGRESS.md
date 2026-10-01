@@ -6,7 +6,10 @@ Phase 5: lunar mission-control UX and design overhaul. Scope and observed baseli
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
 tests pass; actual production screens and all five requested viewport sizes reviewed.
 Confirmed mobile destination/region collision and mission inspector/camera overlap.
-Next: grid/dock layout repairs and responsive task panels. Scientific datasets,
+M2 repairs: toolbar and contextual dock ownership, responsive task panels and
+fixed atlas chrome. 29 Chromium tests pass, including dock/camera layout checks;
+actual desktop/profile, computed mission and mobile region/map screens reviewed.
+Next: four-activity navigation. Scientific datasets,
 numerical logic, existing APIs and saved mission formats remain in the preserved scope.
 
 Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
@@ -41,7 +44,12 @@ illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 Phase 5 M1: repository/runtime audit complete, actionable layout/navigation/design
 plan documented. Baseline screenshots are ignored artifacts; the audit mission
 was removed after actual computed playback review. No user changes were present.
-Current milestone: docs: audit LunarOS visual and usability issues.
+M1 audit 4c69fb6 pushed; GitHub CI 36801148539 passed.
+M2 layout repairs validated: 29 Chromium tests, frontend typecheck and production
+build. One post-review mission control adjustment additionally checked by the
+two global-mission tests. Current milestone: fix: resolve overlapping mission
+control panels. Next: Explore / Analyze / Design / Simulate navigation, preserving
+location, drafts and calculated playback state.
 
 Phase 4 milestone 1 d1d4dc0 pushed, CI passed: real GLD100 native global terrain, typed catalog, bounded
 acquisition plan, independent atlas API and data-to-UI measurement inspector.
@@ -315,14 +323,14 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed functional milestone: 747bc46, pushed and fully validated in
-[GitHub run 36796269865](https://github.com/lucasligenza/lunar-infra/actions/runs/36796269865).
-This documentation milestone records its acceptance and integration status.
+Latest confirmed pushed milestone: 4c69fb6, Phase 5 audit, validated in
+[GitHub run 36801148539](https://github.com/lucasligenza/lunar-infra/actions/runs/36801148539).
+This milestone records the validated responsive layout repairs.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement Phase 5 M2 layout repair from docs/ux-audit.md. New scientific data and
+Implement Phase 5 M3 activity navigation from docs/ux-audit.md. New scientific data and
 numerical algorithms are outside this UX assignment. Existing optional atlas data
 availability limits continue to apply.

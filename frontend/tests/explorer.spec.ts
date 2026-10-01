@@ -94,13 +94,14 @@ test("mobile map and coordinate form remain usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
+  await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Tools", exact: true }).click();
+  const controls = await page.getByRole("region", { name: "Scientific layers" }).boundingBox();
+  const coordinates = await page.getByRole("heading", { name: "Inspect by coordinates" }).boundingBox();
+  expect(controls!.y + controls!.height).toBeLessThan(coordinates!.y);
   await page.getByRole("button", { name: "Inspect location" }).click();
   await expect(page.getByTestId("elevation-value")).toBeVisible();
   const width = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: window.innerWidth }));
   expect(width.content).toBeLessThanOrEqual(width.viewport);
-  const controls = await page.getByRole("region", { name: "Scientific layers" }).boundingBox();
-  const coordinates = await page.getByRole("heading", { name: "Inspect by coordinates" }).boundingBox();
-  expect(controls!.y + controls!.height).toBeLessThan(coordinates!.y);
   await page.screenshot({ path: "../artifacts/lunaros-mobile.png", fullPage: true });
 });
 

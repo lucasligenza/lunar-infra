@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "ol/ol.css";
 import "./globals.css";
 import "./exploration.css";
+import "./mission-control.css";
 
 export const metadata: Metadata = {
   title: "LunarOS | Lunar exploration and mission design",

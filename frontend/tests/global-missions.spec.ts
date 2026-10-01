@@ -19,6 +19,9 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     const scenario=await(await creation).json();id=scenario.id;expect(scenario.region_id).toBe('global-atlas');
     const canvas=page.getByLabel('Interactive 3D Moon',{exact:true}),host=page.getByTestId('moon-canvas');
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+    const renderStatus=(await page.getByTestId('globe-status').boundingBox())!;
+    const fly=(await page.getByRole('button',{name:'Fly to selected site',exact:true}).boundingBox())!;
+    expect(renderStatus.y+renderStatus.height).toBeLessThanOrEqual(fly.y);
     await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeCloseTo(1.18,2);
     const box=(await canvas.boundingBox())!;
     for(const [kind,x,y] of [['habitat',.54,.44],['solar array',.44,.52],['battery',.6,.6]] as const) {
