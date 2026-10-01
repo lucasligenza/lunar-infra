@@ -1,9 +1,10 @@
 # LunarOS engineering rules
 
-Implement the user's Phase 4 lunar atlas: registered scientific datasets, global
-numeric analysis, georeferenced 3D layers, sectors and regional profiles/statistics.
-Preserve Phase 1 science, Phase 2 missions/simulations and Phase 3 navigation.
-Optimization and AI are outside this assignment.
+Implement the user's Phase 5 mission-control UX overhaul: layout, four activities,
+design tokens, command palette, actual activity events and optional guidance.
+Preserve Phase 1 science, Phase 2 missions/simulations, Phase 3 navigation and the
+Phase 4 lunar atlas. New datasets, numerical algorithms, optimization and AI are
+outside this assignment. Use actual rendered browser review and journey tests.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.
 

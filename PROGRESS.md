@@ -2,6 +2,13 @@
 
 ## Current development phase
 
+Phase 5: lunar mission-control UX and design overhaul. Scope and observed baseline
+are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
+tests pass; actual production screens and all five requested viewport sizes reviewed.
+Confirmed mobile destination/region collision and mission inspector/camera overlap.
+Next: grid/dock layout repairs and responsive task panels. Scientific datasets,
+numerical logic, existing APIs and saved mission formats remain in the preserved scope.
+
 Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
 Core acceptance is complete locally and on GitHub, with fresh NASA/USGS acquisition,
 91 Python tests plus eight subtests, 28 Chromium tests, typecheck and production build.
@@ -30,6 +37,11 @@ illumination is not integrated; synthetic/custom hypothetical runs are explicit.
 - Final documentation milestone: record confirmed acceptance and remote validation.
 
 ## Active milestone and features in progress
+
+Phase 5 M1: repository/runtime audit complete, actionable layout/navigation/design
+plan documented. Baseline screenshots are ignored artifacts; the audit mission
+was removed after actual computed playback review. No user changes were present.
+Current milestone: docs: audit LunarOS visual and usability issues.
 
 Phase 4 milestone 1 d1d4dc0 pushed, CI passed: real GLD100 native global terrain, typed catalog, bounded
 acquisition plan, independent atlas API and data-to-UI measurement inspector.
@@ -311,8 +323,6 @@ Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-No required Phase 4 implementation remains. Optional thermal, mineralogical,
-resource and gravity numerical adapters require selected product/axis/calibration
-validation; time-resolved illumination requires a verified temporal source. These
-availability limits are recorded rather than substituted with synthetic observations.
-Await the next user-prioritized development assignment.
+Implement Phase 5 M2 layout repair from docs/ux-audit.md. New scientific data and
+numerical algorithms are outside this UX assignment. Existing optional atlas data
+availability limits continue to apply.
