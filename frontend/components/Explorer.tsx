@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
 import MissionHeader, { ACTIVITIES } from "./MissionHeader";
 import CommandPalette, { type Command } from './CommandPalette';
+import HelpPanel from './HelpPanel';
 import ActivityConsole from './ActivityConsole';
 import { recordActivity } from '../lib/activity';
 import SiteInspector from "./panels/SiteInspector";
@@ -35,6 +36,12 @@ function errorText(error: unknown): string {
 
 export default function Explorer() {
   const [paletteOpen,setPaletteOpen]=useState(false),[consoleVisible,setConsoleVisible]=useState(true);
+  const [helpOpen,setHelpOpen]=useState(false),[helpInitial,setHelpInitial]=useState<'help'|'tour'>('help');
+  const [guideOffer,setGuideOffer]=useState(false),[motion,setMotion]=useState<'system'|'reduce'>('system'),[preferencesReady,setPreferencesReady]=useState(false);
+  useEffect(()=>{try{setGuideOffer(localStorage.getItem('lunaros.walkthrough.dismissed.v1')!=='1');setMotion(localStorage.getItem('lunaros.motion.v1')==='reduce'?'reduce':'system');}catch{}finally{setPreferencesReady(true);}},[]);
+  useEffect(()=>{document.documentElement.dataset.motion=motion;if(preferencesReady){try{localStorage.setItem('lunaros.motion.v1',motion);}catch{}}},[motion,preferencesReady]);
+  function dismissGuide(){setGuideOffer(false);try{localStorage.setItem('lunaros.walkthrough.dismissed.v1','1');}catch{}}
+  function openHelp(tour=false){setHelpInitial(tour?'tour':'help');setHelpOpen(true);}
   const [destinations,setDestinations]=useState<Destination[]>([]);
   const [atlasRequest,setAtlasRequest]=useState<{tab:string;serial:number}|null>(null);
   const [navigationRequest,setNavigationRequest]=useState<{coordinates:GlobeLocation;distance:number;serial:number}|null>(null);
@@ -191,13 +198,16 @@ export default function Explorer() {
     {id:'slope',label:'Show slope layer',group:'Scientific layers',run:()=>showLayer('slope')},
     {id:'catalog',label:'Open dataset catalog',group:'Scientific sources',run:()=>openAtlas('catalog')},
     {id:'run',label:'Run current simulation',group:'Saved mission',disabled:runDisabled,run:async()=>{if(scenario.active&&!runDisabled){switchMode('simulation');await simulation.simulate(scenario.active);}}},
+    {id:'help',label:'Open help and settings',group:'System',run:()=>openHelp()},
+    {id:'tour',label:'Start walkthrough',group:'Guidance',run:()=>openHelp(true)},
     {id:'activity',label:'Open activity console',group:'System',run:()=>setConsoleVisible(true)},
   ];
   return <main data-workspace-panel={mobilePane} className={`explorer mode-${mode}${atlasRegionalView?' atlas-workspace':''}${inspectorOpen?'':' inspector-collapsed'}`}>
     <MissionHeader mode={mode} context={scenario.active?.name ?? (location ? `${location.latitude_deg.toFixed(3)}° / ${location.longitude_deg.toFixed(3)}° E` : 'No location selected')}
-      ready={Boolean(region)} busy={working} onMode={switchMode} onCommands={()=>setPaletteOpen(true)} onActivity={()=>setConsoleVisible(true)}
+      ready={Boolean(region)} busy={working} onMode={switchMode} onCommands={()=>setPaletteOpen(true)} onActivity={()=>setConsoleVisible(true)} onHelp={()=>openHelp()}
       status={scenario.active ? scenario.busy ? 'Saving…' : assetDirty ? 'Unsaved asset changes' : missionDirty ? 'Unsaved simulation inputs' : scenarioName !== scenario.active.name ? 'Unsaved name' : `Saved / revision ${scenario.active.revision}` : region ? 'Data ready' : loading ? 'Connecting' : 'Data unavailable'}
       onSave={scenario.active?()=>void scenario.patch({name:scenarioName}):undefined} canSave={Boolean(scenario.active&&scenarioName!==scenario.active.name&&scenarioName.trim())}/>
+    {guideOffer&&<section className="guidance-offer" aria-label="First-time guidance"><span>New to LunarOS? Six steps from orbit to a mission.</span><button onClick={()=>openHelp(true)}>Quick walkthrough</button><button onClick={dismissGuide}>Dismiss guidance</button></section>}
     {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
       atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
       atlasRequest={atlasRequest} navigationRequest={navigationRequest} onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
@@ -210,7 +220,7 @@ export default function Explorer() {
       <aside id="exploration-tools" className="tool-rail" aria-label="Exploration tools">
         <div className="tool-rail-title"><h2>Workspace</h2><button aria-label={toolsOpen ? "Collapse tools" : "Expand tools"} onClick={() => setToolsOpen(value => !value)}>{toolsOpen ? "‹" : "›"}</button></div>
         {toolsOpen && <div className="map-controls-stack">
-          <details open className="tool-section scenario-controls"><summary>Mission scenarios</summary>
+          <details open hidden={!missionContext} className="tool-section scenario-controls"><summary>Mission scenarios</summary>
             <label>Scenario name<input maxLength={100} value={scenarioName} onChange={event => setScenarioName(event.target.value)} /></label>
             <button className="primary-button" disabled={working || !validLocation || !scenarioName.trim()} onClick={() => {
               if (validLocation && (!(assetDirty || missionDirty) || window.confirm("Discard unsaved asset and simulation input changes?"))) void scenario.create(scenarioName, { latitude_deg: validLocation.latitude_deg, longitude_deg: validLocation.longitude_deg },globalMissionView?'global-atlas':'south-pole');
@@ -226,7 +236,7 @@ export default function Explorer() {
             }}>Delete scenario</button>}
           </details>
           {scenario.active && scenarioInView && <div hidden={mode!=='simulation'}><MissionInputs key={`${scenario.active.id}:${editorEpoch}:${JSON.stringify(scenario.active.mission)}`} scenario={scenario.active}
-            busy={scenario.busy || simulation.busy || assetDirty} onDirty={setMissionDirty}
+            busy={working} blocked={assetDirty?'Save asset changes in Design before saving or running simulation inputs.':undefined} onDirty={setMissionDirty}
             onSave={mission => scenario.patch({ mission })} onRun={simulation.simulate} /></div>}
           {scenario.active && scenarioInView && <div hidden={mode!=='mission'}><details open className="tool-section asset-catalog"><summary>Infrastructure catalog</summary>
             <p>Hypothetical assets. Click a tool, then place it on valid terrain.</p>
@@ -311,6 +321,8 @@ export default function Explorer() {
     {simulation.run && scenarioInView && <div hidden={mode!=='simulation'} className="timeline-slot"><Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='simulation'} /></div>}
     </div>
     <ActivityConsole visible={consoleVisible} onDismiss={()=>setConsoleVisible(false)}/>
+    <HelpPanel open={helpOpen} initial={helpInitial} onClose={()=>{setHelpOpen(false);dismissGuide();}} motion={motion} onMotion={setMotion}
+      consoleVisible={consoleVisible} onConsole={setConsoleVisible} onTips={()=>{try{localStorage.removeItem('lunaros.walkthrough.dismissed.v1');}catch{}setGuideOffer(true);setHelpOpen(false);}}/>
     <CommandPalette open={paletteOpen} onClose={()=>setPaletteOpen(false)} commands={commands}/>
   </main>;
 }

@@ -1,5 +1,18 @@
 # LunarOS
 
+The mission-control interface has four direct activities: **Explore**, **Analyze**,
+**Design** and **Simulate**. Location, atlas selection, mission drafts and playback
+position stay connected while switching. Use **Commands** or **Ctrl/Cmd+K** to
+search existing actions. The collapsible **Activity** console shows actual UTC
+requests, layer readiness and simulation results, with optional request details.
+
+An optional six-step walkthrough can be dismissed and reopened from **Help**.
+**Help → Settings** offers reduced camera motion and console visibility. Tour
+dismissal and motion preference are stored locally; scenarios remain saved through
+the backend with revision checks. Simulations require explicit hypothetical input
+series because validated time-resolved lunar illumination is unavailable.
+See the [UX audit](docs/ux-audit.md) and [design system](docs/design-system.md).
+
 The Lunar Atlas adds global GLD100 elevation/slope, georeferenced scientific color
 layers, cube-sphere sectors, arbitrary area statistics, native elevation profiles
 and an optional USGS geological-unit layer. Open **Lunar atlas** on the globe;

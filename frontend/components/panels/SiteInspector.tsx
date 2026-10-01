@@ -8,7 +8,7 @@ function Quantity({ name, measurement, testId }: { name: string; measurement: Me
   const kind = measurement.quantity_kind === "measured_gridded" ? "Gridded altimetry" :
     measurement.quantity_kind === "derived" ? "Derived" : "Modeled";
   return <section className="quantity">
-    <div className="quantity-heading"><h3>{name}</h3><span className="quantity-kind">{kind}</span></div>
+    <div className="quantity-heading"><h3>{name}</h3><span className="quantity-kind" title={measurement.quantity_kind === 'derived' ? 'Calculated from the supporting terrain raster; resolution limits remain.' : measurement.quantity_kind === 'modeled' ? 'Computed by a scientific model, not a direct observation or temporal prediction.' : 'Instrument observations registered onto a scientific raster grid.'}>{kind}</span></div>
     <p className="quantity-value"><strong data-testid={testId}>{formatted}</strong>{value !== null && <span>{unit}</span>}</p>
     <p className="quantity-note">{value === null ? `Missing data (${measurement.status})` : measurement.notes}</p>
     <p className="source-id">{measurement.source_id}</p>

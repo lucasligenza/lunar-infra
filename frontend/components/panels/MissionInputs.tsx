@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import type { Mission, Scenario } from "../../types/mission";
 import { parseSeries } from "../../lib/series";
 
-export default function MissionInputs({ scenario, busy, onSave, onRun, onDirty }: {
+export default function MissionInputs({ scenario, busy, blocked, onSave, onRun, onDirty }: {
   scenario: Scenario; busy: boolean; onSave: (mission: Mission) => Promise<Scenario | undefined>;
   onRun: (saved: Scenario) => Promise<void>; onDirty: (dirty: boolean) => void;
+  blocked?: string;
 }) {
   const original = scenario.mission;
   const [start, setStart] = useState(original.start.slice(0, 19));
@@ -62,7 +63,8 @@ export default function MissionInputs({ scenario, busy, onSave, onRun, onDirty }
     <label>Input description<input maxLength={200} value={label} onChange={event => setLabel(event.target.value)} /></label>
     <p className={dirty ? "warning" : "nominal"}>{dirty ? "Unsaved simulation inputs" : "Simulation inputs saved"}</p>
     {error && <p role="alert" className="warning">{error}</p>}
-    <button className="secondary-button" disabled={busy || !dirty} onClick={() => void save(false)}>Save simulation inputs</button>
-    <button className="primary-button" disabled={busy} onClick={() => void save(true)}>{busy ? "Working…" : "Run simulation"}</button>
+    {blocked && <p className="warning">{blocked}</p>}
+    <button className="secondary-button" disabled={busy || Boolean(blocked) || !dirty} onClick={() => void save(false)}>Save simulation inputs</button>
+    <button className="primary-button" disabled={busy || Boolean(blocked)} title={blocked} onClick={() => void save(true)}>{busy ? "Working…" : "Run simulation"}</button>
   </div></details>;
 }

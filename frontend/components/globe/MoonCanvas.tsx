@@ -74,7 +74,7 @@ export default function MoonCanvas(props: Props) {
       const direction = new THREE.Vector3(...lunarVector(point.longitude_deg, point.latitude_deg));
       // Pole views use a stable meridian; equatorial views keep north upward.
       const up = Math.abs(point.latitude_deg) > 85 ? new THREE.Vector3(0,0,point.latitude_deg > 0 ? -1 : 1) : new THREE.Vector3(0,1,0);
-      const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900;
+      const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'reduce' ? 0 : 900;
       flight = { started: performance.now(), duration, from: camera.position.clone(), to: direction.multiplyScalar(distance), fromUp: camera.up.clone(), up, fromTarget: controls.target.clone() };
     };
     runtime.current = { camera, controls, mesh, markers, grid, heights: null, invalidate:()=>{dirty=true;}, animateTo };

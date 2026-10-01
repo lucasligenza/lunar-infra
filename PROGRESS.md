@@ -16,7 +16,9 @@ readable scientific labels/charts and contrast/focus checks. Next: command palet
 and actual-event activity console. M5: Ctrl/Cmd+K commands share navigation,
 layer and saved-simulation actions; console records actual UTC requests/readiness
 and failures, capped at 100 session events. Next: guidance, Help / Settings and
-optional onboarding. Scientific datasets,
+optional onboarding. M6: six-step dismissible/reopenable walkthrough, Help / Settings,
+persisted reduced-motion preference and explanatory blocked simulation states.
+Next: final responsive/user-journey review and acceptance documentation. Scientific datasets,
 numerical logic, existing APIs and saved mission formats remain in the preserved scope.
 
 Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
@@ -78,7 +80,16 @@ Validation: 32 browser tests, typecheck and production build; actual expanded
 console/catalog screens inspected on desktop and mobile. No shell interpreter,
 fake telemetry or persisted event logs are introduced.
 Current milestone: feat: add mission control commands and activity console.
-Next: optional walkthrough, Help / Settings and contextual guidance.
+M5 7df7063 pushed; GitHub CI 36805965898 passed.
+M6: optional six-step tour and Help with actual shortcuts/quantity explanations;
+functional camera-motion and console settings; tour dismissal and motion
+preference persist locally. Preference writes wait for initial reads, preventing
+React development remounts from overwriting saved values. Scientific kind labels
+have explanatory tooltips. Unsaved asset edits show an explicit simulation block.
+Validation: 33 browser tests, frontend typecheck and production build; actual tour
+and mobile settings dialog inspected. Current milestone: feat: add optional
+mission workflow guidance. Next: final responsive/zoom-equivalent and complete
+journey validation, followed by documented Phase 5 acceptance.
 
 Phase 4 milestone 1 d1d4dc0 pushed, CI passed: real GLD100 native global terrain, typed catalog, bounded
 acquisition plan, independent atlas API and data-to-UI measurement inspector.
@@ -352,16 +363,16 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed pushed functional milestone: 3496e5f, mission-control design system,
-validated in [GitHub run 36804297500](https://github.com/lucasligenza/lunar-infra/actions/runs/36804297500).
+Latest confirmed pushed functional milestone: 7df7063, commands and actual-event console,
+validated in [GitHub run 36805965898](https://github.com/lucasligenza/lunar-infra/actions/runs/36805965898).
 The Phase 5 audit is validated in
 [GitHub run 36801148539](https://github.com/lucasligenza/lunar-infra/actions/runs/36801148539).
-This milestone records the validated commands and actual-event console.
+This milestone records the validated optional mission guidance.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Implement Phase 5 M6 guidance and optional onboarding from docs/ux-audit.md. New scientific data and
+Implement Phase 5 M7 final responsive and journey validation from docs/ux-audit.md. New scientific data and
 numerical algorithms are outside this UX assignment. Existing optional atlas data
 availability limits continue to apply.

@@ -44,3 +44,11 @@ actions display a reason. Escape closes the native modal and returns focus.
 The activity console starts minimized, can expand, clear or dismiss, and reopens
 from Activity. It shows actual UTC application events with optional request
 details; the viewport shrinks normally when the console expands.
+
+The first-time invitation is an optional normal-flow strip, not a mandatory modal.
+Its six-step tour can be closed at any point, remembers dismissal locally and is
+reopened through Help or commands. Help explains actual shortcuts and scientific
+quantity terminology. Settings respects system motion preference or explicitly
+reduces camera/CSS motion, persists that preference and controls console visibility.
+Unsaved asset drafts explain why simulation saving/running is blocked rather than
+displaying a fictitious in-progress state.
