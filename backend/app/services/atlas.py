@@ -8,6 +8,8 @@ from backend.app.data.catalog import definitions
 from backend.app.models.atlas import AtlasPoint, CatalogEntry, Quantity
 from backend.app.geospatial.global_terrain import slope_at, SLOPE_METHOD
 from lunaros.dataset import checksum
+from backend.app.geospatial.projected_raster import ProjectedRaster
+from backend.app.geospatial.terrain import POLAR_PROJ
 from backend.app.services.geology import GeologyGrid
 
 RADIUS = 1737400
@@ -50,10 +52,13 @@ class NumericGrid:
 class AtlasStore:
     def __init__(self,directory:Path=OUTPUT,globe=None,polar=None):
         self.directory=directory; self.globe=globe; self.polar=polar
-        self.definitions=definitions(); self.grids={}; self.errors={};self.classifications={};self.registries={}
+        self.environment={}; self.definitions=definitions(); self.grids={}; self.errors={};self.classifications={};self.registries={}
         if globe is not None:
             self.grids['lola-global']=NumericGrid(globe.elevation,self.definitions['lola-global'])
             self.registries['lola-global']={'source':globe.registry['terrain'],'artifacts':{'elevation.bin':globe.registry['artifacts']['elevation.bin']}}
+        if polar is not None:
+            self.environment['solar-visibility']=ProjectedRaster(polar.illumination, polar.transform, POLAR_PROJ,
+                self.definitions['solar-visibility'], 'modeled', 'Containing 240 m cell; original 60 m area-averaged visibility over ~18.6 years, not a temporal profile')
         source=self.definitions['gld100']; path=directory/source.id
         try:
             registry=json.loads((path/'registry.json').read_text(encoding='utf8'))
@@ -86,7 +91,7 @@ class AtlasStore:
             downloaded=bool(source.files) and all((RAW/name).exists() for name in source.files)
             result.append(CatalogEntry(**source.model_dump(), acquisition_status='ready' if ready else
                 'downloaded' if downloaded else 'not_acquired' if source.files else 'discovered',
-                numerical_queries=ready,overlay_available=source.id in self.grids or source.id in self.classifications,download_bytes=download_bytes))
+                numerical_queries=ready,overlay_available=source.id in self.grids or source.id in self.classifications or source.id in self.environment,download_bytes=download_bytes))
         return result
     def grid(self,identifier='auto'):
         if identifier=='auto':identifier='gld100' if 'gld100' in self.grids else 'lola-global'

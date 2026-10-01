@@ -33,7 +33,9 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
       .catch(error=>{if(!abort.signal.aborted){setError(error.message);setLoading(false);}});return ()=>abort.abort();},[location,dataset]);
   const source=catalog.find(value=>value.id===point?.dataset_id);
   const selectedDataset=dataset==='auto'?(catalog.find(value=>value.id==='gld100'&&value.numerical_queries)?.id??'lola-global'):dataset;
-  const layer=layers.find(value=>(value.dataset_id===selectedDataset||value.id==='geology')&&value.id===view.layer);
+  const availableLayers=layers.filter(value=>value.dataset_id===selectedDataset||Boolean(catalog.find(source=>source.id===value.dataset_id&&source.category!=='terrain')));
+  const layer=availableLayers.find(value=>value.id===view.layer);
+  useEffect(()=>{if(layer&&view.tileUrl!==layer.url_template)onView({...view,tileUrl:layer.url_template});},[layer?.url_template,view.tileUrl]);
   return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>Scientific overlays</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
     <div className="atlas-disclosure"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button>
     {advanced&&<nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>}</div>
@@ -47,7 +49,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     <div hidden={tab!=='layers'}>
     <section className="atlas-layer-tools" aria-label="Scientific surface layers">
       <label>Scientific overlay<select aria-label="Scientific overlay" value={view.layer} onChange={e=>onView({...view,layer:e.target.value})}><option value="none">Imagery only</option>
-        {layers.filter(value=>value.dataset_id===selectedDataset||value.id==='geology').map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
+        {availableLayers.map(value=><option value={value.id} key={value.id}>{value.name}</option>)}</select></label>
       {layer&&<><label>Layer opacity {Math.round(view.opacity*100)}%<input aria-label="Scientific layer opacity" type="range" min={0} max={1} step={.05} value={view.opacity} onChange={e=>onView({...view,opacity:Number(e.target.value)})} /></label>
         <AtlasLegend layer={layer}/>
         <p role={overlayStatus.includes('unavailable')?'alert':'status'} data-testid="atlas-overlay-status">{overlayStatus}</p>
@@ -60,10 +62,11 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     {loading&&<p role="status">Loading native terrain…</p>}{error&&<p role="alert">{error}</p>}
     {point&&<section aria-label="Atlas terrain inspection"><p className="region-coordinate">{point.latitude_deg.toFixed(5)}° latitude / {point.longitude_deg.toFixed(5)}° E</p>
       <dl><dt>Elevation</dt><dd data-testid="atlas-elevation">{point.elevation.value===null?'Missing data':`${point.elevation.value.toLocaleString('en-US')} m`}</dd>
+      <dt>Average solar visibility</dt><dd data-testid="atlas-sunlight">{point.solar_visibility?.status==='ok'?`${(point.solar_visibility.value!*100).toFixed(1)}%`:'Unavailable here'}</dd>
       <dt hidden={!advanced}>Source</dt><dd hidden={!advanced}>{point.elevation.source_id} {point.elevation.version}</dd><dt hidden={!advanced}>Native spacing at sampled latitude</dt><dd hidden={!advanced}>{point.elevation.spacing_north_m.toFixed(1)} m north / {point.elevation.spacing_east_m.toFixed(1)} m east</dd>
       <dt hidden={!advanced}>Sampling</dt><dd hidden={!advanced}>{point.elevation.method}</dd><dt>Derived slope</dt><dd data-testid="atlas-slope">{point.slope.value===null?'Missing stencil':`${point.slope.value.toFixed(3)}°`}</dd>
       <dt hidden={!advanced}>Slope support</dt><dd hidden={!advanced}>{point.slope.support_north_m.toFixed(1)} m north / {point.slope.support_east_m.toFixed(1)} m east</dd><dt hidden={!advanced}>Terrain provenance</dt><dd hidden={!advanced}>{point.terrain_source}</dd></dl>
-      {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
+      {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}{point.solar_visibility&&<p>{point.solar_visibility.source_id} {point.solar_visibility.version}: {point.solar_visibility.method}. This is not current sunlight.</p>}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
       <div hidden={view.layer!=='geology'&&!advanced} className="geologic-inspection" aria-label="Geological interpretation"><h3>Geological interpretation</h3>
         {point.geology?<><p data-testid="atlas-geology">{point.geology.category?`${point.geology.category.code} / ${point.geology.category.name}`:'Missing mapped class'}</p>
           <p>{point.geology.source_id} {point.geology.version} / 1:5,000,000 source map; categorical grid 16 ppd.</p>

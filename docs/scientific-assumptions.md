@@ -131,3 +131,15 @@ and precision notes stay visible in the destination inspector.
 - [GDAL PDS georeferencing caveats](https://gdal.org/en/stable/drivers/raster/pds.html)
 - [Rasterio masks](https://rasterio.readthedocs.io/en/stable/topics/masks.html)
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
+
+## Projected environmental overlays
+
+The 3D atlas now samples the prepared solar visibility raster through explicit
+lunar geographic-to-south-polar transforms. Containing numeric cells provide both
+queries and visualization colors; outside coverage and nodata remain transparent.
+Valid zero visibility is preserved. Geographic tile resolution is a visualization
+choice and does not increase native scientific resolution. The original 60 m
+model has already been area-averaged onto the registered 240 m crop. It describes
+~18.6-year solar visibility, not current sunlight or mission eclipse intervals.
+Registered tile URLs drive the shared frontend renderer; no per-provider shader
+or duplicate map implementation is introduced.

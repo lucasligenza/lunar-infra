@@ -92,3 +92,5 @@ class AtlasPoint(BaseModel):
     frame_note: str
     terrain_source: str
     geology:GeologyQuantity|None=None
+    solar_visibility:Quantity|None=None
+    temperature:Quantity|None=None

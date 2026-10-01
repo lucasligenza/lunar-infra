@@ -64,7 +64,7 @@ export class ScientificOverlay {
   private controller=new AbortController();private active=0;private view:AtlasView|null=null;private cameraKey='';private disposed=false;private revision=0;
   constructor(private base:THREE.SphereGeometry,private invalidate:()=>void,private status:(value:string)=>void) {}
   configure(view:AtlasView) {
-    if(this.view?.dataset!==view.dataset||this.view?.layer!==view.layer||this.view?.reload!==view.reload) {
+    if(this.view?.dataset!==view.dataset||this.view?.layer!==view.layer||this.view?.reload!==view.reload||this.view?.tileUrl!==view.tileUrl) {
       this.controller.abort();this.controller=new AbortController();this.revision++;this.pending.clear();this.queue=[];this.wanted.clear();this.cameraKey='';
       this.failed.clear();
       for(const tile of this.tiles.values())this.disposeTile(tile);this.tiles.clear();
@@ -102,7 +102,7 @@ export class ScientificOverlay {
       const tile=this.queue.shift()!;if(this.tiles.has(tile.key)||this.pending.has(tile.key))continue;
       const revision=this.revision,view=this.view!,signal=this.controller.signal;this.active++;
       this.pending.set(tile.key,revision);
-      void fetch(`/api/atlas/tiles/${view.layer==='geology'?'usgs-geology':view.dataset}/${view.layer}/${tile.key}.png`,{signal}).then(async response=>{
+      void fetch(`/api${view.tileUrl?view.tileUrl.replace('{z}',String(tile.z)).replace('{x}',String(tile.x)).replace('{y}',String(tile.y)):`/atlas/tiles/${view.layer==='geology'?'usgs-geology':view.dataset}/${view.layer}/${tile.key}.png`}`,{signal}).then(async response=>{
         if(!response.ok)throw new Error('Scientific tile unavailable');
         const bitmap=await createImageBitmap(await response.blob(),{imageOrientation:'flipY'});
         if(this.disposed||revision!==this.revision||!this.wanted.has(tile.key)) {bitmap.close();return;}

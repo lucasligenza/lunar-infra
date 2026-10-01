@@ -15,6 +15,8 @@ STYLES={
 }
 
 
+ENV_STYLES={'illumination':{'name':'Average solar visibility','unit':'fraction','minimum':0,'maximum':1,'colors':['#172633','#506372','#acac88','#f4da8b']}}
+
 def tile_bounds(z,x,y):
     if not 0<=z<=5 or not 0<=x<2**(z+1) or not 0<=y<2**z:raise ValueError('Invalid geographic tile')
     step=180/2**z
@@ -47,6 +49,12 @@ def layers(atlas):
             categories=grid.categories,minimum=None,maximum=None,colors=[],tile_size=256,max_level=5,
             sampling='Source polygons rasterized at cell centers; categorical values, no interpolation',
             url_template=f'/atlas/tiles/{identifier}/geology/{{z}}/{{x}}/{{y}}.png'))
+    for identifier,grid in atlas.environment.items():
+        kind='illumination'
+        result.append(dict(ENV_STYLES[kind],id=kind,dataset_id=identifier,source_id=grid.source.product_id,
+            version=grid.source.version,angular_spacing_deg=math.degrees(grid.transform.a/1737400),
+            tile_size=256,max_level=5,sampling=grid.method,
+            url_template=f'/atlas/tiles/{identifier}/{kind}/{{z}}/{{x}}/{{y}}.png'))
     return result
 
 
@@ -54,6 +62,7 @@ def tile_values(grid,layer,z,x,y,size=256):
     west,south,east,north=tile_bounds(z,x,y)
     lat=north-(np.arange(size)+.5)*(north-south)/size
     lon=west+(np.arange(size)+.5)*(east-west)/size
+    if hasattr(grid,'at'):return grid.at(lon[None,:],lat[:,None])
     rows=np.minimum(grid.rows-1,np.floor((90-lat)*grid.ppd).astype(int))
     cols=np.floor((lon%360)*grid.ppd).astype(int)
     if layer=='geology':return np.asarray(grid.values[np.ix_(rows,cols)])
@@ -69,7 +78,10 @@ def tile_values(grid,layer,z,x,y,size=256):
 
 def render_tile(atlas,identifier,layer,z,x,y):
     tile_bounds(z,x,y)
-    if layer=='geology':
+    if identifier in atlas.environment:
+        if layer!='illumination':raise ValueError('Unsupported environmental layer')
+        grid=atlas.environment[identifier];style=ENV_STYLES[layer]
+    elif layer=='geology':
         if identifier not in atlas.classifications:raise ValueError('Geological layer is not prepared')
         grid=atlas.classifications[identifier];style={'categories':grid.categories}
     else:

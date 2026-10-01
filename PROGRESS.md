@@ -17,6 +17,14 @@ within approved 300 MB total; numeric integration remains in progress. No new
 suitability recommendations are claimed yet. Known limitation: no actual temporal
 solar mission input; candidate screening will not establish human/construction safety.
 
+M1 pushed: c5ff8d7. M2 projected solar overlay is functional: registered layer URLs
+share the existing 3D renderer, masks and zeros are preserved, and native numerical
+inspection agrees with prepared polar values. Validation: 93 Python tests pass;
+nine atlas/solar browser checks pass, final solar/error check passes without
+React duplicate-key errors, typecheck and production build pass. Actual rendered
+solar overlay reviewed. Latest successful pushed commit: c5ff8d7.
+Next: bounded Diviner native-table validation and thermal integration.
+
 Phase 5 is complete: lunar mission-control UX and design overhaul. Scope and observed baseline
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
 tests pass; actual production screens and all five requested viewport sizes reviewed.
