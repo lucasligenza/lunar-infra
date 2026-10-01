@@ -53,6 +53,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await page.locator('.mission-layer-status summary').click();
     await expect(page.locator('.mission-layer-status')).toContainText('30 deg');
     await page.locator('.mission-layer-status summary').click();
+    await page.getByRole('button',{name:'Simulate',exact:true}).click();
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();
     const result=page.waitForResponse(r=>r.url().endsWith('/simulations')&&r.request().method()==='POST');
     await page.getByRole('button',{name:'Run simulation',exact:true}).click();
@@ -63,11 +64,11 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready');
     await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
     await page.screenshot({path:'../artifacts/phase4-global-mission.png'});
-    await page.getByRole('button',{name:'Global Explorer',exact:true}).click();
+    await page.getByRole('button',{name:'Explore',exact:true}).click();
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-    await page.getByRole('button',{name:'Regional Analysis',exact:true}).click();
+    await page.getByRole('button',{name:'Analyze',exact:true}).click();
     await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toBeVisible();
-    await page.getByRole('button',{name:'Mission Designer',exact:true}).click();
+    await page.getByRole('button',{name:'Simulate',exact:true}).click();
     await expect(page.getByRole('slider',{name:'Mission interval'})).toHaveValue(String(run.result.intervals.length-1));
     await page.reload();
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
@@ -93,7 +94,7 @@ test('global mission and regional atlas remain usable when the polar cache is un
   await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
   await expect(page.getByRole('button',{name:'Create scenario at selected site',exact:true})).toBeEnabled();
   await expect(page.getByRole('alert').filter({hasText:'No prepared region'})).toHaveCount(0);
-  await page.getByRole('button',{name:'Regional Analysis',exact:true}).click();
+  await page.getByRole('button',{name:'Analyze',exact:true}).click();
   await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toBeVisible();
   await expect(page.getByTestId('terrain-map')).toHaveCount(0);
 });

@@ -126,8 +126,8 @@ test('sectors favorites arbitrary regions profiles and mode state use actual num
   await expect(page.getByRole('button',{name:'Close atlas',exact:true})).toBeInViewport();
   const exported=page.waitForEvent('download');await page.getByRole('button',{name:'Export profile CSV',exact:true}).click();expect((await exported).suggestedFilename()).toBe('lunar-elevation-profile.csv');
   await page.screenshot({path:'../artifacts/phase4-regional-profile.png'});
-  await page.getByRole('button',{name:'Global Explorer',exact:true}).click();
-  await page.getByRole('button',{name:'Regional Analysis',exact:true}).click();
+  await page.getByRole('button',{name:'Explore',exact:true}).click();
+  await page.getByRole('button',{name:'Analyze',exact:true}).click();
   await expect(page.getByTestId('area-elevation')).toHaveText([expected.elevation.minimum,expected.elevation.mean,expected.elevation.maximum].map((value:number)=>value.toFixed(1)).join(' · ')+' m');
   await page.getByRole('button',{name:'Regions',exact:true}).click();
   await page.getByRole('combobox',{name:'Sector depth',exact:true}).selectOption('1');
@@ -139,7 +139,7 @@ test('sectors favorites arbitrary regions profiles and mode state use actual num
   await page.getByRole('button',{name:'Save selected location',exact:true}).click();
   await expect(page.getByRole('button',{name:'Far-side study',exact:true})).toBeVisible();
   await page.screenshot({path:'../artifacts/phase4-sectors.png'});
-  await page.getByRole('button',{name:'Global Explorer',exact:true}).click();
+  await page.getByRole('button',{name:'Explore',exact:true}).click();
   await page.reload();await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await page.getByRole('button',{name:'Lunar atlas',exact:true}).click();await page.getByRole('button',{name:'Regions',exact:true}).click();
   await page.getByRole('button',{name:'Far-side study',exact:true}).click();

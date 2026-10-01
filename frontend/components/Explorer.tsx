@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
+import MissionHeader from "./MissionHeader";
 import SiteInspector from "./panels/SiteInspector";
 import { fetchScientific } from "../lib/api";
 import { useScenario } from "../lib/useScenario";
@@ -40,7 +41,7 @@ export default function Explorer() {
   const [atlasAnalysis,setAtlasAnalysis]=useState<AtlasAnalysisState>({radius:'25',kind:'circle',bounds:{south:'-5',north:'5',west:'350',east:'10'},endpoint:{latitude:'0',longitude:'24'},report:null,profile:null});
   const [inspectorOpen,setInspectorOpen] = useState(true);
   useEffect(()=> { const requested = new URLSearchParams(window.location.search).get('mode');
-    if(requested==='regional' || requested==='mission') setMode(requested); },[]);
+    if(requested==='regional' || requested==='mission' || requested==='simulation') setMode(requested); },[]);
   const [region, setRegion] = useState<Region | null>(null);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -153,7 +154,7 @@ export default function Explorer() {
 
   function switchMode(next:Mode) { setMode(next); setPlacement(null);setMobilePane('map');
     const url = new URL(window.location.href); url.searchParams.set('mode',next); window.history.replaceState(null,'',url);
-    if(next==='mission') {
+    if(next==='mission'||next==='simulation') {
       const global=Boolean(!region||outsideFootprint||scenario.active?.region_id==='global-atlas');setGlobalPlanning(global);
       if(location)void inspect(location.longitude_deg,location.latitude_deg,global?'atlas':'polar');
     }else if(next==='regional' && location && !outsideFootprint) void inspect(location.longitude_deg,location.latitude_deg,'polar');
@@ -163,19 +164,16 @@ export default function Explorer() {
   const outsideFootprint = location && region && (location.latitude_deg>0 || (projectedLocation &&
     (projectedLocation[0]<region.bounds_m[0] || projectedLocation[0]>=region.bounds_m[2] || projectedLocation[1]<=region.bounds_m[1] || projectedLocation[1]>region.bounds_m[3])));
   const atlasRegionalView=mode==='regional'&&Boolean(atlasRegional||outsideFootprint||(location&&!region&&!loading));
-  const globalMissionView=mode==='mission'&&globalPlanning;
+  const missionContext=mode==='mission'||mode==='simulation';
+  const globalMissionView=missionContext&&globalPlanning;
   const scenarioInView=!globalMissionView||scenario.active?.region_id==='global-atlas';
   const validLocation=globalMissionView?(atlasSite?.elevation.status==='ok'?{latitude_deg:atlasSite.latitude_deg,longitude_deg:atlasSite.longitude_deg}:null):site?.coordinates;
-  const unsupportedSelection = mode==='mission' && !globalMissionView && Boolean(outsideFootprint || (coverage && !coverage.local_analysis));
+  const unsupportedSelection = missionContext && !globalMissionView && Boolean(outsideFootprint || (coverage && !coverage.local_analysis));
   return <main data-workspace-panel={mobilePane} className={`explorer mode-${mode}${atlasRegionalView?' atlas-workspace':''}${inspectorOpen?'':' inspector-collapsed'}`}>
-    <header className="app-header"><div className="brand"><span className="brand-orbit" aria-hidden="true" /><h1>Lunar<span>OS</span></h1>
-      <span className="header-divider" /><p>{scenario.active?.name ?? 'Lunar exploration'}<small>{mode==='global'?'Global NASA visualization':mode==='regional'?'Scientific regional analysis':'Hypothetical mission design'}</small></p></div>
-      <nav className="mode-navigation" aria-label="Viewing mode">{([['global','Global Explorer'],['regional','Regional Analysis'],['mission','Mission Designer']] as const).map(([value,label])=><button key={value} disabled={working} aria-pressed={mode===value} onClick={()=>switchMode(value)}>{label}</button>)}</nav>
-      <div className="header-status"><span className={region ? "status-dot ready" : "status-dot"} />
-        {scenario.active ? scenario.busy ? "Saving…" : assetDirty ? "Unsaved asset changes" : missionDirty ? "Unsaved simulation inputs" : scenarioName !== scenario.active.name ? "Unsaved name" : `Saved / revision ${scenario.active.revision}` : region ? "Verified NASA data" : loading ? "Connecting to scientific API" : "Data unavailable"}
-        {scenario.active && <button className="primary-button" disabled={working || scenarioName === scenario.active.name || !scenarioName.trim()} onClick={() => void scenario.patch({ name: scenarioName })}>Save scenario</button>}
-        <span className="phase-label">{globalMissionView?'Global terrain / hypothetical light':'South pole / ME-PA DE421'}</span></div>
-    </header>
+    <MissionHeader mode={mode} context={scenario.active?.name ?? (location ? `${location.latitude_deg.toFixed(3)}° / ${location.longitude_deg.toFixed(3)}° E` : 'No location selected')}
+      ready={Boolean(region)} busy={working} onMode={switchMode}
+      status={scenario.active ? scenario.busy ? 'Saving…' : assetDirty ? 'Unsaved asset changes' : missionDirty ? 'Unsaved simulation inputs' : scenarioName !== scenario.active.name ? 'Unsaved name' : `Saved / revision ${scenario.active.revision}` : region ? 'Data ready' : loading ? 'Connecting' : 'Data unavailable'}
+      onSave={scenario.active?()=>void scenario.patch({name:scenarioName}):undefined} canSave={Boolean(scenario.active&&scenarioName!==scenario.active.name&&scenarioName.trim())}/>
     {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={switchMode} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
       atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
       onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
@@ -183,7 +181,7 @@ export default function Explorer() {
       <button onClick={()=>switchMode('global')}>Return to selected global location</button>
       <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}
     <div className="local-shell" hidden={mode==='global' || atlasRegionalView || unsupportedSelection}>
-    <nav className="mobile-navigation" aria-label="Workspace navigation">{(['map','tools','inspector'] as const).map(pane=><a key={pane} href={pane==='map'?'#terrain-workspace':pane==='tools'?'#exploration-tools':'#context-inspector'} aria-current={mobilePane===pane?'page':undefined} onClick={e=>{e.preventDefault();setMobilePane(pane);if(pane==='inspector')setInspectorOpen(true);}}>{pane==='map'?'Map':pane==='tools'?'Tools':'Inspector'}</a>)}{simulation.run&&mode==='mission' && <a href="#mission-timeline" aria-current={mobilePane==='timeline'?'page':undefined} onClick={e=>{e.preventDefault();setMobilePane('timeline');}}>Timeline</a>}</nav>
+    <nav className="mobile-navigation" aria-label="Workspace navigation">{(['map','tools','inspector'] as const).map(pane=><a key={pane} href={pane==='map'?'#terrain-workspace':pane==='tools'?'#exploration-tools':'#context-inspector'} aria-current={mobilePane===pane?'page':undefined} onClick={e=>{e.preventDefault();setMobilePane(pane);if(pane==='inspector')setInspectorOpen(true);}}>{pane==='map'?'Map':pane==='tools'?'Tools':'Inspector'}</a>)}{simulation.run&&mode==='simulation' && <a href="#mission-timeline" aria-current={mobilePane==='timeline'?'page':undefined} onClick={e=>{e.preventDefault();setMobilePane('timeline');}}>Timeline</a>}</nav>
     <div className={toolsOpen ? "workspace" : "workspace tools-collapsed"}>
       <aside id="exploration-tools" className="tool-rail" aria-label="Exploration tools">
         <div className="tool-rail-title"><h2>Workspace</h2><button aria-label={toolsOpen ? "Collapse tools" : "Expand tools"} onClick={() => setToolsOpen(value => !value)}>{toolsOpen ? "‹" : "›"}</button></div>
@@ -203,17 +201,17 @@ export default function Explorer() {
               if (window.confirm(`Delete scenario “${scenario.active?.name}”? This cannot be undone.`)) void scenario.remove();
             }}>Delete scenario</button>}
           </details>
-          {scenario.active && scenarioInView && <MissionInputs key={`${scenario.active.id}:${editorEpoch}:${JSON.stringify(scenario.active.mission)}`} scenario={scenario.active}
+          {scenario.active && scenarioInView && <div hidden={mode!=='simulation'}><MissionInputs key={`${scenario.active.id}:${editorEpoch}:${JSON.stringify(scenario.active.mission)}`} scenario={scenario.active}
             busy={scenario.busy || simulation.busy || assetDirty} onDirty={setMissionDirty}
-            onSave={mission => scenario.patch({ mission })} onRun={simulation.simulate} />}
-          {scenario.active && scenarioInView && <details open className="tool-section asset-catalog"><summary>Infrastructure catalog</summary>
+            onSave={mission => scenario.patch({ mission })} onRun={simulation.simulate} /></div>}
+          {scenario.active && scenarioInView && <div hidden={mode!=='mission'}><details open className="tool-section asset-catalog"><summary>Infrastructure catalog</summary>
             <p>Hypothetical assets. Click a tool, then place it on valid terrain.</p>
             {(Object.keys(ASSET_NAMES) as AssetKind[]).map(kind => <button key={kind} disabled={working} aria-pressed={placement === kind}
               onClick={() => { if (discardAsset()) { setSelectedAssetId(null); setPlacement(kind);setMobilePane('map'); } }}><span className="asset-badge" aria-hidden="true">{ASSET_SYMBOLS[kind]}</span>Place {ASSET_NAMES[kind].toLowerCase()}</button>)}
             <div className="asset-list">{scenario.active.assets.map(asset => <button key={asset.id} aria-pressed={asset.id === selectedAssetId}
               disabled={working} onClick={() => selectAsset(asset.id)} aria-label={`Select asset: ${asset.name}`}><span>{ASSET_SYMBOLS[asset.kind]}</span>{asset.name}</button>)}</div>
             <button disabled={working || !validLocation} onClick={() => { if (validLocation) void scenario.patch({ site: { latitude_deg: validLocation.latitude_deg, longitude_deg: validLocation.longitude_deg } }); }}>Use selected location as base site</button>
-          </details>}
+          </details></div>}
           {region&&layer&&!globalMissionView&&<details open className="tool-section"><summary>Map layers</summary>
           <section className="layer-panel" aria-label="Scientific layers"><h3>Scientific layers</h3>
             <div role="radiogroup" aria-label="Active scientific layer">{region.layers.map(value => <label className={value.id === layerId ? "layer-choice selected" : "layer-choice"} key={value.id}>
@@ -242,7 +240,11 @@ export default function Explorer() {
         </div>}
       </aside>
       <section id="terrain-workspace" className="map-workspace" aria-label="Terrain exploration">
-        <div className="workspace-toolbar"><span>{globalMissionView?'Global mission terrain':'Lunar south-pole terrain'}</span><button className="inspector-toggle" aria-expanded={narrow?mobilePane==='inspector':inspectorOpen} onClick={()=>{if(narrow){setMobilePane('inspector');setInspectorOpen(true);}else setInspectorOpen(value=>!value);}}>{narrow?'Open inspector':inspectorOpen?'Hide inspector':'Show inspector'}</button>
+        <div className="workspace-toolbar">
+        {mode==='regional'&&<button className="primary-button" onClick={()=>switchMode('mission')}>Create mission here</button>}
+        {mode==='mission'&&<button className="primary-button" onClick={()=>switchMode('simulation')}>Configure simulation</button>}
+        {mode==='simulation'&&<button onClick={()=>switchMode('mission')}>Return to mission design</button>}
+        <span>{globalMissionView?'Global mission terrain':'Lunar south-pole terrain'}</span><button className="inspector-toggle" aria-expanded={narrow?mobilePane==='inspector':inspectorOpen} onClick={()=>{if(narrow){setMobilePane('inspector');setInspectorOpen(true);}else setInspectorOpen(value=>!value);}}>{narrow?'Open inspector':inspectorOpen?'Hide inspector':'Show inspector'}</button>
         {mode==='regional'&&<button className="atlas-local-toggle" onClick={()=>{if(!location)setLocation({latitude_deg:-89.5,longitude_deg:0});setAtlasRegional(true);}}>3D atlas analysis</button>}
         </div><div className="terrain-viewport">
         {globalMissionView?<MissionMoon location={location} assets={scenarioInView?scenario.active?.assets??[]:[]} base={scenarioInView?scenario.active?.site??null:null}
@@ -271,7 +273,7 @@ export default function Explorer() {
         </div>
       </section>
       <div id="context-inspector" className="context-rail">
-      {selectedInterval && <div hidden={mode!=='mission'||!scenarioInView}><Telemetry interval={selectedInterval} asset={selectedAsset} /></div>}
+      {selectedInterval && <div hidden={mode!=='simulation'||!scenarioInView}><Telemetry interval={selectedInterval} asset={selectedAsset} /></div>}
       <div hidden={mode!=='mission' || !selectedAsset||!scenarioInView}>{selectedAsset && <AssetInspector key={`${selectedAsset.id}:${editorEpoch}:${JSON.stringify(selectedAsset)}`} asset={selectedAsset} busy={working}
         globalDomain={globalMissionView}
         onDirty={setAssetDirty}
@@ -281,7 +283,8 @@ export default function Explorer() {
       <div hidden={mode==='mission' && Boolean(selectedAsset)&&scenarioInView}>{globalMissionView?<AtlasSiteInspector point={atlasSite} loading={inspecting} error={inspectError}/>:<SiteInspector site={site} loading={inspecting} error={inspectError} datasets={datasets} />}</div>
       </div>
     </div>
-    {simulation.run && scenarioInView && <Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='mission'} />}
+    {mode==='simulation'&&!scenario.active&&<div className="simulation-empty" role="status"><h2>No mission open</h2><p>Create a scenario in Design or open a saved scenario from Tools. Simulation inputs and calculated results will appear here.</p></div>}
+    {simulation.run && scenarioInView && <div hidden={mode!=='simulation'} className="timeline-slot"><Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='simulation'} /></div>}
     </div>
   </main>;
 }

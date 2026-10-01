@@ -4,6 +4,14 @@ Phase 1 provides scientific exploration. Phase 2 adds hypothetical infrastructur
 scenario persistence and energy simulation. The user's Phase 3 adds global 3D lunar
 exploration and connected viewing modes. Optimization and AI remain excluded.
 
+Phase 5 organizes the browser into Explore, Analyze, Design and Simulate. These
+are activities over the same root location, camera, atlas selection and scenario
+state, not separate applications. The existing `global`, `regional` and `mission`
+URL values remain supported; `simulation` is added. Asset and mission editors stay
+mounted while hidden between activities, preserving independent drafts. API
+revision checks remain authoritative. The timeline is visible only in Simulate
+and pauses when leaving it; the selected reporting interval persists on return.
+
 ```text
 NASA PDS / LOLA team (pinned IMG + labels)
  -> data/raw/ (ignored and checksummed)

@@ -10,7 +10,9 @@ test("independent drafts survive saves and stale revisions cannot overwrite serv
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
     await page.getByRole("button", { name: "Select asset: Habitat", exact: true }).click();
     await page.getByLabel("Continuous demand (kW)", { exact: true }).fill("12");
+    await page.getByRole("button", { name: "Simulate", exact: true }).click();
     await page.getByLabel("Time step (seconds)", { exact: true }).fill("1800");
+    await page.getByRole("button", { name: "Design", exact: true }).click();
     await page.getByLabel("Scenario name", { exact: true }).fill(`${name} renamed`);
     await page.getByRole("button", { name: "Save scenario", exact: true }).click();
     await expect(page.getByLabel("Continuous demand (kW)", { exact: true })).toHaveValue("12");
@@ -46,7 +48,7 @@ test("custom mission parameters reject missing illumination and preserve explici
     { kind: "solar_array", name: "Array", location, rated_power_kw: 10, derating: 1 },
   ] } })).json();
   try {
-    await page.goto("/?mode=mission");
+    await page.goto("/?mode=simulation");
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
     await page.getByLabel("Mission end (UTC)", { exact: true }).fill("2027-01-01T02:00");
     await page.getByLabel("Time step (seconds)", { exact: true }).fill("1800");

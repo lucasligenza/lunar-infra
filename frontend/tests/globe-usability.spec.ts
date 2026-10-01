@@ -33,7 +33,7 @@ test('loading, missing global data and failed terrain are explicit and recoverab
   await page.route('**/api/globe',route=>route.fulfill({json:{...metadata,available:false}}));
   await page.reload();await expect(page.getByRole('heading',{name:'Global data unavailable',exact:true})).toBeVisible();
   await page.screenshot({path:'../artifacts/phase3-missing-global.png'});
-  await page.getByRole('button',{name:'Regional Analysis',exact:true}).click();
+  await page.getByRole('button',{name:'Analyze',exact:true}).click();
   await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
   const width=(await page.getByTestId('terrain-map').boundingBox())!.width;
   await page.getByRole('button',{name:'Hide inspector',exact:true}).click();
@@ -42,7 +42,7 @@ test('loading, missing global data and failed terrain are explicit and recoverab
   await page.screenshot({path:'../artifacts/phase3-regional-panels-closed.png'});
   await page.getByRole('button',{name:'Expand tools',exact:true}).click();
   await page.getByRole('button',{name:'Show inspector',exact:true}).click();
-  await page.getByRole('button',{name:'Global Explorer',exact:true}).click();
+  await page.getByRole('button',{name:'Explore',exact:true}).click();
   await page.unroute('**/api/globe');
   await page.route('**/api/globe/elevation.bin',route=>route.fulfill({status:503,body:'Unavailable'}));
   await page.getByRole('button',{name:'Retry global data',exact:true}).click();
