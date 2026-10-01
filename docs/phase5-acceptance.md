@@ -82,6 +82,16 @@ suite passes 91 tests plus eight subtests. Existing dependency deprecation warni
 tests are not skipped or disabled. GitHub validation also acquires pinned NASA/
 USGS data on a fresh runner before scientific and browser checks.
 
+The running optimized build also passes nine production-browser checks: all four
+activities at the five requested sizes, both zoom-equivalent layouts, commands
+and guidance. Its frontend proxy returns HTTP 200/readiness and the original
+NASA -705 m elevation at latitude -89.5, longitude 0. The API was already running
+and reused; the production frontend is available on loopback port 3000.
+
+Fresh [GitHub validation for 7bbea57](https://github.com/lucasligenza/lunar-infra/actions/runs/36809881870)
+passed: pinned NASA/USGS acquisition, 91 Python tests plus eight subtests, frontend
+typecheck/build and all 39 Chromium tests (5.5 minutes). No tests were skipped.
+
 ## Retained scientific limitations
 
 Global geometry remains the documented coarse LOLA visualization mesh; overlay

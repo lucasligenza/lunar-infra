@@ -2,7 +2,7 @@
 
 ## Current development phase
 
-Phase 5: lunar mission-control UX and design overhaul. Scope and observed baseline
+Phase 5 is complete: lunar mission-control UX and design overhaul. Scope and observed baseline
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
 tests pass; actual production screens and all five requested viewport sizes reviewed.
 Confirmed mobile destination/region collision and mission inspector/camera overlap.
@@ -16,8 +16,9 @@ readable scientific labels/charts and contrast/focus checks. M5: Ctrl/Cmd+K comm
 layer and saved-simulation actions; console records actual UTC requests/readiness
 and failures, capped at 100 session events. M6: six-step dismissible/reopenable walkthrough, Help / Settings,
 persisted reduced-motion preference and explanatory blocked simulation states.
-M7: local responsive/user-journey acceptance passes; final milestone publication
-and GitHub verification remain. See docs/phase5-acceptance.md. Scientific datasets,
+M7: local, production-browser and fresh GitHub acceptance pass; all seven milestones
+are pushed and verified. Phase 5 is complete within the documented validation limits.
+See docs/phase5-acceptance.md. Scientific datasets,
 numerical logic, existing APIs and saved mission formats remain in the preserved scope.
 
 Phase 4: global lunar atlas, scientific overlays and reusable regional analysis.
@@ -102,7 +103,17 @@ actual transformed axis font size and missing-global/polar-ready distinction pas
 preserved Python suite: 91 tests plus eight subtests. Native Chrome zoom and physical
 handset testing are not claimed; CSS zoom equivalents and emulated viewports are
 documented in docs/phase5-acceptance.md. Current milestone: test: validate mission
-control layouts and user journeys. Final publication/remote verification pending.
+control layouts and user journeys. Acceptance is complete.
+M7 7bbea57 pushed. Nine additional production-browser checks pass (1.2 minutes),
+including the complete four-activity journey at all five sizes, zoom equivalents,
+commands and guidance. Production HTTP readiness and the preserved NASA -705 m
+sample at latitude -89.5, longitude 0 pass through the frontend proxy. Existing
+API reused; optimized frontend available on http://127.0.0.1:3000. Fresh GitHub
+[run 36809881870](https://github.com/lucasligenza/lunar-infra/actions/runs/36809881870)
+passed for 7bbea57: pinned NASA/USGS acquisition, 91 Python tests plus eight subtests,
+frontend typecheck/build and 39 Chromium tests (5.5 minutes). No skips or disabled
+failing checks. Final documentation records verified acceptance; no further feature
+phase is authorized.
 
 Phase 4 milestone 1 d1d4dc0 pushed, CI passed: real GLD100 native global terrain, typed catalog, bounded
 acquisition plan, independent atlas API and data-to-UI measurement inspector.
@@ -376,16 +387,18 @@ Git writes and outbound networking require elevated execution in this environmen
 
 ## Latest successful commit
 
-Latest confirmed pushed functional milestone: 72ab9a9, optional mission guidance,
-validated in [GitHub run 36807276630](https://github.com/lucasligenza/lunar-infra/actions/runs/36807276630).
+Latest confirmed pushed functional milestone: 7bbea57, final responsive and journey
+validation, passed in
+[GitHub run 36809881870](https://github.com/lucasligenza/lunar-infra/actions/runs/36809881870).
 The Phase 5 audit is validated in
 [GitHub run 36801148539](https://github.com/lucasligenza/lunar-infra/actions/runs/36801148539).
-This milestone records final mission-control responsive and journey validation.
+This documentation milestone records confirmed Phase 5 production/remote acceptance.
 Resolve its hash with `git log -1 --format=%h -- PROGRESS.md`.
 Push results and hashes are reported immediately after each successful push.
 
 ## Next development task
 
-Publish Phase 5 M7 and confirm fresh GitHub validation. New scientific data and
-numerical algorithms are outside this UX assignment. Existing optional atlas data
-availability limits continue to apply.
+No active Phase 5 work remains. Await the user's next approved scope. New scientific
+data and numerical algorithms are outside this completed UX assignment. Existing
+optional atlas data availability and native-zoom/accessibility validation limits
+remain explicit in docs/phase5-acceptance.md.
