@@ -18,6 +18,9 @@ DEFAULT_BUDGET = 256 * 1024 * 1024
 
 
 def acquisition_plan(identifier: str, raw: Path = RAW, budget: int = DEFAULT_BUDGET):
+    if identifier=='diviner-polar-midnight':
+        from backend.app.data.thermal import plan
+        return plan(raw)
     source = definitions()[identifier]
     if source.adapter=='range_zip_geology':
         from backend.app.data.geology import archive_definition

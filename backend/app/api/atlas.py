@@ -84,6 +84,7 @@ def inspect(request:Request,
     try:
         atlas=request.app.state.atlas;sample=atlas.grid(dataset).sample(longitude,latitude)
         if 'solar-visibility' in atlas.environment:sample.solar_visibility=atlas.environment['solar-visibility'].sample(longitude,latitude)
+        if 'diviner-polar-midnight' in atlas.environment:sample.temperature=atlas.environment['diviner-polar-midnight'].sample(longitude,latitude)
         if 'usgs-geology' in atlas.classifications:sample.geology=atlas.classifications['usgs-geology'].sample(longitude,latitude)
         return sample
     except ValueError as error:raise HTTPException(503,detail=str(error))

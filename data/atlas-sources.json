@@ -149,6 +149,64 @@
       "source_url": "https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_GLOBAL", "citation": "Speyerer et al. (2011), LPSC 2387; 2014 mosaic update", "version": "Product selection pending", "product_id": "WAC_GLOBAL",
       "period": {"start": "2009-11", "stop": "2011-02", "created": null}, "coverage": {"south": -90, "north": 90, "west": 0, "east": 360}, "unit": "image DN", "crs": "Product selection pending", "longitude_convention": "Planetocentric, east-positive", "frame_note": "Source LROC mosaic network",
       "data_type": "imagery", "adapter": "pending", "cache": null, "limitations": ["Verified low-resolution full products available; current globe uses separately identified NASA SVS imagery.", "Photometrically normalized mosaic is not current sunlight."], "files": {}
+    },
+    {
+      "id": "diviner-polar-midnight",
+      "name": "Diviner south-pole summer temperature / 00:00-00:15 local time",
+      "category": "thermal",
+      "mission": "LRO",
+      "instrument": "Diviner",
+      "organization": "NASA / UCLA / PDS Geosciences",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_pcp/diurnal/ltim/pols/pcp_avg_tbol_pols_sum_ltim01_240.xml",
+      "citation": "Williams et al. (2019), Seasonal polar temperatures on the Moon, JGR Planets 124, 2505-2521, doi:10.1029/2019JE006028",
+      "version": "1.0",
+      "product_id": "PCP_AVG_TBOL_POLS_SUM_LTIM01_240.TAB",
+      "period": {
+        "start": "2009-07-05T16:50:26.195",
+        "stop": "2019-02-17T00:00:00.000",
+        "created": "2019-07-26T12:00:00",
+        "local_time_min_hours": 0,
+        "local_time_max_hours": 0.25,
+        "season": "subsolar latitude < 0; southern summer",
+        "calibration_software": "4.0"
+      },
+      "coverage": {
+        "south": -90,
+        "north": -87.7,
+        "west": 0,
+        "east": 360
+      },
+      "spacing_m_at_equator": 240,
+      "unit": "K",
+      "crs": "+proj=stere +lat_0=-90 +lon_0=0 +k=1 +R=1737400 +units=m +no_defs",
+      "longitude_convention": "Planetocentric, east-positive; original -180..180 normalized to 0..360 for queries",
+      "frame_note": "Published polar table coordinates verified against a 1737.4 km south-polar stereographic sphere. No surveyed inter-frame transformation or pixel alignment with LOLA asserted.",
+      "data_type": "numeric_raster",
+      "adapter": "diviner_polar_table",
+      "cache": "data/processed/atlas/diviner-polar-midnight",
+      "limitations": [
+        "One 0?0.25 local-hour summer climatological bin; not current temperature, a daily cycle, extrema, habitat temperature or a UTC mission series.",
+        "Original table covers south of 80 degrees; application prepares a bounded approximately 96 km polar square. Omitted bins remain nodata.",
+        "Nominal 240 m bins. Rounded source coordinate lattice fitted at 240.035957 m with <0.9 m coordinate quantization residual; original temperatures are not interpolated.",
+        "Selected table has no per-bin observation counts, uncertainty or quality flags. Extremely low brightness temperatures are unqualified source values, not independently validated physical minima."
+      ],
+      "files": {
+        "pcp_avg_tbol_pols_sum_ltim01_240.lbl": {
+          "url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_pcp/diurnal/ltim/pols/pcp_avg_tbol_pols_sum_ltim01_240.lbl",
+          "bytes": 3637,
+          "sha256": "17d9d1a8bac3963543aa59446d818253caa912b4dcf4edb4d9f45f51f1363538"
+        },
+        "pcp_avg_tbol_pols_sum_ltim01_240.xml": {
+          "url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_pcp/diurnal/ltim/pols/pcp_avg_tbol_pols_sum_ltim01_240.xml",
+          "bytes": 12210,
+          "sha256": "21d2ffad65c22e05c6878337d77b5217b3d9ce9431098a71bda8afdeef50c23a"
+        },
+        "pcp_avg_tbol_pols_sum_ltim01_240.tab": {
+          "url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_pcp/diurnal/ltim/pols/pcp_avg_tbol_pols_sum_ltim01_240.tab",
+          "bytes": 212653759,
+          "sha256": "414354cb2334b62161e895fe0f36369fdee77af13b0c5f333b86ddb05a0f618b"
+        }
+      }
     }
   ]
 }

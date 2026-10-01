@@ -143,3 +143,19 @@ model has already been area-averaged onto the registered 240 m crop. It describe
 ~18.6-year solar visibility, not current sunlight or mission eclipse intervals.
 Registered tile URLs drive the shared frontend renderer; no per-provider shader
 or duplicate map implementation is introduced.
+
+## Bounded Diviner thermal integration
+
+PCP_AVG_TBOL_POLS_SUM_LTIM01_240.TAB v1 / PDS4 v1.0 contains average bolometric
+brightness temperatures from southern-summer nadir observations, 2009-07-05 through
+2019-02-17, local time 0.00-0.25 hours, calibration software 4.0. This is one
+climatological local-time bin, not current surface temperature or habitat conditions.
+The 212.7 MB acquisition includes original PDS3/PDS4 labels; all files are pinned
+by size and SHA-256. The pipeline validates all 3,604,300 records, latitude/longitude
+against normalized polar x/y on the 1737.4 km sphere, and the rounded coordinate
+lattice (240.035957 m step, <0.9 m quantization residual). It preserves the native
+bins in a bounded 401x401 crop, without interpolation or alignment assumptions
+against the independently gridded LOLA products. Omitted bins remain nodata.
+The table has no sample counts or uncertainty/quality columns; very low brightness
+values are unqualified source values and do not establish independently verified
+physical temperature minima. Thermal evidence is descriptive in settlement screening.

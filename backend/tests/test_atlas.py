@@ -45,7 +45,7 @@ def test_numeric_grid_nodata_spacing_and_invalid_coordinates():
 def test_atlas_catalog_query_contract_and_missing_data(tmp_path):
     with TestClient(create_app(db_path=tmp_path/'missions.sqlite')) as client:
         catalog=[CatalogEntry.model_validate(value) for value in client.get('/atlas/datasets').json()]
-        assert len(catalog)==10
+        assert len(catalog)==11
         assert next(value for value in catalog if value.id=='gld100').numerical_queries
         assert not next(value for value in catalog if value.id=='m3').numerical_queries
         for latitude,longitude in [(.67,23.47),(-43.3,348.78),(9.62,339.92),(-56,180),(90,0),(-90,360)]:

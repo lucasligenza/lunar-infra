@@ -59,6 +59,24 @@ class AtlasStore:
         if polar is not None:
             self.environment['solar-visibility']=ProjectedRaster(polar.illumination, polar.transform, POLAR_PROJ,
                 self.definitions['solar-visibility'], 'modeled', 'Containing 240 m cell; original 60 m area-averaged visibility over ~18.6 years, not a temporal profile')
+        from backend.app.data.thermal import IDENTIFIER, METHOD, SHAPE, TRANSFORM
+        source=self.definitions[IDENTIFIER];path=directory/IDENTIFIER
+        try:
+            registry=json.loads((path/'registry.json').read_text(encoding='utf8'))
+            if (registry['schema_version']!=1 or registry['source']!=source.model_dump() or
+                    registry['shape']!=list(SHAPE) or registry['transform']!=list(TRANSFORM)[:6] or registry['method']!=METHOD):
+                raise ValueError('Thermal registration does not match validated source and geometry')
+            spec=registry['artifacts']['temperature.npy'];artifact=path/'temperature.npy'
+            if artifact.stat().st_size!=spec['bytes'] or checksum(artifact)!=spec['sha256']:
+                raise ValueError('Thermal numeric integrity check failed')
+            values=np.load(artifact,allow_pickle=False)
+            if values.shape!=SHAPE or values.dtype!=np.dtype('float32') or np.any(values[np.isfinite(values)]<0):
+                raise ValueError('Unsupported thermal raster values')
+            values.flags.writeable=False
+            self.environment[IDENTIFIER]=ProjectedRaster(values,TRANSFORM,source.crs,source,'measured_gridded',
+                'Containing original native bin; southern summer 00:00-00:15 local-time bolometric brightness climatology, 2009-2019; not current temperature')
+            self.registries[IDENTIFIER]=registry
+        except (OSError,ValueError,KeyError) as error:self.errors[IDENTIFIER]=str(error)
         source=self.definitions['gld100']; path=directory/source.id
         try:
             registry=json.loads((path/'registry.json').read_text(encoding='utf8'))
@@ -87,7 +105,7 @@ class AtlasStore:
             if source.adapter=='range_zip_geology':
                 from backend.app.data.geology import archive_definition
                 download_bytes=sum(item['compressed_bytes'] for item in archive_definition()['members'])+2*1024*1024
-            ready=source.id in self.grids or source.id in self.classifications or (source.adapter=='existing_polar' and self.polar is not None)
+            ready=source.id in self.grids or source.id in self.classifications or source.id in self.environment or (source.adapter=='existing_polar' and self.polar is not None)
             downloaded=bool(source.files) and all((RAW/name).exists() for name in source.files)
             result.append(CatalogEntry(**source.model_dump(), acquisition_status='ready' if ready else
                 'downloaded' if downloaded else 'not_acquired' if source.files else 'discovered',

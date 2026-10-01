@@ -20,3 +20,20 @@ test('validated polar visibility colors the globe and matches actual native insp
   await expect(page.getByTestId('atlas-sunlight')).toHaveText('Unavailable here');
   expect(errors).toEqual([]);
 });
+
+test('Diviner temperature is a source-specific summer local-time overlay, with missing data preserved',async({page,request})=>{
+  await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  await openDestinations(page);await page.getByRole('button',{name:/^Shackleton crater/}).click();
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
+  const native=await(await request.get('/api/atlas/inspect?latitude=-89.67&longitude=129.78')).json();
+  expect(native.temperature.source_id).toContain('LTIM01');expect(native.temperature.unit).toBe('K');
+  await expect(page.getByTestId('atlas-temperature')).toHaveText(`${native.temperature.value.toFixed(1)} K`);
+  await page.getByRole('combobox',{name:'Scientific overlay'}).selectOption('temperature');
+  await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
+  await expect(page.getByRole('combobox',{name:'Scientific overlay'})).toContainText('00:00-00:15 local time');
+  await page.screenshot({path:'../artifacts/simple-thermal-overlay.png'});
+  const missing=await(await request.get('/api/atlas/inspect?latitude=-89.5&longitude=0')).json();
+  expect(missing.temperature.status).toBe('nodata');expect(missing.temperature.value).toBeNull();
+  const outside=await(await request.get('/api/atlas/inspect?latitude=0&longitude=0')).json();
+  expect(outside.temperature.status).toBe('unavailable');expect(outside.temperature.value).toBeNull();
+});

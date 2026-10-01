@@ -177,3 +177,14 @@ fetch` and `uv run python -m lunaros inspect`; it is not used for polar analysis
 See [architecture](docs/ARCHITECTURE.md) and
 [global dataset provenance](docs/DATA_PROVENANCE.md) and
 [scientific assumptions and limitations](docs/scientific-assumptions.md).
+
+### Optional bounded polar thermal layer
+
+Run `uv run python -m backend.app.data.thermal --plan` to inspect the pinned
+212.7 MB acquisition, then `uv run python -m backend.app.data.thermal` and restart
+the backend. `--offline` reproduces processing from verified downloaded files.
+This prepares one Diviner southern-summer 00:00-00:15 local-time bolometric
+brightness-temperature climatology (2009-2019), cropped to about 96 km around the
+pole. It does not provide current temperature, thermal extrema or a mission time
+series. Source records, checksums, native grid validation and nodata are preserved.
+The Moon workspace exposes Overlays; Advanced retains the full catalog and tools.

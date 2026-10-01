@@ -62,11 +62,12 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     {loading&&<p role="status">Loading native terrain…</p>}{error&&<p role="alert">{error}</p>}
     {point&&<section aria-label="Atlas terrain inspection"><p className="region-coordinate">{point.latitude_deg.toFixed(5)}° latitude / {point.longitude_deg.toFixed(5)}° E</p>
       <dl><dt>Elevation</dt><dd data-testid="atlas-elevation">{point.elevation.value===null?'Missing data':`${point.elevation.value.toLocaleString('en-US')} m`}</dd>
-      <dt>Average solar visibility</dt><dd data-testid="atlas-sunlight">{point.solar_visibility?.status==='ok'?`${(point.solar_visibility.value!*100).toFixed(1)}%`:'Unavailable here'}</dd>
+      <dt hidden={!advanced&&view.layer!=='illumination'&&point.solar_visibility?.status!=='ok'}>Average solar visibility</dt><dd hidden={!advanced&&view.layer!=='illumination'&&point.solar_visibility?.status!=='ok'} data-testid="atlas-sunlight">{point.solar_visibility?.status==='ok'?`${(point.solar_visibility.value!*100).toFixed(1)}%`:'Unavailable here'}</dd>
+      <dt hidden={!advanced&&view.layer!=='temperature'&&point.temperature?.status!=='ok'}>Summer temperature / local midnight bin</dt><dd hidden={!advanced&&view.layer!=='temperature'&&point.temperature?.status!=='ok'} data-testid="atlas-temperature">{point.temperature?.status==='ok'?`${point.temperature.value!.toFixed(1)} K`:'Unavailable here'}</dd>
       <dt hidden={!advanced}>Source</dt><dd hidden={!advanced}>{point.elevation.source_id} {point.elevation.version}</dd><dt hidden={!advanced}>Native spacing at sampled latitude</dt><dd hidden={!advanced}>{point.elevation.spacing_north_m.toFixed(1)} m north / {point.elevation.spacing_east_m.toFixed(1)} m east</dd>
       <dt hidden={!advanced}>Sampling</dt><dd hidden={!advanced}>{point.elevation.method}</dd><dt>Derived slope</dt><dd data-testid="atlas-slope">{point.slope.value===null?'Missing stencil':`${point.slope.value.toFixed(3)}°`}</dd>
       <dt hidden={!advanced}>Slope support</dt><dd hidden={!advanced}>{point.slope.support_north_m.toFixed(1)} m north / {point.slope.support_east_m.toFixed(1)} m east</dd><dt hidden={!advanced}>Terrain provenance</dt><dd hidden={!advanced}>{point.terrain_source}</dd></dl>
-      {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}{point.solar_visibility&&<p>{point.solar_visibility.source_id} {point.solar_visibility.version}: {point.solar_visibility.method}. This is not current sunlight.</p>}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
+      {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}{point.temperature&&<p>{point.temperature.source_id} {point.temperature.version}: {point.temperature.method}. Surface brightness temperature is not habitat temperature.</p>}{point.solar_visibility&&<p>{point.solar_visibility.source_id} {point.solar_visibility.version}: {point.solar_visibility.method}. This is not current sunlight.</p>}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
       <div hidden={view.layer!=='geology'&&!advanced} className="geologic-inspection" aria-label="Geological interpretation"><h3>Geological interpretation</h3>
         {point.geology?<><p data-testid="atlas-geology">{point.geology.category?`${point.geology.category.code} / ${point.geology.category.name}`:'Missing mapped class'}</p>
           <p>{point.geology.source_id} {point.geology.version} / 1:5,000,000 source map; categorical grid 16 ppd.</p>
@@ -85,7 +86,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
         <p>Units: {value.unit}. {value.longitude_convention}.</p><p>{value.crs}</p><p>{value.frame_note}</p>
         <p>Source period: {value.period.start??'unspecified'} through {value.period.stop??'unspecified'}.</p>
         <p>{value.citation}</p>{value.limitations.map(note=><p key={note}>{note}</p>)}<a href={value.source_url} target="_blank" rel="noreferrer">Source / discovery</a>
-        {['pds_equirectangular','range_zip_geology'].includes(value.adapter)&&<DatasetAcquisition dataset={value.id}/>}
+        {['pds_equirectangular','range_zip_geology','diviner_polar_table'].includes(value.adapter)&&<DatasetAcquisition dataset={value.id}/>}
         {providers.filter(provider=>provider.dataset_id===value.id).map(provider=><DatasetDiscovery key={provider.id} provider={provider}/>)}
       </details>)}
     </section>

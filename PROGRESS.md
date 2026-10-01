@@ -25,6 +25,18 @@ React duplicate-key errors, typecheck and production build pass. Actual rendered
 solar overlay reviewed. Latest successful pushed commit: c5ff8d7.
 Next: bounded Diviner native-table validation and thermal integration.
 
+M2 pushed: a5d6e22. M3 Diviner integration is functional: 212,669,606-byte pinned
+acquisition; all 3,604,300 source records validate, 122,389 native bins retained,
+240.035957 m lattice with 0.877 m maximum quantization residual, original nodata.
+Source-specific numerical queries and 3D summer/local-time temperature overlay
+are available in the bounded polar crop. Original labels, observation period,
+calibration and limitations are recorded; no temporal mission integration claimed.
+Validation: 96 Python tests pass, independent published-table reference and label/
+integrity regression checks pass; both environmental browser journeys and production
+build/typecheck pass. Actual thermal overlay screenshot reviewed. CI prepares this
+bounded product for fresh-data validation. Latest successful push: a5d6e22.
+Next: explainable regional settlement candidate screening and mission transition.
+
 Phase 5 is complete: lunar mission-control UX and design overhaul. Scope and observed baseline
 are in docs/ux-audit.md. M1 audit: 91 Python tests plus eight subtests and 28 browser
 tests pass; actual production screens and all five requested viewport sizes reviewed.
