@@ -77,7 +77,8 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       const slider = page.getByRole('slider', { name: 'Mission interval' });
       await slider.fill('2');
       await expect(page.getByTestId('timeline-soc')).toHaveText(`${(run.result.intervals[2].soc_end * 100).toFixed(2)}%`);
-      await expect(page.getByTestId('timeline-power-status')).toHaveText(`${run.result.intervals[2].unserved_kw.toFixed(2)} kW unserved`);
+      await expect(page.getByTestId('timeline-power-status')).toHaveText('Power shortage');
+      await expect(page.getByTestId('telemetry-unserved')).toHaveText(`${run.result.intervals[2].unserved_kw.toFixed(2)} kW`);
       if(width<=900)await expect(page.getByTestId('terrain-map')).toBeVisible();
       const compactBounds = (await page.getByRole('region',{name:'Mission timeline'}).boundingBox())!;
       expect(compactBounds.x+compactBounds.width).toBeLessThanOrEqual(width+1);
@@ -87,7 +88,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await reachable(page.getByRole('button',{name:'Expand timeline',exact:true}));
       await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
       const timeline = await page.getByRole('region',{name:'Mission timeline'}).boundingBox();
-      if(width>900)expect(timeline!.height).toBeLessThanOrEqual(height*.42+1);
+      if(width>900)expect(timeline!.height).toBeLessThanOrEqual(height*.34+1);
       await reachable(page.getByRole('button',{name:'Collapse timeline',exact:true}));
       const axisSize = await page.locator('.timeline-chart svg text').first().evaluate(element => {
         const text = element as SVGTextElement, transform = text.getScreenCTM()!;

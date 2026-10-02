@@ -1,10 +1,9 @@
 # LunarOS
 
-The interface has two primary workspaces: **Moon** for exploration and scientific
-overlays, and **Mission** for infrastructure design and simulation. Advanced
-analysis remains available in the atlas, and Mission has direct **Design** and
-**Simulate** controls. Location, atlas selection, drafts and playback position
-stay connected while switching. Use **Commands** or **Ctrl/Cmd+K** to
+Use **Explore**, **Analyze**, **Build** and **Simulate** in one compact header.
+The Moon stays central; tools and details open when you need them. Location,
+atlas selection, drafts and playback position stay connected while switching.
+Use **Commands** or **Ctrl/Cmd+K** to
 search existing actions. The collapsible **Activity** console shows actual UTC
 requests, layer readiness and simulation results, with optional request details.
 
@@ -17,20 +16,27 @@ See the [UX audit](docs/ux-audit.md) and [design system](docs/design-system.md).
 See [Phase 5 acceptance](docs/phase5-acceptance.md) for rendered review, user journeys
 and responsive/accessibility validation limits.
 
-Mission starts with a map-first viewport. **Saved missions**, **Add infrastructure**
-and **Simulation inputs** open focused tools; **Advanced tools** (or the mobile
-**Tools** tab) exposes the complete workspace. Selecting an asset opens its
-inspector. Closing a panel restores
-the map width and retains drafts. Simulation playback starts compact, with UTC
-time, play/pause, scrubbing, battery reserve and interval-average power. **Expand
-details** reveals bounded charts, mission energy totals and provenance. Power is
-in kW; stored and accumulated energy is in kWh. No values are invented for playback.
+Build starts with the full terrain viewport and closed panels. **+ Add Asset**
+opens a compact palette; choose equipment and click the surface to place it.
+Selection opens the inspector. Primary engineering fields remain visible;
+**Advanced settings** holds detailed parameters. Clicking empty terrain shows
+coordinates, elevation and slope; **Source details** and **Technical details**
+retain scientific provenance. Close or Escape restores the map and keeps drafts.
+**Mission details** provides saved missions and simulation inputs.
+
+Simulation starts with UTC time, play/pause, a progress slider and current
+generation, demand, battery reserve and shortage status. **View details** opens
+a bounded bottom drawer with charts, **Mission summary (kWh)**, events and input
+provenance. Power is interval-average kW; battery SOC is at interval end.
+Cumulative energy is kWh. Playback reads the saved Python results; no values are
+invented. On smaller screens, contextual panels become dismissible task sheets.
+See the [mission workspace redesign](docs/mission-workspace-redesign.md).
 
 From **Overlays**, use **Find settlement sites**, select a candidate and inspect
 **Why this candidate?**. **Create mission at selected location** opens the creation
 form at those exact coordinates. Creating it opens the infrastructure catalog;
-place a habitat on valid terrain, edit it in the inspector, then **Configure
-simulation**. Saved missions remain directly accessible without repeating screening.
+place a habitat on valid terrain and edit it in the inspector. Choose **Simulate**,
+then **Set up simulation**. Saved missions remain directly accessible without repeating screening.
 Screening is preliminary protected-outpost comparison, not a safety certification
 or universal habitability score. New candidate selection does not move an existing
 mission. Average solar visibility does not supply temporal mission power inputs.
@@ -42,6 +48,14 @@ and an optional USGS geological-unit layer. Open **Overlays** on the globe;
 The original south-pole 240 m analysis and hypothetical mission simulator remain.
 Global atlas sites also support saved hypothetical infrastructure missions on the
 3D Moon. Elevation availability never implies validated temporal solar conditions.
+
+**Overlays** is also available in Build and Simulate: it controls prepared native
+terrain or the existing 3D imagery/scientific surface and opacity. Temperature and
+average solar visibility are limited to the prepared south-pole region. Outside
+coverage, **Go to supported region** moves to Shackleton. The outline marks the
+registered analysis area; actual source gaps remain transparent. Historical
+Diviner summer temperature is not current surface/habitat temperature, and
+average solar visibility is not a temporal input for mission power.
 
 Prepare geology with `uv run python -m backend.app.data.atlas --dataset usgs-geology`.
 Use `--plan` first to inspect the bounded approximately 84 MB selected-member

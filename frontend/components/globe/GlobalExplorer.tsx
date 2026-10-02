@@ -123,7 +123,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         {inspection && <>
           <button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>View scientific overlays</button>
           <button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);setPanelRequest({tab:'sites',serial:++serial.current});}}>Find settlement sites</button>
-          <button disabled={inspection.elevation.status!=='ok'} onClick={()=>onMode('mission')}>Design a mission here</button>
+          <button disabled={inspection.elevation.status!=='ok'} onClick={()=>onMode('mission')}>Create mission here</button>
           </>}
         <details><summary>Advanced</summary><button onClick={()=>onMode('regional')}>Analyze this region</button><p>Global imagery is a visualization product, not a measurement. Local and global elevation have different sampling footprints.</p>
           {terrain&&<p>{terrain.elevation.source_id} {terrain.elevation.version} / {terrain.elevation.spacing_north_m.toFixed(1)} m native spacing. {terrain.elevation.method}.</p>}

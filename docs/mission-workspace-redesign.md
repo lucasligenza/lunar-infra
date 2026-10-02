@@ -66,5 +66,31 @@ Actual outside-coverage, polar temperature/solar, asset and site screenshots wer
 inspected; no environmental or numerical data was added or altered.
 
 M2 validation: 20 workspace/responsive journeys and 15 further footprint,
-settlement, playback and globe journeys pass. Typecheck passes. Registered layers,
+settlement, playback and globe journeys pass. Typecheck and production build pass. Registered layers,
 real polar colors, native measurements, nodata and persistence are preserved.
+
+M2 pushed as `0b19c37`; [GitHub validation](https://github.com/lucasligenza/lunar-infra/actions/runs/36958233781)
+passed all 55 browser journeys, fresh scientific acquisition, Python and build.
+
+## M3 playback review
+
+The timeline now composes a compact `SimulationBar` and a separately disclosed
+`SimulationDrawer`. The existing controller retains selected interval, speed,
+play/pause and chart window. Current generation/demand/unserved demand use kW;
+battery SOC is at interval end. Selected-asset output is a direct lookup in the
+same saved interval, not an additional frontend simulation.
+
+View details exposes the three charts, mission energy summary in kWh, events,
+input/result hashes and assumptions. Desktop drawer height is capped at 34dvh;
+its body scrolls while close/playback stay reachable. Mobile details use a task
+sheet; the compact state keeps the surface visible. Escape collapses details and
+returns focus to the toggle without changing the reporting interval.
+
+Actual 1366/1024/mobile compact and expanded screenshots were inspected. New
+journey assertions check closed default charts/rails, >75% desktop surface height
+in compact simulation, retained interval on collapse, selected-battery SOC from
+the actual Python output and distinct cumulative summary values.
+
+M3 validation: 15 focused browser journeys and 11 final label/focus/responsive
+checks pass; typecheck and production build pass. Python regression passes
+106 tests and eight subtests. No backend, simulation, source data or APIs changed.

@@ -32,7 +32,7 @@ test("simulation inputs playback charts telemetry stale state and saved result r
     await expect(page.getByRole('button', {name:'Expand timeline',exact:true})).toHaveAttribute('aria-expanded','false');
     await expect(slider).toBeVisible();
     await expect(page.getByTestId('timeline-soc')).toHaveText(`${(run.result.intervals[0].soc_end! * 100).toFixed(2)}%`);
-    await expect(page.getByTestId('timeline-power')).toHaveText(`${run.result.intervals[0].generation_kw.toFixed(2)} kW generation / ${run.result.intervals[0].demand_kw.toFixed(2)} kW demand`);
+    await expect(page.getByTestId('timeline-power')).toHaveText(`Generation ${run.result.intervals[0].generation_kw.toFixed(2)} kWDemand ${run.result.intervals[0].demand_kw.toFixed(2)} kW`);
     await expect(page.getByRole('button',{name:/Electrical generation chart/})).toHaveCount(0);
     await page.screenshot({path:'../artifacts/targeted-playback-compact.png'});
     await expect(page.getByTestId("telemetry-generation")).toHaveText(run.result.intervals[0].generation_kw.toFixed(2));
@@ -43,8 +43,8 @@ test("simulation inputs playback charts telemetry stale state and saved result r
     expect(run.result.intervals[selected].unserved_kw).toBeGreaterThan(0);
     await expect(page.getByTestId("telemetry-unserved")).toHaveText(`${run.result.intervals[selected].unserved_kw.toFixed(2)} kW`);
     await expect(page.getByTestId("telemetry-soc")).toHaveText(`${(run.result.intervals[selected].soc_end! * 100).toFixed(2)}%`);
-    await expect(page.getByTestId('timeline-power-status')).toHaveText(`${run.result.intervals[selected].unserved_kw.toFixed(2)} kW unserved`);
-    await expect(page.getByRole('heading',{name:'Mission energy totals (kWh)',exact:true})).toBeVisible();
+    await expect(page.getByTestId('timeline-power-status')).toHaveText('Power shortage');
+    await expect(page.getByRole('heading',{name:'Mission summary (kWh)',exact:true})).toBeVisible();
     await page.getByLabel("Chart window", { exact: true }).selectOption("12");
     await expect(page.getByRole("button", { name: /Electrical generation chart/ })).toBeVisible();
     await slider.focus(); await slider.press("Home"); await slider.press("ArrowRight");

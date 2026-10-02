@@ -5,9 +5,9 @@ const STEPS = [
   ['Navigate the Moon', 'Explore starts with the 3D Moon. Drag to orbit, scroll to approach, or choose a named destination. Reset globe returns to near-side orbit.'],
   ['Select a location', 'Click the surface or enter lunar coordinates. The location panel identifies the actual available data. Your selection stays with you across activities.'],
   ['Choose scientific layers', 'Open Overlays to color the Moon with elevation, slope, geology, or available polar sunlight and temperature. Select a location, then Find settlement sites to compare nearby candidates. Advanced opens the full catalog and analysis tools.'],
-  ['Analyze the terrain', 'Open Advanced ? Analyze this region. The prepared south pole has a 240 m 2D map; other locations use the global atlas. Analysis provides native measurements, area statistics and elevation profiles where data supports them.'],
-  ['Design a mission', 'Open Mission or choose Design a mission here. Select valid terrain, name a scenario, then create it. Pick an asset from the catalog and click terrain to place it. Use the inspector to edit, move or remove it; saves go through the backend.'],
-  ['Simulate and inspect', 'Choose Simulate, set UTC mission parameters and an explicit hypothetical electrical input profile, then Run simulation. Scrub or play the returned timeline to inspect calculated power and battery conditions. NASA average visibility is not time-resolved sunlight.'],
+  ['Analyze the terrain', 'Choose Analyze this region from the location panel. The prepared south pole has a 240 m 2D map; other locations use the global atlas. Analysis provides native measurements, area statistics and elevation profiles where data supports them.'],
+  ['Build a mission', 'Choose Create mission here, select valid terrain and name your mission. Use + Add Asset, pick equipment and click the surface to place it. Selection opens the inspector; Advanced settings holds detailed engineering inputs.'],
+  ['Simulate and inspect', 'Choose Simulate, open Set up simulation or Mission details → Simulation inputs, set UTC times and an explicit hypothetical sunlight profile, then Run simulation. Play or scrub the compact bar; View details opens charts and mission energy totals. NASA average visibility is not time-resolved sunlight.'],
 ] as const;
 
 export default function HelpPanel({ open, initial, onClose, motion, onMotion, consoleVisible, onConsole, onTips }: {
@@ -20,7 +20,7 @@ export default function HelpPanel({ open, initial, onClose, motion, onMotion, co
     <header><h2>{tab === 'tour' ? 'From orbit to a mission' : tab === 'settings' ? 'Interface settings' : 'LunarOS help'}</h2><button onClick={onClose}>Close help</button></header>
     <nav aria-label="Help sections"><button aria-pressed={tab === 'help'} onClick={() => setTab('help')}>Help</button><button aria-pressed={tab === 'tour'} onClick={() => { setTab('tour'); setStep(0); }}>Walkthrough</button><button aria-pressed={tab === 'settings'} onClick={() => setTab('settings')}>Settings</button></nav>
     <div className="help-content">
-      {tab === 'help' && <><p>Moon brings exploration and scientific overlays together. Mission contains design and simulation. Both preserve your selected location.</p>
+      {tab === 'help' && <><p>Explore the Moon, Analyze scientific layers, Build infrastructure and Simulate power. These activities preserve your selected location and saved mission.</p>
         <dl><dt>Ctrl / Cmd K</dt><dd>Search application commands</dd><dt>Escape</dt><dd>Close a dialog and return focus</dd><dt>Globe keyboard</dt><dd>Focus the Moon: arrows pan and Enter selects the screen center. Use the labeled camera buttons to zoom.</dd></dl>
         <p>“Derived” means computed from supporting terrain. “Modeled” visibility is a long-term average. “Hypothetical” simulation input is an explicit engineering assumption, not a NASA observation.</p>
         <button className="primary-button" onClick={() => { setTab('tour'); setStep(0); }}>Start walkthrough</button>

@@ -27,8 +27,20 @@ settlement, native-coordinate footprint, simulation, errors and all five sizes;
 real environment and global mission checks also pass. Typecheck and production
 build pass. Actual
 asset/site/polar-temperature/polar-solar/outside-coverage screenshots were inspected.
-Latest successful pushed milestone: 89d037b (green CI). No current blockers.
-Next: extract/refine compact playback controls and the bounded details drawer.
+M2 pushed as 0b19c37; GitHub run 36958233781 passed fresh data acquisition,
+science/API tests, types/build and all 55 browser journeys.
+Latest successful local/pushed milestone: 0b19c37 (green CI).
+M3 validated: Timeline retains playback state while SimulationBar and
+SimulationDrawer own presentation. UTC playback and current interval-average kW,
+battery-at-end SOC, shortage status and selected-asset output stay compact.
+Charts, cumulative kWh, events and assumptions require View details. Desktop
+details are capped at 34dvh; mobile uses a dismissible task sheet. Escape returns
+focus without changing interval or chart window. No numerical changes.
+Fifteen focused journeys and 11 final label/focus/responsive checks pass.
+Typecheck and production build pass. Python regression: 106 tests and eight
+subtests pass (nine dependency deprecation warnings). Updated
+1366/1024/mobile simulation screenshots were inspected.
+Next: complete full regressions, record acceptance and verify pushed CI.
 No scientific/backend/data changes; no current acquisition or permission blockers.
 
 ## Current development phase

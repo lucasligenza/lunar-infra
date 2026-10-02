@@ -15,7 +15,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('illumination');
     await expect(page.getByTestId('atlas-sunlight')).toHaveText('Unavailable here');
     await page.getByRole('button',{name:'Close atlas',exact:true}).click();
-    await page.getByRole('button',{name:'Design a mission here',exact:true}).click();
+    await page.getByRole('button',{name:'Create mission here',exact:true}).click();
     await missionInspector(page);
     const sample=await(await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47')).json();
     await expect(page.getByTestId('global-mission-elevation')).toHaveText(sample.elevation.value.toFixed(1));
@@ -114,7 +114,7 @@ test('global mission and regional atlas remain usable when the polar cache is un
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
-  await page.getByRole('button',{name:'Design a mission here',exact:true}).click();
+  await page.getByRole('button',{name:'Create mission here',exact:true}).click();
   await missionInspector(page);
   await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
   await missionTools(page);

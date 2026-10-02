@@ -1,6 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {missionSurface,missionTools,openActivity,missionInspector,openDestinations} from './workspace';
 import {polarBoundary,toPolar} from '../lib/lunar';
+import type {SimulationRun} from '../types/simulation';
 
 test('polar coverage guide follows registered projected edges across longitude wrapping',async({request})=>{
   const region=(await(await request.get('/api/regions')).json()).find((region:{available:boolean})=>region.available);
@@ -35,6 +36,7 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     const close=page.getByRole('button',{name:'Close inspector',exact:true});if(await close.isVisible())await close.click();
     await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
     await expect(page.locator('#context-inspector')).not.toBeVisible();
+    await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
     await page.screenshot({path:`../artifacts/mission-after-build-${width}.png`});
     const map=(await page.getByTestId('terrain-map').boundingBox())!;
     expect(map.width).toBeGreaterThan(width*.9);
@@ -56,12 +58,34 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     await expect(page.getByTestId('elevation-value')).toBeVisible();
     await expect(page.locator('.site-provenance')).not.toHaveAttribute('open','');
     await page.screenshot({path:`../artifacts/mission-after-site-${width}.png`});
+    await missionTools(page);await page.getByRole('button',{name:'Select asset: Reserve battery',exact:true}).click();
     await openActivity(page,'Simulate');await missionTools(page);
     const pending=page.waitForResponse(r=>r.url().endsWith('/simulations')&&r.request().method()==='POST');
-    await page.getByRole('button',{name:'Run simulation',exact:true}).click();await pending;
+    await page.getByRole('button',{name:'Run simulation',exact:true}).click();const run:SimulationRun=await(await pending).json();
     await expect(page.getByRole('region',{name:'Mission timeline'})).toBeVisible();
     await expect(page.locator('#context-inspector')).not.toBeVisible();
+    await expect(page.getByRole('button',{name:/Electrical generation chart/})).toHaveCount(0);
+    const battery=run.scenario_snapshot.assets.find(asset=>asset.kind==='battery')!;
+    await expect(page.getByTestId('selected-asset-telemetry')).toHaveText(`${(run.result.intervals[0].batteries[battery.id].soc_end*100).toFixed(2)}% SOC at end`);
+    const timeline=page.getByRole('region',{name:'Mission timeline'});
+    const compact=(await timeline.boundingBox())!,surface=(await terrain.boundingBox())!;
+    expect(compact.height).toBeLessThanOrEqual(page.viewportSize()!.height*.15);
+    expect(surface.height).toBeGreaterThan(page.viewportSize()!.height*.75);
+    expect(surface.y+surface.height).toBeLessThanOrEqual(compact.y+1);
     await page.screenshot({path:`../artifacts/mission-after-simulate-${width}.png`});
+    const slider=page.getByRole('slider',{name:'Mission interval'});await slider.fill('47');
+    await expect(page.getByTestId('selected-asset-telemetry')).toHaveText(`${(run.result.intervals[47].batteries[battery.id].soc_end*100).toFixed(2)}% SOC at end`);
+    await expect(page.getByTestId('telemetry-generation')).toHaveText(run.result.intervals[47].generation_kw.toFixed(2));
+    await expect(page.getByTestId('telemetry-unserved')).toHaveText(`${run.result.intervals[47].unserved_kw.toFixed(2)} kW`);
+    await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'Mission summary (kWh)',exact:true})).toBeVisible();
+    await expect(page.locator('.timeline-summary')).toContainText(`Generated: ${run.result.summary.generated_kwh.toFixed(2)} kWh`);
+    expect((await timeline.boundingBox())!.height).toBeLessThanOrEqual(page.viewportSize()!.height*.34+1);
+    expect((await terrain.boundingBox())!.height).toBeGreaterThan(page.viewportSize()!.height*.55);
+    await page.screenshot({path:`../artifacts/mission-after-details-${width}.png`});
+    await page.keyboard.press('Escape');await expect(slider).toHaveValue('47');
+    await expect(page.getByRole('button',{name:'Expand timeline',exact:true})).toHaveAttribute('aria-expanded','false');
+    await expect(page.getByRole('button',{name:'Expand timeline',exact:true})).toBeFocused();
   }finally{const latest=await(await request.get(`/api/scenarios/${scenario.id}`)).json();await request.delete(`/api/scenarios/${scenario.id}?revision=${latest.revision}`);}
 });
 

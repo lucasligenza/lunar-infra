@@ -4,13 +4,26 @@ Phase 1 provides scientific exploration. Phase 2 adds hypothetical infrastructur
 scenario persistence and energy simulation. The user's Phase 3 adds global 3D lunar
 exploration and connected viewing modes. Optimization and AI remain excluded.
 
-Phase 5 organizes the browser into Explore, Analyze, Design and Simulate. These
+The visual workspace organizes the browser into Explore, Analyze, Build and Simulate. These
 are activities over the same root location, camera, atlas selection and scenario
 state, not separate applications. The existing `global`, `regional` and `mission`
 URL values remain supported; `simulation` is added. Asset and mission editors stay
 mounted while hidden between activities, preserving independent drafts. API
 revision checks remain authoritative. The timeline is visible only in Simulate
 and pauses when leaving it; the selected reporting interval persists on return.
+
+`MissionWorkspace` owns visual slots around the original map and hooks.
+`ContextInspector` opens only for selection or explicit details; the asset palette
+closes when placement begins. `OverlayMenu` uses registered layers and existing
+numeric coverage queries. Switching native 2D/3D presentation does not change the
+scenario coordinate domain or numerical source. The projected footprint outline
+is a navigation guide, never a substitute for nodata or source coverage.
+
+`Timeline` retains playback timer, selected interval, speed and chart window.
+`SimulationBar` formats interval output; `SimulationDrawer` presents existing
+charts, cumulative energy, events and reproducibility metadata. Collapsing charts
+keeps the reporting interval and settings. No scientific logic moved to JavaScript;
+per-asset telemetry is read directly from the Python result dictionaries.
 
 The command palette calls the existing mode, atlas-view and simulation handlers.
 Destination commands use the API's verified destination catalog. Native modal
