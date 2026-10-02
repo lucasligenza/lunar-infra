@@ -60,6 +60,16 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await pane(page, 'Tools', width);
       await missionTools(page);
       await page.getByRole('button', { name: `Open scenario: ${name}`, exact: true }).click();
+      await expect(page.locator('#context-inspector')).not.toBeVisible();
+      await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+      await reachable(page.getByRole('button',{name:'+ Add Asset',exact:true}));
+      await page.getByRole('button',{name:'+ Add Asset',exact:true}).click();
+      for(const kind of ['habitat','solar array','battery','communications station','robotic equipment'])await reachable(page.getByRole('button',{name:`Place ${kind}`,exact:true}));
+      await page.screenshot({path:`../artifacts/mission-final-palette-${width}.png`});
+      await page.getByRole('button',{name:'Place solar array',exact:true}).click();
+      await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+      await reachable(page.getByRole('button',{name:'Cancel placement',exact:true}));
+      await page.getByRole('button',{name:'Cancel placement',exact:true}).click();
       await missionTools(page);
       await page.getByRole('button', { name: 'Select asset: QA habitat', exact: true }).click();
       await expect(page.getByLabel('Continuous demand (kW)', { exact: true })).toHaveValue('8');
@@ -84,6 +94,10 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       expect(compactBounds.x+compactBounds.width).toBeLessThanOrEqual(width+1);
       await reachable(page.getByRole('combobox',{name:'Playback speed',exact:true}));
       await expect(page.getByTestId('timeline-power-status')).toBeInViewport();
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      const surfaceBounds=(await page.getByTestId('terrain-map').boundingBox())!;
+      expect(surfaceBounds.y+surfaceBounds.height).toBeLessThanOrEqual(compactBounds.y+1);
+      await reachable(page.getByRole('button',{name:'Play mission',exact:true}));
       await page.screenshot({path:`../artifacts/targeted-playback-compact-${width}.png`});
       await reachable(page.getByRole('button',{name:'Expand timeline',exact:true}));
       await page.getByRole('button',{name:'Expand timeline',exact:true}).click();

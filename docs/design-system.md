@@ -1,14 +1,16 @@
 # Lunar mission control interface
 
-Explore, Analyze, Design and Simulate share one header and geographic/mission
-context. The map owns the flexible viewport; desktop tools and inspectors own
-their columns. Global display settings, atlas and region details share one dock.
-Below 900 CSS pixels, contextual docks become task panels; the local workspace
-offers Map, Tools, Inspector and Timeline navigation. Closing a panel restores
-the map and its controls.
+Explore, Analyze, Build and Simulate share one compact header and geographic/mission
+context. The surface owns the flexible viewport. Build opens without rails;
++ Add Asset reveals a compact palette that closes when placement begins.
+Selected equipment or terrain opens a contextual inspector. Overlays is separate
+from advanced tools; metadata and engineering settings use disclosures.
+Below 900 CSS pixels, contextual docks become dismissible task sheets without a
+second navigation row. Closing a panel restores the map and retains draft state.
 
 `frontend/app/mission-control.css` owns the palette, spacing and stacking tokens.
-Legacy component styles reference these tokens rather than independent colors.
+`mission-workspace.css` applies the surface-first shell, palette, inspector and
+playback refinements after the legacy styles, using those same tokens.
 
 | Token | Value | Purpose |
 | --- | --- | --- |
@@ -58,3 +60,10 @@ with a sticky header. This prevents the map footer from covering camera controls
 in short/zoomed windows. Toolbar popovers use separate translucent compositing
 to avoid occlusion artifacts on the demand-rendered WebGL canvas; their stacking
 remains limited to the deliberate toolbar overlay container.
+
+Simulation uses a compact playback/current-conditions bar. Current power is
+interval-average kW, battery SOC is at interval end, and selected-asset readings
+come from that same saved interval. Charts, cumulative kWh totals, events and
+assumptions are disclosed in a separately scrolling drawer capped at 34dvh on
+desktop. On mobile it becomes a task sheet; the collapsed bar retains the map.
+Escape/Close details retain the interval and chart window and return focus.

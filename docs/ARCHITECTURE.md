@@ -146,12 +146,12 @@ provider-specific validation remains necessary before any numerical integration.
 Settlement screening is independent Python computation exposed through the typed
 atlas API. It uses native numerical terrain and registered environmental rasters,
 never rendered colors. The browser owns editable screening settings and the last
-report at the application root, so switching Moon/Mission preserves candidates.
+report at the application root, so switching activities preserves candidates.
 Candidate selection uses the existing shared lunar location and scenario APIs.
 Source/evidence groups prevent comparisons across different supporting grids.
 See [the screening method](settlement-screening.md).
 
-Moon's basic inspector explicitly requests `dataset=best`: native 240 m polar
+Explore's basic inspector explicitly requests `dataset=best`: native 240 m polar
 terrain inside its footprint, otherwise the best prepared global grid. Nodata
 remains nodata. Existing `auto`/explicit dataset API defaults and mission snapshots
 retain their global semantics. Numerical point measurements can be finer than
@@ -165,7 +165,7 @@ The targeted workspace refactor extracts `MissionWorkspace` (layout ownership),
 `ScenarioControls` and `InfrastructureCatalog`. Explorer retains the existing
 scenario/simulation hooks and geographic state. One contextual panel resizes the
 map; tools and inspectors stay mounted while hidden so input drafts survive.
-Mobile task navigation selects a full-width panel. The inspector has one outer
+Mobile contextual disclosure selects a full-width task sheet. The inspector has one outer
 scroll container instead of nested scientific/asset scroll areas.
 
 Timeline starts compact. Playback, the selected interval, interval-average power
@@ -182,7 +182,7 @@ successful creation opens the infrastructure catalog. Saved missions, placement
 and simulation inputs have direct contextual actions; Advanced opens the complete
 tool set. Disclosure uses hidden mounted sections, preserving draft ownership and
 revision checks. Simulation inspection suppresses duplicate site panels while
-showing calculated telemetry; terrain evidence remains available in Design/Moon.
+showing calculated telemetry; terrain evidence remains available in Build/Explore.
 The new-mission name draft is separate from the open scenario's name, preventing
 candidate creation from enabling a rename/save action on the previous mission.
 

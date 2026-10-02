@@ -1,49 +1,51 @@
 # LunarOS progress
 
-## Active visual redesign
+## Mission workspace visual redesign — complete locally
 
-Mission workspace visual roadmap: [plan and observed audit](docs/mission-workspace-redesign.md).
-Baseline d852791 matches latest origin/main; its CI run 36930708483 passed.
-Fresh Build/Simulate screenshots at 1440×900 and 1366×768 were inspected.
-Python baseline: 106 tests plus eight subtests pass; two browser capture journeys
-pass. Active slice: one primary navigation row, contextual placement palette and
-surface control shelf; simulation stops opening duplicate telemetry by default.
-M1 is validated: the complete 53-browser first pass passed 47 journeys; all six
-affected disclosure/navigation journeys pass in the 26-test follow-up, including
-all five sizes and zoom-equivalent layouts. Typecheck and production build pass. Screenshots were
-inspected at 1440/1366 and mobile; no default side rails, compact contextual asset
-palette, one primary navigation, and no automatic duplicate simulation inspector.
-Existing persistence, revisions, placement, playback, terrain and real polar
-overlays pass. Latest successful pushed commit remains d852791 (baseline).
-M1 pushed as 89d037b; GitHub run 36955974128 passed fresh acquisition,
-scientific/API tests, typecheck/build and all 53 Chromium journeys.
-M2 validated: concise contextual inspectors; source and engineering disclosures;
-one Overlays control using registered layers and native coverage queries. Actual
-temperature/solar coverage guidance is qualified by the registered analysis
-outline, not substituted for source nodata. Both renderers and native data stay
-intact. New environmental measurement inspection reuses existing APIs.
-Twenty workspace/responsive tests and 15 further journeys pass, including
-settlement, native-coordinate footprint, simulation, errors and all five sizes;
-real environment and global mission checks also pass. Typecheck and production
-build pass. Actual
-asset/site/polar-temperature/polar-solar/outside-coverage screenshots were inspected.
-M2 pushed as 0b19c37; GitHub run 36958233781 passed fresh data acquisition,
-science/API tests, types/build and all 55 browser journeys.
-Latest successful local/pushed milestone: 0b19c37 (green CI).
-M3 validated: Timeline retains playback state while SimulationBar and
-SimulationDrawer own presentation. UTC playback and current interval-average kW,
-battery-at-end SOC, shortage status and selected-asset output stay compact.
-Charts, cumulative kWh, events and assumptions require View details. Desktop
-details are capped at 34dvh; mobile uses a dismissible task sheet. Escape returns
-focus without changing interval or chart window. No numerical changes.
-Fifteen focused journeys and 11 final label/focus/responsive checks pass.
-Typecheck and production build pass. Python regression: 106 tests and eight
-subtests pass (nine dependency deprecation warnings). Updated
-1366/1024/mobile simulation screenshots were inspected.
-Next: complete full regressions, record acceptance and verify pushed CI.
-No scientific/backend/data changes; no current acquisition or permission blockers.
+Accepted roadmap and rendered audit: [mission workspace redesign](docs/mission-workspace-redesign.md).
+Baseline d852791 matched latest main; previous CI passed. No backend APIs,
+scientific data, numerical models, renderers or dependencies were replaced.
 
-## Current development phase
+Completed milestones:
+- M1: one Explore / Analyze / Build / Simulate header, closed default panels,
+  compact contextual Add Asset palette and map control shelf. Pushed 89d037b;
+  GitHub run 36955974128 passed all 53 journeys, science, types and build.
+- M2: selection-driven asset/site inspectors, advanced/source disclosures,
+  one Overlays control and honest polar coverage navigation/outline. Pushed
+  0b19c37; run 36958233781 passed all 55 journeys and scientific/build checks.
+- M3: compact SimulationBar and bounded SimulationDrawer, actual per-asset
+  interval readings, distinct kW/current and kWh/summary metrics, retained
+  playback/index/settings and Escape focus. Pushed 82c53e5;
+  run 36959266765 passed all 55 journeys and scientific/build checks.
+- M4: complete responsive/journey review, all-size palette/bar reachability,
+  compiled-application smoke check and updated startup/help/architecture docs.
+
+Validation:
+- `uv run pytest -q`: 106 tests + eight subtests pass (69.41s); nine dependency
+  deprecation warnings.
+- Frontend typecheck and production build pass.
+- Complete Chromium suite: 55/55 pass (9.9m). Numerical comparisons, revisions,
+  source metadata, stale-state/error recovery and persistence assertions remain.
+- Production `next start` (ready in 303ms): five actual browser journeys pass
+  (45.7s), covering workspace selection, polar overlays and saved simulation.
+- Before/after screenshots inspected at 1440×900 and 1366×768. Final review
+  includes 1920×1080, 1024×768, 390×844 and zoom-equivalent 125%/200% layouts.
+  Closed/open panels, empty terrain, placement, current/expanded playback,
+  polar temperatures/sunlight and unavailable coverage were inspected.
+
+Scientific integration unchanged: global GLD100/LOLA and existing geology,
+native 240 m polar terrain, Diviner historical summer temperature and modeled
+average solar visibility. Source values/masks/provenance remain authoritative.
+The outline marks an analysis area, not guaranteed environmental availability.
+Power time series remain explicitly hypothetical; no habitability claim added.
+Desktop details are capped at 34dvh; mobile details use dismissible task sheets.
+No current blockers. Source data, caches, SQLite and screenshots stay outside Git.
+
+Latest successful pushed feature commit: 82c53e5 (green GitHub CI).
+Active step: publish M4 acceptance and verify its GitHub run. No further feature
+scope is authorized; next product step is user review of the simplified workspace.
+
+## Prior targeted refactor (completed)
 
 Targeted frontend refactor: [four-milestone plan](docs/targeted-refactor.md).
 Baseline 533f8c7 is on origin/main (prior CI run 36874129533 passed). Clean audit:

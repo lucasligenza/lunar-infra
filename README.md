@@ -118,12 +118,12 @@ cd frontend
 npm run dev
 ```
 
-Open **http://127.0.0.1:3000** for **Global Explorer**. Drag to orbit, right-drag or
+Open **http://127.0.0.1:3000** for **Explore**. Drag to orbit, right-drag or
 use arrow keys to pan, scroll to zoom, and click the Moon to select a location.
 Focus the globe and press Enter to select the center of the view. Search seven
 destinations, fly to coordinates, reset the camera, or toggle imagery/graticule.
 The source drawer identifies coarse elevation and supported local coverage.
-Use **Analyze this region** or **Design a mission here** at a selected location.
+Use **Analyze this region** or **Create mission here** at a selected location.
 Inside the prepared polar footprint, analysis retains the 240 m map. Elsewhere,
 regional analysis uses native global atlas data and the 3D surface. Global missions
 validate asset placement against GLD100 (or prepared LOLA if GLD100 is absent).
@@ -133,23 +133,23 @@ The top mode controls preserve location, camera, active scenario, drafts and the
 selected simulation interval. Hidden playback pauses. On phones, destination and
 region panels can be closed so they do not obstruct navigation.
 
-In **Regional Analysis**, drag or scroll the map, switch elevation/slope/solar
+In **Analyze**, drag or scroll the map, switch elevation/slope/solar
 visibility layers, and click a location to inspect it. The coordinate form also
 accepts planetocentric latitude and east-positive longitude. Source labels, units,
 methods and sampling footprints are available in the inspector. At latitude
 `-89.5`, longitude `0`, the prepared raster reports -705 m elevation.
 
-In **Mission Designer**, select terrain, enter a scenario name and choose
+In **Build**, select terrain, enter a scenario name and choose
 **Create scenario at selected site**.
-Choose an asset from the infrastructure catalog, then click valid terrain to place it.
+Use **+ Add Asset**, then click valid terrain to place the selected equipment.
 Click its symbol or list entry to configure it. **Save asset** persists parameters;
-**Move on map** relocates it. Reopen, duplicate or delete scenarios from the left
-rail; deletion requires confirmation. **Save scenario** saves the edited name.
+**Move on map** relocates it. **Mission details → Saved missions** reopens,
+duplicates or deletes scenarios; deletion requires confirmation.
+**Save scenario** saves the edited name.
 Placements save immediately through the API; unsaved form changes are labeled.
 Reopening restores the saved definition after confirming any discarded drafts.
 Simultaneous edits return a revision conflict; reopen before retrying your changes.
-On small screens, the sticky Map, Tools, Inspector and Timeline links navigate
-between workspace sections.
+On small screens, contextual panels become task sheets with clear Close actions.
 The local database is `data/local/missions.sqlite`, separate from downloaded rasters.
 Set `LUNAROS_DB_PATH` before backend startup to use another database path.
 
@@ -225,7 +225,7 @@ The Moon workspace exposes Overlays; Advanced retains the full catalog and tools
 
 ### Find promising settlement sites
 
-In **Moon**, choose an overlay and a location, then **Find settlement sites**.
+In **Explore**, choose an overlay and a location, then **Find settlement sites**.
 Compare nearby neighborhoods, select a candidate, read its evidence, and create
 a mission at that location. The default search is 25 km; Screening settings expose
 the radius, neighborhood size, terrain dataset and editable slope threshold.
@@ -237,6 +237,6 @@ construction feasibility require further analysis. See the
 Basic controls emphasize Overlays. **Advanced** exposes coordinate navigation,
 display settings, the dataset catalog, sector browser, regional statistics and
 profiles. Detailed time steps and custom input series are under **Advanced
-simulation settings** in Mission. Moon uses native 240 m point measurements inside
+simulation settings** in Simulate. Explore uses native 240 m point measurements inside
 the prepared polar footprint; global coloring can be coarser and its legend names
 the supporting source. Existing saved mission/API dataset defaults are preserved.

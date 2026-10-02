@@ -94,3 +94,52 @@ the actual Python output and distinct cumulative summary values.
 M3 validation: 15 focused browser journeys and 11 final label/focus/responsive
 checks pass; typecheck and production build pass. Python regression passes
 106 tests and eight subtests. No backend, simulation, source data or APIs changed.
+
+M3 pushed as `82c53e5`; [GitHub validation](https://github.com/lucasligenza/lunar-infra/actions/runs/36959266765)
+passed all 55 browser journeys, fresh scientific acquisition, Python and build.
+
+## Acceptance review
+
+Actual Chromium screenshots were inspected before and after at 1440×900 and
+1366×768. Final rendered review also covers 1920×1080, 1024×768 and 390×844.
+Screenshots remain ignored local artifacts; no scientific files or visual caches
+were staged. In the 1366×768 compact simulation comparison, the surface viewport
+grew from 1046×447 to 1366×614 pixels (about 80% of the window area). Geographic
+aspect, source grid and numeric measurements were not changed to fill the frame.
+
+| State | Rendered review and journey checks |
+| --- | --- |
+| Explore / Analyze | Actual Moon, selected locations, overlays, source metadata, regional terrain and mode continuity |
+| Build, no selection | Closed palette/inspector; full-width surface; one navigation row; no duplicate task toolbar |
+| Add Asset | All five supported kinds; desktop popover/mobile sheet; hit-tested controls at every requested size; closes at placement start |
+| Asset selected | Relevant primary parameters, coordinates, save/move/remove; advanced engineering fields disclosed; selected state retained |
+| Empty terrain | Actual elevation/slope and active environmental value where supported; source/technical metadata disclosed |
+| Simulation compact | UTC time, play/pause, speed, slider, actual interval kW/SOC/status and selected-asset output; charts absent by default |
+| Simulation details | Original charts, cumulative kWh, shortage navigation, events and hashes; bounded scroll body; close/Escape retains index |
+| Polar environments | Actual temperature and average-visibility colors, native masks, readiness after rendering, source qualifications |
+| Outside coverage / errors | Explicit missing/preparation/loading/failure states; supported-region action; raster/tile retry and scientific measurements retained |
+
+The existing suite also checks saved definitions/revisions, duplication/deletion,
+draft guards, calculated energy output, real settlement evidence and mission
+handoff, command palette/activity console, keyboard globe interaction, focus,
+contrast and 125%/200% zoom-equivalent layouts. This is targeted browser QA,
+not a full external accessibility audit or a guarantee for every GPU/browser.
+
+Final local regression: **55/55 Chromium journeys pass (9.9 minutes)**, including
+the expanded reachability checks at all five viewport sizes. Python:
+**106 tests and eight subtests pass (69.41 seconds)**; nine dependency deprecation
+warnings. Frontend typecheck and production build pass. None of the numerical,
+revision, provenance or real-source comparison assertions was weakened.
+
+Compiled-application check: `next start` was ready in 303ms; five browser journeys
+pass (45.7s), using actual site/asset selection, polar overlays, compact/expanded
+playback and saved-result reopening against the production bundle. The temporary
+loopback servers were stopped after review.
+
+Remaining limits are intentional: phone details occupy a dismissible task sheet;
+the optional drawer is height-bounded rather than drag-resizable. Environmental
+coverage remains polar and may include nodata. The outline marks an analysis
+area, not guaranteed environmental coverage. Diviner is a historical summer
+local-time product; average visibility cannot supply a real mission time series.
+Power playback continues to use explicit hypothetical inputs. No new scientific
+capabilities or physical habitability claims were introduced.

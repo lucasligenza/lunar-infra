@@ -1,5 +1,22 @@
 # LunarOS UX audit and Phase 5 plan
 
+## Mission workspace visual follow-up, baseline d852791
+
+Fresh 1440×900 and 1366×768 Build/Simulate screenshots showed three competing
+navigation/tool rows, an automatically opened simulation inspector repeating
+timeline measurements, and long asset forms/source identifiers in primary view.
+The scientific overlay repair was already functioning at this baseline; no new
+data or numerical work was needed. See [the visual roadmap](mission-workspace-redesign.md)
+for before/after review and validation.
+
+The new shell uses one Explore / Analyze / Build / Simulate header. Default Build
+and Simulate have no large rails. Equipment placement uses a contextual palette;
+selection-driven inspectors disclose advanced/source fields. Simulation uses a
+compact current-condition bar and an explicitly opened, bounded chart drawer.
+Coverage guidance preserves native masks and qualifies the visual polar outline.
+The earlier audit below records historical observations, not unresolved defects
+in the current workspace.
+
 ## Targeted follow-up, baseline 533f8c7
 
 Actual rendered polar overlays show a tiny, coarse footprint at the destination
