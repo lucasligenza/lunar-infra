@@ -15,7 +15,20 @@ inspected at 1440/1366 and mobile; no default side rails, compact contextual ass
 palette, one primary navigation, and no automatic duplicate simulation inspector.
 Existing persistence, revisions, placement, playback, terrain and real polar
 overlays pass. Latest successful pushed commit remains d852791 (baseline).
-Next: concise contextual inspectors, overlays, and refined playback drawer.
+M1 pushed as 89d037b; GitHub run 36955974128 passed fresh acquisition,
+scientific/API tests, typecheck/build and all 53 Chromium journeys.
+M2 validated: concise contextual inspectors; source and engineering disclosures;
+one Overlays control using registered layers and native coverage queries. Actual
+temperature/solar coverage guidance is qualified by the registered analysis
+outline, not substituted for source nodata. Both renderers and native data stay
+intact. New environmental measurement inspection reuses existing APIs.
+Twenty workspace/responsive tests and 15 further journeys pass, including
+settlement, native-coordinate footprint, simulation, errors and all five sizes;
+real environment and global mission checks also pass. Typecheck and production
+build pass. Actual
+asset/site/polar-temperature/polar-solar/outside-coverage screenshots were inspected.
+Latest successful pushed milestone: 89d037b (green CI). No current blockers.
+Next: extract/refine compact playback controls and the bounded details drawer.
 No scientific/backend/data changes; no current acquisition or permission blockers.
 
 ## Current development phase

@@ -17,6 +17,7 @@ import Timeline from "./mission/Timeline";
 import MissionWorkspace from "./mission/MissionWorkspace";
 import ScenarioControls from "./mission/ScenarioControls";
 import InfrastructureCatalog from "./mission/InfrastructureCatalog";
+import OverlayMenu from "./mission/OverlayMenu";
 import AssetInspector from "./panels/AssetInspector";
 import { ASSET_NAMES, ASSET_SYMBOLS, type AssetKind } from "../types/mission";
 import type { Dataset, LayerId, Region, Site } from "../types/scientific";
@@ -72,6 +73,7 @@ export default function Explorer() {
   const [reload, setReload] = useState(0);
   const [layerId, setLayerId] = useState<LayerId>("elevation");
   const [grid, setGrid] = useState(true);
+  const [missionGlobe,setMissionGlobe]=useState(false);
   const [site, setSite] = useState<Site | null>(null);
   const [inspecting, setInspecting] = useState(false);
   const [inspectError, setInspectError] = useState<string | null>(null);
@@ -80,7 +82,7 @@ export default function Explorer() {
   const [longitude, setLongitude] = useState("0");
   const activeInspection = useRef<AbortController | null>(null);
   const [toolsOpen, setToolsOpen] = useState(false);
-  const [toolsSection,setToolsSection]=useState<'all'|'missions'|'assets'|'simulation'>('all');
+  const [toolsSection,setToolsSection]=useState<'all'|'missions'|'assets'|'simulation'|'overlays'>('all');
   const [mobilePane,setMobilePane]=useState<'map'|'tools'|'inspector'|'timeline'>('map');
   const [narrow,setNarrow]=useState(false);
   useEffect(()=>{const media=window.matchMedia('(max-width: 900px)');const update=()=>setNarrow(media.matches);update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
@@ -133,11 +135,11 @@ export default function Explorer() {
     try {
       if(domain==='atlas') {
         const result=await fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${lat}&longitude=${lon}`,controller.signal);
-        if(!controller.signal.aborted){setAtlasSite(result);if(reveal)setInspectorOpen(true);setInspecting(false);setLocation({latitude_deg:result.latitude_deg,longitude_deg:result.longitude_deg});setCoverage(null);setLatitude(result.latitude_deg.toFixed(5));setLongitude(result.longitude_deg.toFixed(5));}return;
+        if(!controller.signal.aborted){setAtlasSite(result);if(reveal){setInspectorOpen(true);setMobilePane('inspector');}setInspecting(false);setLocation({latitude_deg:result.latitude_deg,longitude_deg:result.longitude_deg});setCoverage(null);setLatitude(result.latitude_deg.toFixed(5));setLongitude(result.longitude_deg.toFixed(5));}return;
       }
       const result = await fetchScientific<Site>(`/sites/inspect?latitude=${lat}&longitude=${lon}`, controller.signal);
       if (!controller.signal.aborted) {
-        setSite(result);if(reveal)setInspectorOpen(true); setInspecting(false);
+        setSite(result);if(reveal){setInspectorOpen(true);setMobilePane('inspector');} setInspecting(false);
         setLocation({latitude_deg:result.coordinates.latitude_deg,longitude_deg:result.coordinates.longitude_deg});
         setCoverage(null);
         setLatitude(result.coordinates.latitude_deg.toFixed(5));
@@ -159,7 +161,7 @@ export default function Explorer() {
     if (scenario.busy || simulation.busy) return;
     if (placement === "move" && selectedAsset) {
       const updated = await scenario.editAsset(selectedAsset.id, { location: { latitude_deg: lat, longitude_deg: lon } });
-      if (updated) setPlacement(null);
+      if (updated) {setPlacement(null);setInspectorOpen(true);setMobilePane('inspector');}
     } else if (placement && placement !== "move") {
       const updated = await scenario.place(placement, { latitude_deg: lat, longitude_deg: lon });
       if (updated) { setToolsOpen(false);setInspectorOpen(true); setSelectedAssetId(updated.assets.at(-1)!.id); setPlacement(null);setMobilePane('inspector'); }
@@ -223,18 +225,20 @@ export default function Explorer() {
       onSave={scenario.active?()=>void scenario.patch({name:scenarioName}):undefined} canSave={Boolean(scenario.active&&scenarioName!==scenario.active.name&&scenarioName.trim())}/>
 
 
-    {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={next=>next==='mission'?startMission():switchMode(next)} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
+    {(mode==='global'||atlasRegionalView) && <GlobalExplorer preparedRegion={region} location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={next=>next==='mission'?startMission():switchMode(next)} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
       atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
       settlement={settlement} atlasRequest={atlasRequest} navigationRequest={navigationRequest} onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
     {unsupportedSelection && <section className="unsupported-region" aria-label="Local coverage unavailable"><h2>Local analysis unavailable here</h2><p>The selected location remains {location?.latitude_deg.toFixed(5)}° latitude / {location?.longitude_deg.toFixed(5)}° E. {coverage?.local_status==='unavailable'?'Prepared polar datasets are not loaded. Run the polar pipeline and restart the API.':coverage?.local_status==='nodata'?'The selected terrain cell has missing elevation. Choose a location with valid data.':'Prepared 240 m terrain and infrastructure placement cover the south-pole footprint only.'}</p>
       <button onClick={()=>switchMode('global')}>Return to selected global location</button>
       <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}
     <div className="local-shell" hidden={mode==='global' || atlasRegionalView || unsupportedSelection}>
-    <MissionWorkspace toolsSection={toolsSection} toolsOpen={toolsOpen} inspectorOpen={inspectorOpen&&!toolsOpen} pane={mobilePane}
-      onPane={pane=>{setMobilePane(pane);if(pane==='tools')openTools();if(pane==='inspector'){setInspectorOpen(true);setToolsOpen(false);}}}
+    <MissionWorkspace toolsSection={toolsSection} toolsOpen={toolsOpen} inspectorOpen={inspectorOpen&&!toolsOpen}
       onCloseTools={()=>{setToolsOpen(false);setMobilePane('map');}} onCloseInspector={()=>{setInspectorOpen(false);setMobilePane('map');}}
-      hasTimeline={Boolean(simulation.run&&mode==='simulation')}
       tools={<>
+          <div hidden={toolsSection!=='overlays'}><OverlayMenu region={globalMissionView?null:region} native={!globalMissionView&&!missionGlobe} layerId={layerId} view={atlasView} location={location}
+            onLayer={(id,source)=>{if(!globalMissionView&&!missionGlobe&&['elevation','slope','illumination'].includes(id)){setLayerId(id as LayerId);setAtlasView({...atlasView,layer:id,tileUrl:source?.url_template,preparation:source?.preparation_status??'ready'});}else{setMissionGlobe(true);setAtlasView({...atlasView,layer:id,tileUrl:source?.url_template,preparation:source?.preparation_status??'ready',compare:false});}}}
+            onOpacity={opacity=>setAtlasView({...atlasView,opacity})} onNative={()=>setMissionGlobe(false)}
+            onCoverage={()=>{const coordinates={latitude_deg:-89.67,longitude_deg:129.78};setToolsOpen(false);setInspectorOpen(false);setMobilePane('map');setMissionGlobe(true);setNavigationRequest({coordinates,distance:1.08,serial:++commandSerial.current});void inspect(coordinates.longitude_deg,coordinates.latitude_deg,globalMissionView?'atlas':'polar',false);}}/></div>
 
           <div hidden={!missionContext||!['all','missions'].includes(toolsSection)}><ScenarioControls scenario={scenario} scenarioName={scenarioName} setScenarioName={setScenarioName}
             working={working} validLocation={validLocation??null} globalMissionView={globalMissionView} scenarioInView={scenarioInView}
@@ -280,8 +284,9 @@ export default function Explorer() {
         {mode==='mission'&&scenario.active&&scenarioInView&&<button className="primary-button" disabled={working} onClick={()=>openTools('assets')}>+ Add Asset</button>}
         {mode==='mission'&&(!scenario.active||!scenarioInView)&&<button className="primary-button" disabled={working||!validLocation} onClick={startMission}>Create mission here</button>}
         {mode==='regional'&&<button className="primary-button" onClick={startMission}>Create mission here</button>}
-        <button aria-label={toolsOpen&&toolsSection==='all'?'Close mission tools':'Expand tools'} aria-expanded={toolsOpen&&toolsSection==='all'} onClick={()=>{if(toolsOpen&&toolsSection==='all'){setToolsOpen(false);setMobilePane('map');}else openTools();}}>Overlays & tools</button>
-        <details className="mission-actions"><summary>Mission details</summary><div>
+        <button aria-expanded={toolsOpen&&toolsSection==='overlays'} onClick={()=>{if(toolsOpen&&toolsSection==='overlays'){setToolsOpen(false);setMobilePane('map');}else openTools('overlays');}}>Overlays</button>
+        <details className="mission-actions"><summary>{missionContext?'Mission details':'More tools'}</summary><div>
+          <button aria-label="Expand tools" onClick={()=>openTools()}>Advanced tools</button>
           {missionContext&&<button disabled={working} onClick={()=>openTools('missions')}>Saved missions</button>}
           {missionContext&&scenario.active&&<button onClick={()=>{switchMode('simulation');openTools('simulation');}}>Simulation inputs</button>}
           <button className="inspector-toggle" aria-label="Show inspector" onClick={()=>{setInspectorOpen(true);setToolsOpen(false);setMobilePane('inspector');}}>Inspector</button>
@@ -291,10 +296,10 @@ export default function Explorer() {
       </>}
       viewport={<>
 
-        {globalMissionView?<MissionMoon location={location} assets={scenarioInView?scenario.active?.assets??[]:[]} base={scenarioInView?scenario.active?.site??null:null}
+        {globalMissionView||missionGlobe?<MissionMoon preparedRegion={region} navigationRequest={navigationRequest} location={location} assets={scenarioInView?scenario.active?.assets??[]:[]} base={scenarioInView?scenario.active?.site??null:null}
           scenarioId={scenarioInView?scenario.active?.id??null:null} selectedAssetId={selectedAssetId} placing={Boolean(placement)} camera={camera} onCamera={setCamera}
           onSelect={(lon,lat)=>void mapSelect(lon,lat)} onAssetSelect={id=>{if(!working)selectAsset(id);}} view={atlasView} onView={setAtlasView}/>:
-          region && layer && <TerrainMap region={region} layer={layer} site={site} grid={grid}
+          region && layer && <TerrainMap opacity={atlasView.opacity} region={region} layer={layer} site={site} grid={grid}
           onSelect={(lon, lat) => void mapSelect(lon, lat)} onPointer={setPointer}
           assets={scenario.active?.assets} baseSite={scenario.active?.site} selectedAssetId={selectedAssetId}
           onAssetSelect={id => { if (!working) selectAsset(id); }} placementActive={Boolean(placement)} />}
@@ -308,7 +313,7 @@ export default function Explorer() {
         {loadError&&!globalMissionView && <div className="startup-message" role="alert"><h2>Scientific data unavailable</h2><p>{loadError}</p>
           <button className="primary-button" onClick={() => setReload(value => value + 1)}>Retry connection</button>
           <p className="quiet">Start the backend and prepare the NASA datasets using the README instructions.</p></div>}
-        {region && layer && !globalMissionView && <>
+        {region && layer && !globalMissionView && !missionGlobe && <>
           <div className="map-heading"><h2>Lunar south pole</h2><p>{((region.bounds_m[2] - region.bounds_m[0]) / 1000).toFixed(0)} km region / {region.resolution_m} m terrain grid</p></div>
           <div className="map-instruction">Drag to pan · scroll to zoom · click to inspect</div>
         </>}
@@ -324,7 +329,7 @@ export default function Explorer() {
         onSave={changes => void scenario.editAsset(selectedAsset.id, changes)} onMove={() => {setPlacement("move");setInspectorOpen(false);setMobilePane('map');}}
         onRemove={() => { if (window.confirm(`Remove “${selectedAsset.name}”?`)) void scenario.removeAsset(selectedAsset.id); }}
         onInspect={() => { if (discardAsset()) { setSelectedAssetId(null); void inspect(selectedAsset.location.longitude_deg, selectedAsset.location.latitude_deg); } }} />}</div>
-      <div hidden={(mode==='mission'&&Boolean(selectedAsset)&&scenarioInView)||(mode==='simulation'&&Boolean(selectedInterval)&&scenarioInView)}>{globalMissionView?<AtlasSiteInspector point={atlasSite} loading={inspecting} error={inspectError}/>:<SiteInspector site={site} loading={inspecting} error={inspectError} datasets={datasets} />}</div>
+      <div hidden={(mode==='mission'&&Boolean(selectedAsset)&&scenarioInView)||(mode==='simulation'&&Boolean(selectedInterval)&&scenarioInView)}>{globalMissionView?<AtlasSiteInspector activeLayer={atlasView.layer} point={atlasSite} loading={inspecting} error={inspectError}/>:<SiteInspector activeLayer={missionGlobe?atlasView.layer:layerId} site={site} loading={inspecting} error={inspectError} datasets={datasets} />}</div>
       </>}/>
     {mode==='simulation'&&!scenario.active&&<div className="simulation-empty" role="status"><h2>No mission open</h2><p>Create a scenario in Design or open a saved scenario from Tools. Simulation inputs and calculated results will appear here.</p></div>}
     {simulation.run && scenarioInView && <div hidden={mode!=='simulation'} className="timeline-slot"><Timeline key={simulation.run.id} run={simulation.run} index={intervalIndex} onIndex={setIntervalIndex} active={mode==='simulation'} onExpandedChange={expanded=>{if(narrow)setMobilePane(expanded?'timeline':'map');}} /></div>}

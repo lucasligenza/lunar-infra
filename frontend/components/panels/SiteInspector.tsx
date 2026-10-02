@@ -1,5 +1,5 @@
 import type { Dataset, Measurement, Site } from "../../types/scientific";
-
+import EnvironmentValue from './EnvironmentValue';
 function Quantity({ name, measurement, testId }: { name: string; measurement: Measurement; testId: string }) {
   const value = measurement.value;
   const formatted = value === null ? "Unavailable" : (measurement.unit === "fraction" ? value * 100 : value)
@@ -10,16 +10,14 @@ function Quantity({ name, measurement, testId }: { name: string; measurement: Me
   return <section className="quantity">
     <div className="quantity-heading"><h3>{name}</h3><span className="quantity-kind" title={measurement.quantity_kind === 'derived' ? 'Calculated from the supporting terrain raster; resolution limits remain.' : measurement.quantity_kind === 'modeled' ? 'Computed by a scientific model, not a direct observation or temporal prediction.' : 'Instrument observations registered onto a scientific raster grid.'}>{kind}</span></div>
     <p className="quantity-value"><strong data-testid={testId}>{formatted}</strong>{value !== null && <span>{unit}</span>}</p>
-    <p className="quantity-note">{value === null ? `Missing data (${measurement.status})` : measurement.notes}</p>
-    <p className="source-id">{measurement.source_id}</p>
-    <details className="method"><summary>Sampling method</summary><p>{measurement.method}</p>
+    <p className="quantity-note">{value === null ? `Missing data (${measurement.status})` : null}</p>
+    <details className="method"><summary>Source details</summary><p className="source-id">{measurement.source_id}</p><p>{measurement.notes}</p><p>{measurement.method}</p>
       <p>Ground spacing: {measurement.resolution_m.toFixed(1)} m. Support: {measurement.support_m.toFixed(1)} m.</p>
     </details>
   </section>;
 }
-
-export default function SiteInspector({ site, loading, error, datasets }: {
-  site: Site | null; loading: boolean; error: string | null; datasets: Dataset[];
+export default function SiteInspector({ site, loading, error, datasets,activeLayer='illumination' }: {
+  site: Site | null; loading: boolean; error: string | null; datasets: Dataset[];activeLayer?:string;
 }) {
   return <aside className="inspector" aria-label="Site inspector">
     <div className="inspector-title"><span className="selection-symbol" aria-hidden="true">⌖</span><div><h2>Site inspector</h2><p>Scientific measurements</p></div></div>
@@ -32,17 +30,18 @@ export default function SiteInspector({ site, loading, error, datasets }: {
       {site && <>
         <div className="selected-coordinate"><span>Selected location</span><p data-testid="selected-coordinate">
           {Math.abs(site.coordinates.latitude_deg).toFixed(5)}° S / {site.coordinates.longitude_defined ? `${site.coordinates.longitude_deg.toFixed(5)}° E` : "Pole (longitude undefined)"}</p>
-          <small>Cell {site.sample.row}, {site.sample.column} · containing-pixel sampling</small>
+
         </div>
         <Quantity name="Elevation" measurement={site.elevation} testId="elevation-value" />
         <Quantity name="Local slope" measurement={site.slope} testId="slope-value" />
-        <Quantity name="Solar visibility" measurement={site.solar_visibility} testId="illumination-value" />
+        {activeLayer==='temperature'&&<EnvironmentValue layer={activeLayer} latitude={site.coordinates.latitude_deg} longitude={site.coordinates.longitude_deg}/>}
+        {activeLayer==='illumination'?<Quantity name="Solar visibility" measurement={site.solar_visibility} testId="illumination-value" />:<details className="other-environment"><summary>Solar visibility</summary><Quantity name="Solar visibility" measurement={site.solar_visibility} testId="illumination-value" /></details>}
         <details className="sample-details"><summary>Sampled cell center</summary>
           <p>{Math.abs(site.sample.center.latitude_deg).toFixed(5)}° S / {site.sample.center.longitude_deg.toFixed(5)}° E</p>
           <p>{site.sample.center.x_m.toFixed(0)} m east / {site.sample.center.y_m.toFixed(0)} m north in lunar polar projection.</p>
         </details>
       </>}
-      <section className="data-sources"><h3>Data provenance</h3>
+      <details className="site-provenance"><summary>Technical details</summary><section className="data-sources"><h3>Data provenance</h3>
         {datasets.map(dataset => <details key={dataset.product_id}><summary>{dataset.product_id}<span>{dataset.version}</span></summary>
           <dl><dt>Dataset</dt><dd>{dataset.dataset_id}</dd><dt>Source grid</dt><dd>{dataset.source_resolution_m} m / pixel</dd>
             <dt>Prepared grid</dt><dd>{dataset.prepared_resolution_m} m / pixel</dd><dt>Frame</dt><dd>{dataset.frame}</dd>
@@ -55,7 +54,7 @@ export default function SiteInspector({ site, loading, error, datasets }: {
             <span title={file.sha256}>SHA-256: {file.sha256.slice(0, 16)}…</span></div>)}
         </details>)}
         <p className="science-limit">240 m terrain resolves regional landforms. It cannot assess landing hazards or engineering suitability.</p>
-      </section>
+      </section></details>
     </div>
   </aside>;
 }

@@ -24,6 +24,31 @@
 .mode-mission .map-heading h2,.mode-simulation .map-heading h2 { font-size:16px; color:var(--quiet); font-weight:500; }
 .mode-mission .map-heading p,.mode-simulation .map-heading p,.mode-mission .map-instruction,.mode-simulation .map-instruction { display:none; }
 .mode-mission .map-footer,.mode-simulation .map-footer { background:var(--base); font-size:10px; }
+.mode-mission .map-footer,.mode-simulation .map-footer { display:none; }
+.mode-mission .terrain-map,.mode-simulation .terrain-map { bottom:0; }
+.mode-mission .workspace-toolbar,.mode-simulation .workspace-toolbar { bottom:16px; }
+.mission-workspace[data-tools-section=assets] > .tool-rail { bottom:76px; }
+.configuration-form { gap:16px; padding:16px 0; }
+.configuration-form label { font-size:13px; color:var(--ink); }
+.configuration-form input,.configuration-form textarea { margin-top:8px; }
+.asset-location { font-family:var(--font-geist-mono),monospace; color:var(--quiet); overflow-wrap:anywhere; }
+.asset-advanced > label { display:block; margin:16px 0; }
+.asset-advanced > fieldset { margin-top:16px; }
+.configuration-form summary,.site-provenance > summary,.other-environment > summary { cursor:pointer; font-size:12px; color:var(--quiet); padding:8px 0; }
+.engineering-notes p,.site-provenance p { color:var(--quiet); }
+.site-provenance { margin-top:16px; }
+.site-provenance .data-sources { margin-top:12px; padding-top:12px; }
+.quantity { padding:16px 0; }
+.quantity-note:empty { display:none; }
+.quantity-value { margin-top:8px; font-family:var(--font-geist-mono),monospace; }
+.overlay-menu { padding:16px; font-size:13px; }
+.overlay-menu label { display:block; margin-bottom:16px; }
+.overlay-menu select,.overlay-menu input { margin-top:8px; }
+.overlay-menu p { line-height:1.6; color:var(--quiet); margin:12px 0; }
+.overlay-menu details { margin-top:12px; font-size:12px; }
+.overlay-menu .overlay-availability { font-size:12px; }
+.overlay-menu > button { margin-top:16px; }
+.overlay-menu small { display:block; color:var(--quiet); font-size:11px; }
 @media(max-width:1200px) {
   .mission-header { grid-template-columns:auto auto minmax(0,1fr) auto auto; min-height:60px; gap:12px; padding:8px 16px; }
   .mission-header .mode-navigation,.mission-header .header-status,.mission-header .header-utilities,.mission-header .mission-context { grid-row:1; grid-column:auto; }

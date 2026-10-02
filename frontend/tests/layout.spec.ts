@@ -1,4 +1,4 @@
-import {openActivity,openDestinations,missionTools} from './workspace';
+import {missionSurface,openActivity,openDestinations,missionTools} from './workspace';
 import { test, expect } from '@playwright/test';
 
 test('context docks own space and mobile task navigation keeps controls reachable', async ({ page }) => {
@@ -17,17 +17,16 @@ test('context docks own space and mobile task navigation keeps controls reachabl
   await page.getByRole('button', { name: 'Close region details', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Reset globe', exact: true })).toBeInViewport();
   await openActivity(page, 'Analyze');
-  const navigation = page.getByRole('navigation', { name: 'Workspace navigation' });
-  await navigation.getByRole('link', { name: 'Tools', exact: true }).click();
+  await missionTools(page);
   await page.getByRole('button', { name: 'Inspect location', exact: true }).click();
   await expect(page.getByTestId('elevation-value')).toBeVisible();
-  await navigation.getByRole('link', { name: 'Map', exact: true }).click();
+  await missionSurface(page);
   const toolbar = (await page.locator('.workspace-toolbar').boundingBox())!;
   const map = (await page.locator('.terrain-viewport').boundingBox())!;
   expect(toolbar.y).toBeGreaterThan(map.y);
   expect(toolbar.y + toolbar.height).toBeLessThan(map.y + map.height);
   expect(toolbar.width).toBeLessThanOrEqual(map.width);
-  await expect(navigation.getByRole('link', { name: 'Inspector', exact: true })).toBeInViewport();
+  await expect(page.locator('.mission-actions > summary')).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: '../artifacts/phase5-layout-mobile-map.png' });
 });
@@ -39,8 +38,7 @@ test('mission workspace gives closed panels back to the map and selects one cont
     await page.goto('/?mode=mission');await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
     for(const [width,height] of [[1920,1080],[1440,900],[1366,768],[1024,768],[390,844]]) {
       await page.setViewportSize({width,height});
-      const nav=page.getByRole('navigation',{name:'Workspace navigation'});
-      if(width<=900)await nav.getByRole('link',{name:'Map',exact:true}).click();
+      await missionSurface(page);
       const map=page.locator('.map-workspace'),box=(await map.boundingBox())!;
       if(width>900)expect(box.width).toBeGreaterThan(width*.9);
       await page.screenshot({path:`../artifacts/targeted-map-first-${width}.png`});

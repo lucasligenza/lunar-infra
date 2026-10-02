@@ -1,4 +1,4 @@
-import {missionInspector,missionTools} from './workspace';
+import {assetAdvanced,missionInspector,missionTools} from './workspace';
 import { test, expect } from "@playwright/test";
 
 test("scenario placement editing movement persistence duplication and deletion", async ({ page, request }) => {
@@ -42,6 +42,7 @@ test("scenario placement editing movement persistence duplication and deletion",
     await missionTools(page);
     await page.getByRole("button", { name: "Select asset: Research habitat", exact: true }).click();
     await expect(page.getByLabel("Continuous demand (kW)", { exact: true })).toHaveValue("12");
+    await assetAdvanced(page);
     await page.getByLabel("Asset latitude (°)", { exact: true }).fill("-80");
     await missionInspector(page);
     await page.getByRole("button", { name: "Save asset", exact: true }).click();

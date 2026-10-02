@@ -1,4 +1,4 @@
-import {missionInspector,missionTools,openActivity,simulationAdvanced} from './workspace';
+import {missionSurface,missionInspector,missionTools,openActivity,simulationAdvanced} from './workspace';
 import { test, expect } from "@playwright/test";
 
 test("independent drafts survive saves and stale revisions cannot overwrite server state", async ({ page, request }) => {
@@ -85,9 +85,9 @@ test("custom mission parameters reject missing illumination and preserve explici
     await page.getByRole("slider", { name: "Mission interval" }).press("End");
     await expect(page.getByTestId("telemetry-generation")).toHaveText("10.00");
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Tools", exact: true }).click();
+    await missionTools(page);
     await expect(page.getByRole("heading", { name: "Advanced tools", exact: true })).toBeInViewport();
-    await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Timeline", exact: true }).click();
+    await missionSurface(page);
     await expect(page.getByRole("button", { name: "Expand timeline", exact: true })).toBeInViewport();
     await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
     await expect(page.getByRole("button", { name: "Collapse timeline", exact: true })).toBeInViewport();

@@ -39,23 +39,26 @@ export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, 
     onSave(changes);
   }
   return <aside className="inspector asset-inspector" aria-label="Asset configuration">
-    <div className="inspector-title"><span className="asset-badge">{ASSET_NAMES[asset.kind][0]}</span><div><h2>{ASSET_NAMES[asset.kind]}</h2><p>Hypothetical infrastructure</p></div></div>
+    <div className="inspector-title"><span className="asset-badge">{ASSET_NAMES[asset.kind][0]}</span><div><h2>{asset.name}</h2><p>{ASSET_NAMES[asset.kind]} · hypothetical</p></div></div>
     <div className="inspector-content"><form className="configuration-form" onSubmit={submit}>
       <label>Asset name<input required maxLength={100} value={draft.name} onChange={event => setDraft({ ...draft, name: event.target.value })} /></label>
       <label className="checkbox-label"><input type="checkbox" checked={draft.operational} onChange={event => setDraft({ ...draft, operational: event.target.checked })} />Operational</label>
-      {PARAMETERS[asset.kind].map(parameter => <label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min ?? 0} max={parameter.max ?? 1e9}
+      {PARAMETERS[asset.kind].filter(parameter=>['demand_kw','rated_power_kw','capacity_kwh','initial_soc','active_demand_kw','idle_demand_kw','duty_cycle'].includes(parameter.field)).map(parameter => <label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min ?? 0} max={parameter.max ?? 1e9}
         value={draft[parameter.field] as number} onChange={event => setDraft({ ...draft, [parameter.field]: Number(event.target.value) })} /></label>)}
+      <p className="asset-location">{draft.location.latitude_deg.toFixed(5)}° / {draft.location.longitude_deg.toFixed(5)}° E</p>
+      <details className="asset-advanced" onInvalid={event=>{event.currentTarget.open=true;}}><summary>Advanced settings</summary>
+      {PARAMETERS[asset.kind].filter(parameter=>!['demand_kw','rated_power_kw','capacity_kwh','initial_soc','active_demand_kw','idle_demand_kw','duty_cycle'].includes(parameter.field)).map(parameter=><label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min??0} max={parameter.max??1e9} value={draft[parameter.field] as number} onChange={event=>setDraft({...draft,[parameter.field]:Number(event.target.value)})}/></label>)}
       {asset.kind === "habitat" && <label>Optional load profile (kW per interval)<textarea aria-label="Optional load profile (kW per interval)" value={profile} onChange={event => setProfile(event.target.value)} placeholder="Blank uses continuous demand" /></label>}
       <fieldset><legend>{globalDomain?'Location / source lunar frame':'Location / ME-PA DE421'}</legend>
         <label>Asset latitude (°)<input type="number" required step="any" min={-90} max={globalDomain?90:0} value={draft.location.latitude_deg} onChange={event => setDraft({ ...draft, location: { ...draft.location, latitude_deg: Number(event.target.value) } })} /></label>
         <label>Asset longitude (° E)<input type="number" required step="any" min={0} max={359.999999999} value={draft.location.longitude_deg} onChange={event => setDraft({ ...draft, location: { ...draft.location, longitude_deg: Number(event.target.value) } })} /></label>
-      </fieldset>
+      </fieldset></details>
       <p className={dirty ? "warning" : "nominal"}>{dirty ? "Unsaved asset changes" : "Asset configuration saved"}</p>
       {error && <p role="alert" className="warning">{error}</p>}
       <button className="primary-button" disabled={busy || !dirty}>Save asset</button>
       <div className="button-row"><button type="button" disabled={busy} onClick={onMove}>Move on map</button><button type="button" onClick={onInspect}>Inspect terrain</button></div>
       <button className="danger-button" type="button" disabled={busy} onClick={onRemove}>Remove asset</button>
-      <p className="quiet">Editable assumptions, not NASA hardware specifications. Symbols mark coordinates and do not represent a physical footprint.</p>
+      <details className="engineering-notes"><summary>Engineering assumptions</summary><p>Editable assumptions, not NASA hardware specifications. Symbols mark coordinates and do not represent a physical footprint.</p></details>
     </form></div>
   </aside>;
 }

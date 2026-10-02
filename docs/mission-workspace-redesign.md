@@ -42,3 +42,29 @@ restore the entire map width. Desktop/laptop and phone screenshots were inspecte
 The 53-case first pass passed 47; its six old navigation/disclosure expectations
 were updated and all pass in a 26-case follow-up. Existing numerical comparisons,
 revision assertions, error recovery and saved scenario equality checks remain.
+
+M1 pushed as `89d037b`; [GitHub validation](https://github.com/lucasligenza/lunar-infra/actions/runs/36955974128)
+passed all 53 browser journeys, Python validation, fresh acquisition and build.
+
+## M2 rendered review
+
+Selected-asset screenshots now show name, operational state, demand/capacity,
+coordinates and save/move/remove actions without a long advanced form. Terrain
+selection shows coordinates/elevation/slope; source IDs, native spacing, sample
+details and qualifications remain under disclosures. The phone uses task sheets
+with Close actions rather than a second permanent navigation row.
+
+Overlays is distinct from advanced tools. Prepared native 2D layers remain;
+imagery, geology and temperature use the existing Three.js surface. Selecting a
+3D layer changes presentation only; placement still uses the scenario's native
+coordinate domain and numerical queries retain their original supporting raster.
+Coverage messages use `/atlas/inspect`, distinguishing unavailable and nodata.
+The outline shows the registered south-pole **analysis area**, not a claim that
+every enclosed environmental cell exists. Native masks and query statuses remain
+authoritative. The supported-region action flies to verified Shackleton terrain.
+Actual outside-coverage, polar temperature/solar, asset and site screenshots were
+inspected; no environmental or numerical data was added or altered.
+
+M2 validation: 20 workspace/responsive journeys and 15 further footprint,
+settlement, playback and globe journeys pass. Typecheck passes. Registered layers,
+real polar colors, native measurements, nodata and persistence are preserved.

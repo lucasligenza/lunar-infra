@@ -21,14 +21,14 @@ import { ASSET_SYMBOLS, type Asset, type Location } from "../../types/mission";
 import type { Layer, Region, Site } from "../../types/scientific";
 
 type Props = {
-  region: Region; layer: Layer; site: Site | null; grid: boolean;
+  region: Region; layer: Layer; site: Site | null; grid: boolean;opacity?:number;
   onSelect: (longitude: number, latitude: number) => void;
   onPointer: (coordinate: [number, number]) => void;
   assets?: Asset[]; baseSite?: Location; selectedAssetId?: string | null;
   onAssetSelect?: (id: string) => void; placementActive?: boolean;
 };
 
-export default function TerrainMap({ region, layer, site, grid, onSelect, onPointer, assets, baseSite, selectedAssetId, onAssetSelect, placementActive }: Props) {
+export default function TerrainMap({ region, layer, site, grid, opacity=1, onSelect, onPointer, assets, baseSite, selectedAssetId, onAssetSelect, placementActive }: Props) {
   const target = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const raster = useRef<ImageLayer<ImageStatic> | null>(null);
@@ -155,6 +155,7 @@ export default function TerrainMap({ region, layer, site, grid, onSelect, onPoin
   }, [region, layer, retry]);
 
   useEffect(() => { graticule.current?.setVisible(grid); }, [grid, region]);
+  useEffect(()=>{raster.current?.setOpacity(opacity);},[opacity,region]);
   useEffect(() => {
     marker.current?.clear();
     if (!site || !marker.current) return;

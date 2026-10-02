@@ -1,4 +1,4 @@
-import {missionInspector,missionTools,openActivity,openDestinations,utilities} from './workspace';
+import {missionSurface,missionInspector,missionTools,openActivity,openDestinations,utilities} from './workspace';
 import { test, expect, type Locator, type Page } from '@playwright/test';
 
 async function reachable(control: Locator) {
@@ -19,7 +19,7 @@ async function header(page: Page, width: number) {
   }
 }
 async function pane(page: Page, label: 'Map' | 'Tools' | 'Inspector' | 'Timeline', width: number) {
-  if (width <= 900) await page.getByRole('navigation', { name: 'Workspace navigation' }).getByRole('link', { name: label, exact: true }).click();
+  if(label==='Map'||label==='Timeline')await missionSurface(page);
   else if(label==='Tools')await missionTools(page);
   else if(label==='Inspector')await missionInspector(page);
 }
@@ -95,10 +95,12 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       });
       expect(axisSize).toBeGreaterThanOrEqual(10.5);
       await page.screenshot({ path: `../artifacts/phase5-final-simulate-${width}.png` });
+      await page.getByRole('button',{name:'Collapse timeline',exact:true}).click();
       await pane(page, 'Inspector', width);
       await expect(page.getByTestId('inspector-telemetry-generation')).toHaveText(run.result.intervals[2].generation_kw.toFixed(2));
       await expect(page.getByTestId('inspector-telemetry-unserved')).toHaveText(`${run.result.intervals[2].unserved_kw.toFixed(2)} kW`);
       await pane(page, 'Timeline', width);
+      await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
       await slider.press('Home'); await page.getByRole('button', { name: 'Play mission', exact: true }).click();
       await expect.poll(() => slider.inputValue()).not.toBe('0');
       await page.getByRole('button', { name: 'Pause playback', exact: true }).click();

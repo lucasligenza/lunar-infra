@@ -8,9 +8,12 @@ import type { AtlasView,AtlasSector,AtlasAnalysisState,AtlasPoint } from '../../
 import type { Asset } from '../../types/mission';
 import type { CameraState, Destination, GlobeInspection, GlobeLocation, GlobeMetadata, Mode } from '../../types/globe';
 import {areaBoundary} from '../../lib/atlas-area';
+import {polarBoundary} from '../../lib/lunar';
+import type {Region} from '../../types/scientific';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
 
-export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest,settlement }: {
+export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest,settlement,preparedRegion }: {
+  preparedRegion?:Region|null;
   location: GlobeLocation | null; assets: Asset[]; base: GlobeLocation | null; camera: CameraState | null;
   onCamera:(state:CameraState)=>void; onSelect:(location:GlobeLocation)=>void; onCoverage:(coverage:GlobeInspection)=>void; onMode:(mode:Mode)=>void;
   atlasView:AtlasView;onAtlasView:(view:AtlasView)=>void;sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;
@@ -36,7 +39,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   useEffect(()=>{if(navigationRequest){setFlight(navigationRequest);setDrawerOpen(true);setAtlasOpen(false);setLayersOpen(false);setSearchOpen(false);}},[navigationRequest]);
   useEffect(()=>{const narrow=window.matchMedia('(max-width: 900px)');const closeSearch=()=>{if(narrow.matches)setSearchOpen(false);};narrow.addEventListener('change',closeSearch);return()=>narrow.removeEventListener('change',closeSearch);},[]);
   const [atlasStatus,setAtlasStatus]=useState('Scientific overlay hidden');
-  const boundaries=useMemo(()=>[...(sector?[sector.boundary]:[]),...(location&&analysisMode?[areaBoundary(location,analysis)]:[]),...(analysis.profile?[analysis.profile.samples]:[]),...(settlement.report?.candidates.map(point=>areaBoundary(point,{...analysis,radius:String(point.radius_km),kind:'circle'}))??[])],[sector,location,analysisMode,analysis,settlement.report]);
+  const boundaries=useMemo(()=>[...(preparedRegion&&["temperature","illumination"].includes(atlasView.layer)?[polarBoundary(preparedRegion)]:[]),...(sector?[sector.boundary]:[]),...(location&&analysisMode?[areaBoundary(location,analysis)]:[]),...(analysis.profile?[analysis.profile.samples]:[]),...(settlement.report?.candidates.map(point=>areaBoundary(point,{...analysis,radius:String(point.radius_km),kind:'circle'}))??[])],[sector,location,analysisMode,analysis,settlement.report,preparedRegion,atlasView.layer]);
   useEffect(()=>{if(analysisMode){setAtlasOpen(true);setDrawerOpen(false);setSearchOpen(false);}},[analysisMode]);
   useEffect(()=>{
     const abort = new AbortController(); setError(null);setDestinationError(null);setDestinationsLoading(true);

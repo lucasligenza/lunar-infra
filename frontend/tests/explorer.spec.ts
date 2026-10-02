@@ -33,7 +33,7 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
   await missionTools(page);
   await page.getByRole("button", { name: "Collapse tools" }).click();
   await expect(page.getByRole("region", { name: "Scientific layers" })).not.toBeVisible();
-  await page.getByRole("button", { name: "Expand tools" }).click();
+  await missionTools(page);
   await expect(page.getByRole("region", { name: "Scientific layers" })).toBeVisible();
   await page.getByLabel("Latitude (°)", { exact: true }).fill("-89.5");
   await page.getByLabel("Longitude (° E)", { exact: true }).fill("0");
@@ -70,6 +70,7 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
   await page.getByRole("checkbox", { name: "Lunar coordinate grid" }).uncheck();
   await expect(page.getByRole("checkbox", { name: "Lunar coordinate grid" })).not.toBeChecked();
   await missionInspector(page);
+  await page.locator(".site-provenance > summary").click();
   await page.locator(".data-sources summary").filter({ hasText: "LDEM_75S_240M" }).click();
   await expect(page.getByRole("link", { name: "NASA source: ldem_75s_240m.lbl" })).toBeVisible();
   await page.screenshot({ path: "../artifacts/lunaros-desktop.png", fullPage: true });
@@ -104,7 +105,7 @@ test("mobile map and coordinate form remain usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
-  await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Tools", exact: true }).click();
+  await missionTools(page);
   const controls = await page.getByRole("region", { name: "Scientific layers" }).boundingBox();
   const coordinates = await page.getByRole("heading", { name: "Inspect by coordinates" }).boundingBox();
   expect(controls!.y + controls!.height).toBeLessThan(coordinates!.y);

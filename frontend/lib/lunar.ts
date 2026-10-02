@@ -15,3 +15,13 @@ export function toGeographic(x: number, y: number, radius: number): [number, num
 export function groundScale(x: number, y: number, radius: number): number {
   return 1 + (x * x + y * y) / (4 * radius * radius);
 }
+
+// Visual guide for the registered analysis footprint, not a replacement for
+// source nodata/coverage queries. Sample projected edges to preserve polar shape.
+export function polarBoundary(region:{bounds_m:number[];reference_radius_m:number}) {
+  const [west,south,east,north]=region.bounds_m;
+  const corners=[[west,south],[east,south],[east,north],[west,north],[west,south]];
+  return Array.from({length:65},(_,index)=>{const edge=Math.min(3,Math.floor(index/16)),fraction=(index-edge*16)/16;
+    const x=corners[edge][0]+fraction*(corners[edge+1][0]-corners[edge][0]),y=corners[edge][1]+fraction*(corners[edge+1][1]-corners[edge][1]);
+    const [longitude_deg,latitude_deg]=toGeographic(x,y,region.reference_radius_m);return {longitude_deg,latitude_deg};});
+}
