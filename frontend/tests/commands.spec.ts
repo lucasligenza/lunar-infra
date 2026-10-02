@@ -22,7 +22,7 @@ test('keyboard commands navigate real destinations, scientific tools and the act
   await command('Open Analyze');
   await expect(page.getByTestId('selected-coordinate')).toContainText('89.67000');
   await command('Show slope layer');
-  await expect(page.getByRole('combobox', { name: 'Scientific overlay' })).toHaveValue('slope');
+  await expect(page.getByRole('radio', { name: 'Slope', exact:true })).toBeChecked();
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await command('Open dataset catalog');
   await expect(page.getByRole('searchbox', { name: 'Search science datasets' })).toBeVisible();

@@ -1,4 +1,5 @@
-/* Surface first: one header, contextual docks, and a deliberate control shelf. */
+/* Final visual layer: surface-first workstation, contextual docks and controls.
+   Layout ownership stays in mission-control; these rules define presentation. */
 .mission-header { min-height:60px; padding:8px 24px; gap:20px; }
 .mission-header .mode-navigation { border:0; background:transparent; }
 .mission-header .mode-navigation button { border:0; background:transparent; padding:10px 14px; font-size:13px; }
@@ -70,10 +71,114 @@
 .timeline-details { overscroll-behavior:contain; }
 .timeline-summary { font-size:12px; gap:12px 24px; padding-bottom:16px; }
 .timeline-summary h3 { text-transform:uppercase; letter-spacing:.04em; }
+
+/* Shared instrument language */
+.ui-icon { width:18px; height:18px; flex-shrink:0; vertical-align:middle; }
+.eyebrow { display:block; font:10px/1.5 var(--font-geist-mono),monospace; color:var(--quiet); letter-spacing:.13em; }
+button { font-weight:500; }
+button, input, select, textarea { border-radius:5px; }
+:where(button, summary):focus-visible { outline-offset:4px; }
+.mission-header { min-height:68px; padding:10px 28px; gap:28px; background:var(--base); border-color:var(--border-soft); }
+.brand { gap:12px; position:relative; padding-right:24px; border-right:1px solid var(--border-soft); }
+.brand h1 { font-size:22px; font-weight:600; letter-spacing:-.8px; line-height:1; }
+.brand h1 span { color:var(--ink); font-weight:400; }
+.brand-orbit { width:28px; height:28px; border-color:var(--ink); box-shadow:inset -9px -2px 0 var(--ink); opacity:.9; }
+.brand-caption { position:absolute; left:40px; top:27px; font:8px var(--font-geist-mono),monospace; letter-spacing:.13em; color:var(--quiet); white-space:nowrap; }
+.mission-header .mode-navigation { gap:4px; padding:0; }
+.mission-header .mode-navigation button { gap:9px; padding:11px 15px; color:var(--quiet); border-radius:5px; box-shadow:none; font-size:13px; }
+.mission-header .mode-navigation button[aria-pressed=true] { color:var(--accent); background:var(--accent-muted); box-shadow:none; }
+.mission-header .mode-navigation button:hover:not(:disabled) { color:var(--ink); background:var(--elevated); }
+.mission-context { font-size:12px; }
+.header-status { font-size:11px; }
+.utility-menu summary { display:flex; align-items:center; gap:8px; color:var(--quiet); font-size:11px; padding:10px 0; list-style:none; }
+.utility-menu summary::-webkit-details-marker { display:none; }
+.utility-menu > div { top:calc(100% + 12px); border-radius:6px; box-shadow:0 12px 36px var(--shadow); }
+
+/* The global toolbar floats in a reserved band above contextual content. */
+.global-explorer { grid-template-rows:minmax(0,1fr) auto; }
+.globe-toolbar { position:absolute; top:20px; left:24px; right:24px; padding:0; border:0; background:transparent; gap:10px; pointer-events:none; }
+.globe-toolbar > * { pointer-events:auto; }
+.globe-toolbar .destination-search { flex:0 1 330px; }
+.globe-toolbar .search-input-row { gap:10px; padding:0 10px 0 14px; background:var(--panel); border:1px solid var(--border); border-radius:6px; box-shadow:0 4px 16px var(--shadow); }
+.search-input-row > .ui-icon { color:var(--quiet); width:16px; }
+.globe-toolbar .search-input-row input { height:42px; padding:0!important; border:0!important; background:transparent!important; font-size:13px; }
+.globe-toolbar .search-input-row button { width:28px; height:28px; display:grid; place-items:center; border:0; background:transparent; }
+.search-input-row button .ui-icon { width:14px; }
+.global-explorer .global-layer-controls button,.global-explorer .region-drawer-toggle { display:flex; align-items:center; justify-content:center; gap:9px; height:44px; padding:10px 14px; background:var(--panel); border-radius:6px; font-size:12px; box-shadow:0 4px 16px var(--shadow); }
+.global-explorer .global-layer-controls button[aria-expanded=true] { border-color:var(--accent); color:var(--accent); background:var(--accent-muted); }
+.globe-toolbar .region-drawer-toggle { margin-left:auto; }
+.destination-results { top:calc(100% + 8px); border-radius:6px; padding:6px; box-shadow:0 12px 32px var(--shadow); }
+.destination-results button { position:relative; padding:12px; border-radius:4px; }
+.destination-results button span { font-size:13px; }
+.destination-results button small { font:10px var(--font-geist-mono),monospace; margin-top:6px; }
+.destination-results button .ui-icon { position:absolute; right:10px; top:21px; width:14px; color:var(--quiet); }
+.globe-layout:has(> aside) { grid-template-columns:minmax(0,1fr) calc(var(--dock-width) + 24px); }
+.globe-dock,.globe-layout > .atlas-panel { margin:80px 24px 20px 0; border:1px solid var(--border); border-radius:8px; box-shadow:0 12px 32px var(--shadow); }
+.globe-dock { padding:24px; }
+.globe-render-status { top:80px; left:24px; font:10px var(--font-geist-mono),monospace; color:var(--quiet); padding:8px 10px; border-radius:4px; }
+.globe-attribution { border:0; color:var(--quiet); padding:10px 24px; font-size:10px; }
+.globe-attribution a { color:var(--quiet); }
+.camera-controls { right:24px; bottom:24px; gap:0; border:1px solid var(--border); border-radius:6px; padding:4px; background:var(--panel); box-shadow:0 6px 18px var(--shadow); }
+.global-explorer .camera-controls button,.camera-controls button { border:0; background:transparent; min-width:36px; height:34px; padding:8px 12px; border-radius:3px; }
+.camera-controls button + button { border-left:1px solid var(--border-soft); }
+.global-introduction { bottom:44px; left:40px; max-width:350px; }
+.global-introduction .eyebrow { margin:0 0 12px; font-size:10px; color:var(--accent); }
+.global-introduction h2 { font-size:32px; font-weight:450; letter-spacing:-1.1px; margin-bottom:14px; }
+.global-introduction p { font-size:14px; line-height:1.8; }
+.global-introduction .navigation-hint { font-size:10px; margin-top:24px; }
+.destination-shortcuts { display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; pointer-events:auto; }
+.global-explorer .destination-shortcuts button { display:flex; align-items:center; gap:8px; padding:8px 10px; font-size:11px; background:var(--panel); border-color:var(--border); }
+.destination-shortcuts .ui-icon { width:12px; height:12px; }
+.region-drawer .drawer-title { margin:8px 0 0; }
+.region-drawer .drawer-title h2 { font-size:26px; line-height:1.2; font-weight:500; letter-spacing:-.7px; }
+.region-drawer p { font-size:13px; line-height:1.8; }
+.region-drawer .region-coordinate { font-size:11px; margin:14px 0 20px; }
+.region-drawer .region-measurements { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:22px 0; border-color:var(--border-soft); }
+.region-measurements dt { margin-bottom:8px; font-size:11px; }
+.region-measurements dd { font:19px var(--font-geist-mono),monospace; letter-spacing:-.6px; margin:0; }
+.region-actions { display:grid; gap:8px; margin-top:24px; }
+.region-drawer .region-actions button { margin:0; text-align:left; display:flex; align-items:center; gap:10px; font-size:12px; min-height:44px; }
+.region-actions button > .ui-icon:last-child { margin-left:auto; width:13px; }
+.region-drawer details { border-top:1px solid var(--border-soft); padding-top:20px; margin-top:24px; }
+.region-drawer summary { color:var(--quiet); font-size:12px; }
+
+/* Scientific choices are visible; detailed source metadata stays disclosed. */
+.atlas-panel > header { padding:20px 20px 16px; border-color:var(--border-soft); }
+.atlas-panel > header h2 { font-size:20px; letter-spacing:-.5px; font-weight:500; margin-top:5px; }
+.atlas-panel > header button { display:grid; place-items:center; padding:8px; border:0; background:transparent; }
+.atlas-disclosure { padding:12px 20px 0; }
+.atlas-panel .atlas-description { margin:12px 0 16px; }
+.atlas-content { padding:0 20px 24px; }
+.atlas-panel .atlas-disclosure > button { padding:5px 0; border:0; background:transparent; color:var(--quiet); font-size:11px; }
+.layer-picker { display:grid; grid-template-columns:1fr 1fr; gap:8px; min-width:0; border:0; padding:0; margin:0 0 18px; }
+.layer-picker legend { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.atlas-panel .layer-option,.overlay-menu .layer-option { display:flex; position:relative; align-items:center; gap:10px; padding:12px 10px; margin:0; min-width:0; min-height:72px; border:1px solid var(--border); border-radius:5px; background:var(--surface-inset); cursor:pointer; }
+.layer-option input { position:absolute; opacity:0; width:1px!important; height:1px; margin:0!important; padding:0!important; }
+.layer-option strong { display:block; font-size:12px; font-weight:500; color:var(--ink); }
+.layer-option small { display:block; font-size:10px; color:var(--quiet); margin-top:5px; line-height:1.4; }
+.layer-option .ui-icon { width:20px; height:20px; color:var(--quiet); }
+.layer-option:has(input:checked) { border-color:var(--accent); background:var(--accent-muted); }
+.layer-option:has(input:checked) .ui-icon { color:var(--accent); }
+.layer-option:has(input:checked)::after { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent); position:absolute; top:14px; right:12px; }
+.layer-option:has(input:focus-visible) { outline:2px solid var(--accent); outline-offset:3px; }
+.layer-option:hover { border-color:var(--quiet); }
+.layer-option[data-unavailable=true] small { color:var(--warning); }
+.atlas-panel .active-layer-caption,.overlay-menu .active-layer-caption { font-size:12px; color:var(--ink); line-height:1.7; margin-top:16px; }
+.atlas-legend { padding:8px 0; }
+.atlas-legend > div { height:6px; border-radius:3px; }
+.atlas-panel dl { border-color:var(--border-soft); padding:20px 0; }
+.atlas-panel dt { font-size:11px; margin-top:4px; }
+.atlas-panel dd { font-size:17px; margin-bottom:10px; }
+.atlas-layer-tools { border-color:var(--border-soft); padding-bottom:16px; margin-bottom:16px; }
+.atlas-panel details { border-color:var(--border-soft); }
+.atlas-panel [data-testid=atlas-overlay-status] { font:10px/1.6 var(--font-geist-mono),monospace; padding-left:10px; border-left:2px solid var(--accent); }
 @media(max-width:1200px) {
   .mission-header { grid-template-columns:auto auto minmax(0,1fr) auto auto; min-height:60px; gap:12px; padding:8px 16px; }
   .mission-header .mode-navigation,.mission-header .header-status,.mission-header .header-utilities,.mission-header .mission-context { grid-row:1; grid-column:auto; }
   .mission-header .mode-navigation button { padding:10px; }
+  .brand-caption { display:none; }
+  .brand { padding-right:12px; }
+  .mission-header .mode-navigation .ui-icon { width:15px; height:15px; }
 }
 @media(max-width:900px) {
   .mission-header { grid-template-columns:minmax(0,1fr) auto; padding:10px 12px; gap:8px; }
@@ -96,4 +201,29 @@
   .simulation-current { gap:6px 12px; font-size:11px; }
   .current-power { gap:12px; }
   .simulation-current .input-source-tag { margin:0; }
+  .mission-header { min-height:0; gap:6px; padding:10px 12px; }
+  .mission-header .brand { border:0; padding:0; }
+  .mission-header .brand h1 { font-size:20px; }
+  .mission-header .mode-navigation button { padding:9px 5px; gap:6px; font-size:12px; }
+  .mission-header .mission-context,.mission-header .header-status { font-size:10px; }
+  .global-explorer { grid-template-rows:auto minmax(0,1fr) auto; }
+  .globe-toolbar { position:relative; inset:auto; padding:10px 12px; gap:8px; border-bottom:1px solid var(--border-soft); }
+  .globe-toolbar .destination-search { flex:1 1 100%; max-width:none; }
+  .globe-toolbar .search-input-row { box-shadow:none; }
+  .global-explorer .global-layer-controls button,.global-explorer .region-drawer-toggle { height:34px; padding:6px 10px; font-size:11px; box-shadow:none; gap:6px; }
+  .globe-toolbar .region-drawer-toggle { margin-left:auto; }
+  .global-layer-controls .ui-icon { width:14px; height:14px; }
+  .globe-layout,.globe-layout:has(> aside) { grid-template-columns:minmax(0,1fr); }
+  .globe-dock,.globe-layout > .atlas-panel { margin:0; border:0; border-radius:0; width:auto; box-shadow:none; }
+  .globe-dock { padding:24px; }
+  .globe-render-status { top:12px; left:12px; font-size:9px; }
+  .global-introduction { bottom:70px; left:24px; max-width:260px; }
+  .global-introduction .eyebrow { font-size:9px; }
+  .global-introduction h2 { font-size:26px; }
+  .global-introduction p { font-size:12px; }
+  .global-introduction .navigation-hint { margin-top:14px; font-size:9px; }
+  .destination-shortcuts { display:none; }
+  .camera-controls { bottom:12px; right:12px; }
+  .globe-attribution { padding:8px 12px; font-size:8px; }
+  .globe-attribution span { max-width:130px; text-align:right; }
 }

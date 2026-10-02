@@ -1,8 +1,9 @@
 /* Phase 5 structural ownership: shell, toolbar, viewport, one contextual dock. */
 :root {
   color-scheme:dark;
-  --base:#0B0F14; --panel:#141A22; --elevated:#1D2632; --border:#344252;
-  --ink:#F0F3F6; --quiet:#99A6B5; --accent:#4C9BE8;
+  --base:#0B0F14; --panel:#131A23; --elevated:#202C39; --border:#2B3745;
+  --ink:#F0F3F6; --quiet:#A3AEBC; --accent:#82B8EF;
+  --surface-inset:#0E141C; --accent-muted:#1C3249; --border-soft:#222D39;
   --nominal:#53B987; --warning:#D7A44B; --failure:#D96B6B;
   --shadow:rgb(0 0 0 / .2); --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
   --z-surface:0; --z-controls:10; --z-popover:30; --z-dialog:60; --z-console:40; --dock-width:360px;

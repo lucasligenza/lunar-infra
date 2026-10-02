@@ -1,3 +1,4 @@
+import {chooseOverlay} from './workspace';
 import {test,expect} from '@playwright/test';
 import {missionSurface,missionTools,openActivity,missionInspector,openDestinations} from './workspace';
 import {polarBoundary,toPolar} from '../lib/lunar';
@@ -97,8 +98,8 @@ test('mission environmental overlays disclose actual missing coverage and naviga
   await page.screenshot({path:'../artifacts/mission-after-explore.png'});
   await page.getByRole('button',{name:'Build',exact:true}).click();
   await page.getByRole('button',{name:'Overlays',exact:true}).click();
-  const layer=page.getByRole('combobox',{name:'Mission scientific overlay'});
-  await layer.selectOption('temperature');
+
+  await chooseOverlay(page,'temperature',true);
   await expect(page.getByRole('region',{name:'Mission scientific overlays'})).toContainText('Outside the prepared south-pole region.');
   await page.screenshot({path:'../artifacts/mission-after-unsupported-temperature.png'});
   await page.getByRole('button',{name:'Go to supported region',exact:true}).click();
@@ -106,7 +107,7 @@ test('mission environmental overlays disclose actual missing coverage and naviga
   await expect.poll(async()=>Number(await page.getByTestId('moon-canvas').getAttribute('data-sector-boundaries'))).toBeGreaterThan(0);
   await page.screenshot({path:'../artifacts/mission-after-polar-temperature.png'});
   await missionInspector(page);await expect(page.getByTestId('active-environment-value')).toContainText('K');await missionSurface(page);
-  await page.getByRole('button',{name:'Overlays',exact:true}).click();await layer.selectOption('illumination');await missionSurface(page);
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();await chooseOverlay(page,'illumination',true);await missionSurface(page);
   await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready',{timeout:60000});
   await page.screenshot({path:'../artifacts/mission-after-polar-solar.png'});
 });

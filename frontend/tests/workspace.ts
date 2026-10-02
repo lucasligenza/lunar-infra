@@ -1,5 +1,10 @@
 import { expect, type Page } from '@playwright/test';
 
+export async function chooseOverlay(page:Page,id:string,mission=false) {
+  const labels:Record<string,string>={none:'Imagery',elevation:'Elevation',slope:'Slope',geology:'Geology',temperature:'Temperature',illumination:'Solar visibility'};
+  await page.getByRole('group',{name:mission?'Mission scientific overlay':'Scientific overlay',exact:true}).getByRole('radio',{name:labels[id],exact:true}).check();
+}
+
 export async function openActivity(page:Page, name:string) {
   await page.keyboard.press('Control+k');
   const search=page.getByRole('combobox',{name:'Search commands'});

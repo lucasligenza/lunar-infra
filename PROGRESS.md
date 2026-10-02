@@ -1,6 +1,28 @@
 # LunarOS progress
 
-## Mission workspace visual redesign — complete locally
+## UI overhaul — active
+
+User requested a broader visual overhaul after reviewing the previous redesign.
+Current plan and fresh screenshot audit: [UI overhaul](docs/ui-overhaul.md).
+Baseline `4d9372e` matches fetched origin/main; its GitHub run 36960549213 passed.
+
+M1 implementation: refined shell and typography, shared line icons, compact
+floating globe controls, real destination shortcuts, clearer region hierarchy
+and native keyboard-operable scientific layer choices shared with missions.
+Original metadata, polar limitations and rendered/not-prepared states remain.
+
+Scientific integration: unchanged. No backend, API, model, source, renderer or
+dependency changes. Current work is presentation and interaction refinement.
+M1 validation: 22 relevant browser journeys pass across focused runs, including
+all five viewport sizes, actual polar rendering, source/geometry preservation,
+keyboard selection, no-overlap/hit checks, missions and playback. Before/after
+screenshots inspected. Python: 106 tests plus eight subtests pass (133.88s), with
+nine dependency deprecation warnings. Typecheck and production build pass.
+Next: infrastructure and playback visual refinement.
+No external blockers.
+Latest successful pushed commit: `4d9372e` (previous redesign acceptance).
+
+## Prior mission workspace visual redesign — completed and pushed
 
 Accepted roadmap and rendered audit: [mission workspace redesign](docs/mission-workspace-redesign.md).
 Baseline d852791 matched latest main; previous CI passed. No backend APIs,
@@ -41,9 +63,9 @@ Power time series remain explicitly hypothetical; no habitability claim added.
 Desktop details are capped at 34dvh; mobile details use dismissible task sheets.
 No current blockers. Source data, caches, SQLite and screenshots stay outside Git.
 
-Latest successful pushed feature commit: 82c53e5 (green GitHub CI).
-Active step: publish M4 acceptance and verify its GitHub run. No further feature
-scope is authorized; next product step is user review of the simplified workspace.
+Final acceptance commit: `4d9372e`; GitHub run 36960549213 passed 55 browser
+journeys, 106 Python tests plus eight subtests, fresh acquisition, types and build.
+The user's subsequent UI-overhaul request is the current authorized scope.
 
 ## Prior targeted refactor (completed)
 

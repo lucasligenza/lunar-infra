@@ -1,6 +1,7 @@
 # LunarOS engineering rules
 
-Implement the accepted visual roadmap in docs/mission-workspace-redesign.md:
+Implement the current visual overhaul in docs/ui-overhaul.md, preserving the
+accepted workspace behavior in docs/mission-workspace-redesign.md:
 surface-first Build/Simulate, contextual infrastructure and inspectors, compact
 playback, and disclosed scientific metadata. Preserve existing science, missions,
 simulations and location state. Navigation is Explore / Analyze / Build / Simulate.

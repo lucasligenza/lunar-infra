@@ -1,3 +1,4 @@
+import {chooseOverlay} from './workspace';
 import {missionInspector,missionDetails,missionTools,openActivity,openDestinations} from './workspace';
 import {test,expect} from '@playwright/test';
 import {lunarCoordinate} from '../lib/globe';
@@ -12,7 +13,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
   await openDestinations(page);
     await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
     await page.getByRole('button',{name:'Overlays',exact:true}).click();
-    await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('illumination');
+    await chooseOverlay(page,'illumination');
     await expect(page.getByTestId('atlas-sunlight')).toHaveText('Unavailable here');
     await page.getByRole('button',{name:'Close atlas',exact:true}).click();
     await page.getByRole('button',{name:'Create mission here',exact:true}).click();

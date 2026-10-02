@@ -1,3 +1,4 @@
+import {chooseOverlay} from './workspace';
 import {test,expect} from '@playwright/test';
 import {openDestinations} from './workspace';
 
@@ -20,14 +21,14 @@ test('basic Moon controls disclose advanced tools and preserve best native point
   await page.getByRole('button',{name:'View scientific overlays',exact:true}).click();
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${native.elevation.value.toLocaleString('en-US')} m`);
   await expect(page.getByRole('complementary',{name:'Lunar atlas'})).toContainText('240 m native spacing');
-  await page.getByRole('combobox',{name:'Scientific overlay'}).selectOption('illumination');
+  await chooseOverlay(page,'illumination');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await expect(page.getByRole('button',{name:'Find settlement sites',exact:true})).toBeEnabled();
   await page.screenshot({path:'../artifacts/simple-overlay-final.png'});
   await page.getByRole('button',{name:'Close atlas',exact:true}).click();
   await openDestinations(page);await page.getByRole('button',{name:/^Lunar north pole/}).click();
   await page.getByRole('button',{name:'Overlays',exact:true}).click();
-  await page.getByRole('combobox',{name:'Scientific overlay'}).selectOption('slope');
+  await chooseOverlay(page,'slope');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   const resources=JSON.parse((await page.getByTestId('moon-canvas').getAttribute('data-overlay-resources'))!);
   expect(resources.retained_tiles).toBeLessThanOrEqual(32);

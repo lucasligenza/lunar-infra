@@ -5,6 +5,7 @@ import type {AtlasLayer,AtlasView,AtlasPoint} from '../../types/atlas';
 import type {Region,LayerId} from '../../types/scientific';
 import type {GlobeLocation} from '../../types/globe';
 import AtlasLegend from '../globe/AtlasLegend';
+import LayerPicker from '../ui/LayerPicker';
 
 export default function OverlayMenu({region,native,layerId,view,location,onLayer,onOpacity,onNative,onCoverage}:{
   region:Region|null;native:boolean;layerId:LayerId;view:AtlasView;location:GlobeLocation|null;
@@ -22,10 +23,8 @@ export default function OverlayMenu({region,native,layerId,view,location,onLayer
     fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${location.latitude_deg}&longitude=${location.longitude_deg}`,abort.signal).then(point=>{if(!abort.signal.aborted)setPoint(point);}).catch(error=>{if(!abort.signal.aborted)setCoverageError(error.message);});return()=>abort.abort();},[environmental,location]);
   const quantity=selected==='temperature'?point?.temperature:point?.solar_visibility;
   return <section className="overlay-menu" aria-label="Mission scientific overlays">
-    <label>Surface layer<select aria-label="Mission scientific overlay" value={selected} onChange={event=>onLayer(event.target.value,available.find(layer=>layer.id===event.target.value))}>
-      <option value="none">NASA imagery · 3D</option>
-      {available.map(layer=><option key={layer.id} value={layer.id}>{native&&region?.layers.some(value=>value.id===layer.id)?`${region.layers.find(value=>value.id===layer.id)!.name} · native 2D`:layer.name}{layer.preparation_status==='not_prepared'?' · not prepared locally':''}</option>)}
-    </select></label>
+    <LayerPicker label="Mission scientific overlay" layers={available} value={selected} onChange={id=>onLayer(id,available.find(layer=>layer.id===id))}/>
+    {layer&&<p className="active-layer-caption">{native&&local?local.name:layer.name}</p>}
     {error&&<p role="alert">{error}</p>}
     <p className="overlay-availability">{native?'Prepared native terrain':selected==='none'?'Prepared NASA imagery':layer?.preparation_status==='not_prepared'?'Unavailable · not prepared locally':layer?'Available · rendering status is shown on the surface':'Layer metadata unavailable'}</p>
     {selected!=='none'&&<label>Opacity {Math.round(view.opacity*100)}%<input type="range" aria-label="Mission layer opacity" min={0} max={1} step={.05} value={view.opacity} onChange={event=>onOpacity(Number(event.target.value))}/></label>}

@@ -10,6 +10,8 @@ import AtlasAnalysis from './AtlasAnalysis';
 import AtlasLegend from './AtlasLegend';
 import DatasetDiscovery from './DatasetDiscovery';
 import DatasetAcquisition from './DatasetAcquisition';
+import LayerPicker from '../ui/LayerPicker';
+import Icon from '../ui/Icon';
 
 export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false,request,settlement,onMission}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
   settlement:SettlementState;onMission:()=>void;
@@ -41,7 +43,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   useEffect(()=>{if(layer&&(view.tileUrl!==layer.url_template||view.preparation!==(layer.preparation_status??'ready')))onView({...view,tileUrl:layer.url_template,preparation:layer.preparation_status??'ready'});},[layer?.url_template,layer?.preparation_status,view.tileUrl,view.preparation]);
   const environmental=['temperature','illumination'].includes(view.layer);
   const quantity=view.layer==='temperature'?point?.temperature:point?.solar_visibility;
-  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>{tab==='sites'?'Settlement suitability':'Scientific overlays'}</h2><button onClick={onClose} aria-label="Close atlas">×</button></header>
+  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><div><span className="eyebrow">LUNAR ATLAS</span><h2>{tab==='sites'?'Settlement suitability':'Scientific overlays'}</h2></div><button onClick={onClose} aria-label="Close atlas"><Icon name="close"/></button></header>
     <div className="atlas-disclosure"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button>
     {advanced&&<nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>}</div>
     <div className="atlas-content">
@@ -54,8 +56,8 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     {tab==='analysis'&&<AtlasAnalysis location={location} dataset={dataset} state={analysis} onState={onAnalysis}/>}
     <div hidden={tab!=='layers'}>
     <section className="atlas-layer-tools" aria-label="Scientific surface layers">
-      <label>Scientific overlay<select aria-label="Scientific overlay" value={view.layer} onChange={e=>{const next=availableLayers.find(value=>value.id===e.target.value);onView({...view,layer:e.target.value,tileUrl:next?.url_template,preparation:next?.preparation_status??'ready'});}}><option value="none">Imagery only</option>
-        {availableLayers.map(value=><option value={value.id} key={value.id}>{value.name}{value.preparation_status==='not_prepared'?' — not prepared locally':''}</option>)}</select></label>
+      <LayerPicker layers={availableLayers} value={view.layer} onChange={id=>{const next=availableLayers.find(value=>value.id===id);onView({...view,layer:id,tileUrl:next?.url_template,preparation:next?.preparation_status??'ready'});}}/>
+      {layer&&<p className="active-layer-caption">{layer.name}</p>}
       {layer&&<><label>Layer opacity {Math.round(view.opacity*100)}%<input aria-label="Scientific layer opacity" type="range" min={0} max={1} step={.05} value={view.opacity} onChange={e=>onView({...view,opacity:Number(e.target.value)})} /></label>
         <AtlasLegend layer={layer}/>
         <p role={overlayStatus.includes('unavailable')?'alert':'status'} data-testid="atlas-overlay-status">{overlayStatus}</p>

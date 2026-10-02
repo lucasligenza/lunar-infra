@@ -10,6 +10,7 @@ import type { CameraState, Destination, GlobeInspection, GlobeLocation, GlobeMet
 import {areaBoundary} from '../../lib/atlas-area';
 import {polarBoundary} from '../../lib/lunar';
 import type {Region} from '../../types/scientific';
+import Icon from '../ui/Icon';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
 
 export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest,settlement,preparedRegion }: {
@@ -74,16 +75,16 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
     <div className="globe-toolbar">
     <div className="destination-search">
       <label htmlFor="destination-query">Find a lunar destination</label>
-      <div className="search-input-row"><input id="destination-query" type="search" placeholder="Crater, pole or landing region" value={query} onFocus={()=>{setSearchOpen(true);if(window.innerWidth<900){setAtlasOpen(false);setLayersOpen(false);setDrawerOpen(false);}}} onChange={event=>{setQuery(event.target.value);setSearchOpen(true);}} />
-        <button onClick={()=>setSearchOpen(value=>!value)} aria-expanded={searchOpen} aria-label={searchOpen?'Close destinations':'Open destinations'}>{searchOpen?'−':'+'}</button></div>
+      <div className="search-input-row"><Icon name="search"/><input id="destination-query" type="search" placeholder="Search the Moon" value={query} onFocus={()=>{setSearchOpen(true);if(window.innerWidth<900){setAtlasOpen(false);setLayersOpen(false);setDrawerOpen(false);}}} onChange={event=>{setQuery(event.target.value);setSearchOpen(true);}} />
+        <button onClick={()=>setSearchOpen(value=>!value)} aria-expanded={searchOpen} aria-label={searchOpen?'Close destinations':'Open destinations'}><Icon name={searchOpen?'close':'down'}/></button></div>
       {searchOpen && <div className="destination-results" aria-label="Lunar destinations">{results.map(place=><button key={place.id} onClick={()=>choose(place.coordinates,place)} aria-pressed={selected?.id===place.id}>
-        <span>{place.name}</span><small>{Math.abs(place.coordinates.latitude_deg).toFixed(2)}° {place.coordinates.latitude_deg<0?'S':'N'} / {place.coordinates.longitude_defined===false?'pole':`${place.coordinates.longitude_deg.toFixed(2)}° E`}</small></button>)}
+        <span>{place.name}</span><small>{Math.abs(place.coordinates.latitude_deg).toFixed(2)}° {place.coordinates.latitude_deg<0?'S':'N'} / {place.coordinates.longitude_defined===false?'pole':`${place.coordinates.longitude_deg.toFixed(2)}° E`}</small><Icon name="chevron"/></button>)}
         {destinationsLoading ? <p role="status">Loading destinations…</p> : destinationError ? <p role="alert">{destinationError}</p> : !results.length && <p>No matching destination. Try a crater name or coordinates.</p>}
       </div>}
     </div>
     <nav className="global-layer-controls" aria-label="Global view tools">
-      <button className="primary-button" aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);setPanelRequest({tab:'layers',serial:++serial.current});}}>Overlays</button>
-      <button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);setAtlasOpen(false);setDrawerOpen(false);setSearchOpen(false);}}>Advanced</button>
+      <button className="overlay-trigger" aria-expanded={atlasOpen} onClick={()=>{setAtlasOpen(value=>!value);setDrawerOpen(false);setLayersOpen(false);setPanelRequest({tab:'layers',serial:++serial.current});}}><Icon name="layers"/>Overlays</button>
+      <button aria-expanded={layersOpen} onClick={()=>{setLayersOpen(value=>!value);setAtlasOpen(false);setDrawerOpen(false);setSearchOpen(false);}}><Icon name="settings"/>Advanced</button>
       {onLocal&&<button onClick={onLocal}>2D polar analysis</button>}
 
     </nav>
@@ -98,7 +99,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
       <div className="globe-loading" role={error || metadata ? 'alert':'status'}><h2>{error || metadata ? 'Global data unavailable':'Preparing the lunar view'}</h2>
         <p>{error ?? (metadata ? 'Prepare the global NASA data and restart the API. The regional scientific map remains available.' : 'Loading verified global data metadata…')}</p>
         {(error || metadata) && <button onClick={()=>setReload(value=>value+1)}>Retry global data</button>}</div>}
-    {!location && <div className="global-introduction"><h2>Explore the Moon</h2><p>Choose a scientific overlay.<br/>Select a location to look closer.</p><span>Drag to orbit · scroll to approach · click to select</span></div>}
+    {!location && <div className="global-introduction"><span className="eyebrow">YOUR NEXT FRONTIER</span><h2>Explore the Moon.</h2><p>Find a place. Understand the terrain.<br/>Design what comes next.</p><div className="destination-shortcuts" aria-label="Featured destinations">{destinations.filter(place=>['shackleton','apollo-11','tycho'].includes(place.id)).map(place=><button key={place.id} aria-label={`Visit ${place.name}`} onClick={()=>choose(place.coordinates,place)}>{place.id==='apollo-11'?'Apollo 11':place.name}<Icon name="chevron"/></button>)}</div><span className="navigation-hint">Drag to orbit · scroll to approach · click to select</span></div>}
     {atlasView.layer!=='none'&&!atlasOpen&&<button className="atlas-active" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>{atlasView.layer} / {atlasView.dataset==='auto'?'best prepared terrain':atlasView.dataset}</button>}
       </div>
       {layersOpen && <aside className="globe-dock display-settings" aria-label="Globe display settings"><header><h2>Advanced map controls</h2><button onClick={()=>setLayersOpen(false)}>Close display settings</button></header>
@@ -114,16 +115,16 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
     {location && !atlasOpen && !layersOpen && <>
 
       {drawerOpen && <aside className="region-drawer globe-dock" aria-label="Selected lunar region">
-        <div className="drawer-title"><span className="selection-dot"/><h2>{destination?.name ?? 'Selected location'}</h2></div>
+        <span className="eyebrow">SELECTED REGION</span><div className="drawer-title"><h2>{destination?.name ?? 'Selected location'}</h2></div>
         <p className="region-coordinate" data-testid="global-coordinate">{Math.abs(location.latitude_deg).toFixed(5)}° {location.latitude_deg<0?'S':'N'} / {Math.abs(location.latitude_deg)===90?'longitude undefined':`${location.longitude_deg.toFixed(5)}° E`}</p>
         {destination && <p>{destination.description}</p>}
         {inspecting && <p role="status">Checking scientific coverage…</p>}
         {inspectionError && <p role="alert">{inspectionError}</p>}
-        {terrain&&<dl><dt>Elevation</dt><dd data-testid="global-elevation">{terrain.elevation.value===null?'Unavailable':`${terrain.elevation.value.toLocaleString('en-US')} m`}</dd><dt>Derived slope</dt><dd>{terrain.slope.value===null?'Missing stencil':`${terrain.slope.value.toFixed(2)}°`}</dd></dl>}
+        {terrain&&<dl className="region-measurements"><div><dt>Elevation</dt><dd data-testid="global-elevation">{terrain.elevation.value===null?'Unavailable':`${terrain.elevation.value.toLocaleString('en-US')} m`}</dd></div><div><dt>Derived slope</dt><dd>{terrain.slope.value===null?'Missing stencil':`${terrain.slope.value.toFixed(2)}°`}</dd></div></dl>}
         {inspection && <>
-          <button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>View scientific overlays</button>
-          <button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);setPanelRequest({tab:'sites',serial:++serial.current});}}>Find settlement sites</button>
-          <button disabled={inspection.elevation.status!=='ok'} onClick={()=>onMode('mission')}>Create mission here</button>
+          <div className="region-actions"><button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}><Icon name="layers"/>View scientific overlays<Icon name="chevron"/></button>
+          <button onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);setPanelRequest({tab:'sites',serial:++serial.current});}}><Icon name="target"/>Find settlement sites<Icon name="chevron"/></button>
+          <button disabled={inspection.elevation.status!=='ok'} onClick={()=>onMode('mission')}><Icon name="build"/>Create mission here<Icon name="chevron"/></button></div>
           </>}
         <details><summary>Advanced</summary><button onClick={()=>onMode('regional')}>Analyze this region</button><p>Global imagery is a visualization product, not a measurement. Local and global elevation have different sampling footprints.</p>
           {terrain&&<p>{terrain.elevation.source_id} {terrain.elevation.version} / {terrain.elevation.spacing_north_m.toFixed(1)} m native spacing. {terrain.elevation.method}.</p>}

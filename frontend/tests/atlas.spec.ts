@@ -1,3 +1,4 @@
+import {chooseOverlay} from './workspace';
 import {openActivity,openDestinations,closeDestinations,atlasAdvanced,regionAdvanced} from './workspace';
 import {test,expect} from '@playwright/test';
 import {SphereGeometry,PerspectiveCamera} from 'three';
@@ -46,7 +47,7 @@ test('failed scientific tiles retain native queries and retry with bounded rende
   const destination=(await(await request.get('/api/destinations')).json()).find((place:any)=>place.id==='tycho');
   const sample=await(await request.get(`/api/atlas/inspect?latitude=${destination.coordinates.latitude_deg}&longitude=${destination.coordinates.longitude_deg}`)).json();
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${sample.elevation.value.toLocaleString('en-US')} m`);
-  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('slope');
+  await chooseOverlay(page,'slope');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific tiles unavailable');
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${sample.elevation.value.toLocaleString('en-US')} m`);
   failing=false;await page.getByRole('button',{name:'Retry scientific layer',exact:true}).click();
@@ -55,7 +56,7 @@ test('failed scientific tiles retain native queries and retry with bounded rende
   await expect.poll(async()=>JSON.parse((await host.getAttribute('data-overlay-resources'))!).active_requests).toBe(0);
   const resources=JSON.parse((await host.getAttribute('data-overlay-resources'))!);
   expect(resources.retained_tiles).toBeLessThanOrEqual(32);expect(resources.visible_tiles).toBeGreaterThan(0);
-  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('none');
+  await chooseOverlay(page,'none');
   await expect.poll(async()=>Number(await host.getAttribute('data-overlay-tiles'))).toBe(0);
 });
 
@@ -93,7 +94,7 @@ test('scientific layers follow the 3D surface with legends opacity and synchroni
   await closeDestinations(page);
   const host=page.getByTestId('moon-canvas'),terrain=await host.getAttribute('data-terrain');
   await page.getByRole('button',{name:'Overlays',exact:true}).click();
-  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('elevation');
+  await chooseOverlay(page,'elevation');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await expect(page.getByRole('region',{name:'Scientific surface layers'})).toContainText('12,000 m');
   await expect.poll(async()=>Number(await host.getAttribute('data-overlay-tiles'))).toBeGreaterThan(0);
@@ -105,7 +106,7 @@ test('scientific layers follow the 3D surface with legends opacity and synchroni
   await expect(page.locator('.atlas-reveal')).toHaveAttribute('style',/65%/);
   await page.screenshot({path:'../artifacts/phase4-elevation-overlay.png'});
   expect(await host.getAttribute('data-terrain')).toBe(terrain);
-  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('slope');
+  await chooseOverlay(page,'slope');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await expect(page.getByRole('region',{name:'Scientific surface layers'})).toContainText('30 deg');
   await page.getByRole('button',{name:'Close atlas',exact:true}).click();
@@ -182,7 +183,7 @@ test('USGS geology colors the Moon with original categorical legend and source-l
   await page.getByRole('button',{name:'Overlays',exact:true}).click();
   const point=await (await request.get('/api/atlas/inspect?latitude=.67&longitude=23.47')).json();
   await expect(page.getByTestId('atlas-geology')).toHaveText(`${point.geology.category.code} / ${point.geology.category.name}`);
-  await page.getByRole('combobox',{name:'Scientific overlay',exact:true}).selectOption('geology');
+  await chooseOverlay(page,'geology');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await page.getByText('49 geological units / categorical legend',{exact:true}).click();
   await expect(page.locator('.geology-legend li')).toHaveCount(49);

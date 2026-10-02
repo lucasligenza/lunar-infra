@@ -1,3 +1,4 @@
+import {chooseOverlay} from './workspace';
 import {test,expect} from '@playwright/test';
 import {missionDetails,missionTools,openDestinations,openActivity} from './workspace';
 import type {SuitabilityReport} from '../types/suitability';
@@ -6,7 +7,7 @@ async function openFinder(page:import('@playwright/test').Page,destination='Shac
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await openDestinations(page);await page.getByRole('button',{name:new RegExp(`^${destination}`)}).click();
   await page.getByRole('button',{name:'Overlays',exact:true}).click();
-  await page.getByRole('combobox',{name:'Scientific overlay'}).selectOption('illumination');
+  await chooseOverlay(page,'illumination');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await page.getByRole('button',{name:'Find settlement sites',exact:true}).click();
 }
