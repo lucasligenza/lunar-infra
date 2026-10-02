@@ -4,7 +4,7 @@ import {openDestinations} from './workspace';
 test('basic Moon controls disclose advanced tools and preserve best native point measurements',async({page,request})=>{
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   const primary=page.getByRole('navigation',{name:'Primary navigation'});
-  await expect(primary.getByRole('button')).toHaveCount(2);
+  await expect(primary.getByRole('button')).toHaveText(['Explore','Analyze','Build','Simulate']);
   const tools=page.getByRole('navigation',{name:'Global view tools'});
   await expect(tools.getByRole('button')).toHaveCount(2);
   await expect(page.getByText('Go to coordinates',{exact:true})).toHaveCount(0);

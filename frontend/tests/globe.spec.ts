@@ -30,7 +30,7 @@ test('global NASA globe supports destinations, surface picking, layers and camer
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');
   await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-  await expect(page.getByRole('button',{name:'Moon',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByRole('button',{name:'Explore',exact:true})).toHaveAttribute('aria-pressed','true');
   await page.screenshot({path:'../artifacts/phase3-global-initial.png'});
   await closeDestinations(page);
   const canvas = page.getByLabel('Interactive 3D Moon', {exact:true});

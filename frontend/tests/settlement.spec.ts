@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {missionTools,openDestinations,openActivity} from './workspace';
+import {missionDetails,missionTools,openDestinations,openActivity} from './workspace';
 import type {SuitabilityReport} from '../types/suitability';
 
 async function openFinder(page:import('@playwright/test').Page,destination='Shackleton crater') {
@@ -45,7 +45,7 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     const map=page.getByTestId('terrain-map'),box=(await map.boundingBox())!;await map.click({position:{x:box.width*.55,y:box.height*.45}});
     await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
     await page.screenshot({path:'../artifacts/targeted-candidate-habitat.png'});
-    await page.getByRole('button',{name:'Configure simulation',exact:true}).click();
+    await missionDetails(page);await page.getByRole('button',{name:'Simulation inputs',exact:true}).click();
     await expect(page.getByText('Real-data playback unavailable.',{exact:false})).toBeVisible();
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();
     const simulation=page.waitForResponse(result=>result.url().endsWith('/simulations')&&result.request().method()==='POST');
@@ -56,10 +56,10 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     await expect(page.getByTestId('telemetry-generation')).toHaveText(run.result.intervals.at(-1).generation_kw.toFixed(2));
     await expect(page.getByRole('button',{name:'Expand timeline',exact:true})).toBeVisible();
     await page.screenshot({path:'../artifacts/targeted-candidate-playback.png'});
-    await page.getByRole('button',{name:'Return to mission design',exact:true}).click();
-    await page.getByRole('button',{name:'Saved missions',exact:true}).click();
+    await openActivity(page,'Build');
+    await missionDetails(page);await page.getByRole('button',{name:'Saved missions',exact:true}).click();
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
-    await expect(page.getByRole('button',{name:/^Select asset: habitat /i})).toBeVisible();
+    await missionTools(page);await expect(page.getByRole('button',{name:/^Select asset: habitat /i})).toBeVisible();
     const saved=await(await request.get(`/api/scenarios/${id}`)).json();
     expect(saved.site).toEqual(scenario.site);expect(saved.assets).toHaveLength(1);
     await openActivity(page,'Explore');await page.getByRole('button',{name:'Overlays',exact:true}).click();
@@ -70,7 +70,7 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     await page.getByRole('button',{name:'Create mission at selected location',exact:true}).click();
     await expect(page.getByTestId('mission-site-handoff')).toContainText(`${alternative.latitude_deg.toFixed(5)}° / ${alternative.longitude_deg.toFixed(5)}° E`);
     await page.getByLabel('Scenario name',{exact:true}).fill(`${name} separate mission`);
-    await expect(page.getByRole('button',{name:'Save scenario',exact:true})).toBeDisabled();
+    await expect(page.getByRole('button',{name:'Save scenario',exact:true})).not.toBeVisible();
     const unchanged=await(await request.get(`/api/scenarios/${id}`)).json();
     expect(unchanged).toEqual(saved);
     expect(errors).toEqual([]);

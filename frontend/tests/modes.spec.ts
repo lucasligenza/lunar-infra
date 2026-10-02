@@ -22,7 +22,7 @@ test('global selection connects to local science and preserves mission drafts, a
     await expect(page.getByTestId('selected-coordinate')).toContainText('89.67000');
     await expect(page.getByTestId('elevation-value')).toHaveText(local.elevation.value.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1}));
     await page.screenshot({path:'../artifacts/phase3-regional-connected.png'});
-    await openActivity(page, 'Design');
+    await openActivity(page, 'Build');
     await missionTools(page);
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
     await missionTools(page);
@@ -46,13 +46,13 @@ test('global selection connects to local science and preserves mission drafts, a
     await page.screenshot({path:'../artifacts/phase3-global-mission-assets.png'});
     await openActivity(page, 'Analyze');
     await expect(page.getByTestId('selected-coordinate')).toContainText('89.50000');
-    await openActivity(page, 'Design');
+    await openActivity(page, 'Build');
     await expect(page.getByLabel('Continuous demand (kW)',{exact:true})).toHaveValue('9');
     await expect(page.getByLabel('Time step (seconds)',{exact:true})).toHaveValue('1800');
     await openActivity(page, 'Simulate');
     await simulationAdvanced(page);
     await page.getByLabel('Time step (seconds)',{exact:true}).fill('3600');
-    await openActivity(page, 'Design');
+    await openActivity(page, 'Build');
     await missionInspector(page);
     await page.getByRole('button',{name:'Save asset',exact:true}).click();
     await expect(page.getByRole('button',{name:'Save asset',exact:true})).toBeDisabled();

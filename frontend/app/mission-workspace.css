@@ -1,0 +1,44 @@
+/* Surface first: one header, contextual docks, and a deliberate control shelf. */
+.mission-header { min-height:60px; padding:8px 24px; gap:20px; }
+.mission-header .mode-navigation { border:0; background:transparent; }
+.mission-header .mode-navigation button { border:0; background:transparent; padding:10px 14px; font-size:13px; }
+.mission-header .mode-navigation button[aria-pressed=true] { background:var(--elevated); }
+.mission-context { font-family:var(--font-geist-sans),sans-serif; font-size:13px; color:var(--quiet); }
+.save-name[hidden] { display:none; }
+.mission-workspace { position:relative; }
+.mission-workspace .map-workspace { grid-template-rows:minmax(0,1fr); position:relative; }
+.mission-workspace .workspace-toolbar { position:absolute; left:var(--space-4); bottom:52px; z-index:var(--z-controls); padding:6px; border:1px solid var(--border); border-radius:4px; background:var(--panel); gap:6px; }
+.mission-actions { position:relative; }
+.mission-actions > summary { padding:8px 12px; cursor:pointer; font-size:12px; }
+.mission-actions > div { position:absolute; bottom:calc(100% + 12px); left:0; width:200px; display:grid; padding:8px; gap:6px; border:1px solid var(--border); background:var(--panel); z-index:var(--z-popover); }
+.mission-workspace[data-tools-open=true][data-tools-section=assets] { grid-template-columns:minmax(0,1fr); }
+.mission-workspace[data-tools-section=assets] > .tool-rail { position:absolute; left:16px; bottom:110px; width:260px; height:auto; max-height:calc(100% - 150px); z-index:var(--z-popover); border:1px solid var(--border); border-radius:4px; box-shadow:0 8px 24px var(--shadow); }
+.mission-workspace[data-tools-section=assets] .tool-rail-title { padding:12px 16px; }
+.mission-workspace .asset-catalog { padding:12px 16px; border:0; }
+.asset-catalog > button { display:flex; gap:12px; align-items:center; padding:10px 12px; width:100%; margin:4px 0; background:transparent; border-color:transparent; text-align:left; font-size:13px; }
+.asset-catalog > p { margin:0 0 8px; padding:0; color:var(--quiet); }
+.asset-catalog details { padding:12px 0 4px; font-size:12px; }
+.asset-catalog .asset-list { margin-top:12px; }
+.mission-workspace .context-panel-heading { padding:12px 16px; }
+.mode-mission .map-heading,.mode-simulation .map-heading { top:20px; left:24px; }
+.mode-mission .map-heading h2,.mode-simulation .map-heading h2 { font-size:16px; color:var(--quiet); font-weight:500; }
+.mode-mission .map-heading p,.mode-simulation .map-heading p,.mode-mission .map-instruction,.mode-simulation .map-instruction { display:none; }
+.mode-mission .map-footer,.mode-simulation .map-footer { background:var(--base); font-size:10px; }
+@media(max-width:1200px) {
+  .mission-header { grid-template-columns:auto auto minmax(0,1fr) auto auto; min-height:60px; gap:12px; padding:8px 16px; }
+  .mission-header .mode-navigation,.mission-header .header-status,.mission-header .header-utilities,.mission-header .mission-context { grid-row:1; grid-column:auto; }
+  .mission-header .mode-navigation button { padding:10px; }
+}
+@media(max-width:900px) {
+  .mission-header { grid-template-columns:minmax(0,1fr) auto; padding:10px 12px; gap:8px; }
+  .mission-header .mode-navigation { grid-row:2; grid-column:1/-1; width:100%; display:flex; }
+  .mission-header .mode-navigation button { flex:1; }
+  .mission-header .header-utilities { grid-row:1; grid-column:2; }
+  .mission-header .header-status { display:flex; grid-row:3; grid-column:2; font-size:11px; justify-content:end; }
+  .mission-header .mission-context { display:block; grid-row:3; grid-column:1; max-width:none; }
+  .mission-workspace .workspace-toolbar { bottom:48px; left:12px; right:auto; max-width:calc(100% - 24px); flex-wrap:wrap; }
+  .mission-workspace .workspace-toolbar > button { flex:initial; }
+  .mission-workspace[data-tools-section=assets] > .tool-rail { position:relative; inset:auto; width:100%; height:100%; max-height:none; border:0; }
+  .mission-workspace .mission-actions > div { left:auto; right:0; }
+  .mobile-navigation { background:var(--base); }
+}

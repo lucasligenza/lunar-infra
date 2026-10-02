@@ -14,7 +14,7 @@ async function reachable(control: Locator) {
 async function header(page: Page, width: number) {
   await page.evaluate(() => window.scrollTo(0, 0));
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-  for (const label of ['Moon', 'Mission']) {
+  for (const label of ['Explore', 'Analyze', 'Build', 'Simulate']) {
     await reachable(page.getByRole('button', { name: label, exact: true }));
   }
 }
@@ -56,10 +56,11 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await pane(page, 'Map', width);
       await reachable(page.getByRole('button', { name: 'Reset map view', exact: true }));
       await page.screenshot({ path: `../artifacts/phase5-final-analyze-${width}.png` });
-      await openActivity(page, 'Design');
+      await openActivity(page, 'Build');
       await pane(page, 'Tools', width);
       await missionTools(page);
       await page.getByRole('button', { name: `Open scenario: ${name}`, exact: true }).click();
+      await missionTools(page);
       await page.getByRole('button', { name: 'Select asset: QA habitat', exact: true }).click();
       await expect(page.getByLabel('Continuous demand (kW)', { exact: true })).toHaveValue('8');
       await page.screenshot({ path: `../artifacts/phase5-final-design-inspector-${width}.png` });
@@ -95,8 +96,8 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       expect(axisSize).toBeGreaterThanOrEqual(10.5);
       await page.screenshot({ path: `../artifacts/phase5-final-simulate-${width}.png` });
       await pane(page, 'Inspector', width);
-      await expect(page.getByTestId('telemetry-generation')).toHaveText(run.result.intervals[2].generation_kw.toFixed(2));
-      await expect(page.getByTestId('telemetry-unserved')).toHaveText(`${run.result.intervals[2].unserved_kw.toFixed(2)} kW`);
+      await expect(page.getByTestId('inspector-telemetry-generation')).toHaveText(run.result.intervals[2].generation_kw.toFixed(2));
+      await expect(page.getByTestId('inspector-telemetry-unserved')).toHaveText(`${run.result.intervals[2].unserved_kw.toFixed(2)} kW`);
       await pane(page, 'Timeline', width);
       await slider.press('Home'); await page.getByRole('button', { name: 'Play mission', exact: true }).click();
       await expect.poll(() => slider.inputValue()).not.toBe('0');
@@ -105,7 +106,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await page.getByRole('button',{name:'Collapse timeline',exact:true}).click();
       await expect(slider).toBeVisible();await expect(slider).toHaveValue(paused);
       if(width<=900)await expect(page.getByTestId('terrain-map')).toBeVisible();
-      await openActivity(page, 'Design');
+      await openActivity(page, 'Build');
       await pane(page, 'Tools', width);
       await expect(page.getByRole('button', { name: `Open scenario: ${name}`, exact: true })).toHaveAttribute('aria-pressed', 'true');
       const stored = await (await request.get(`/api/scenarios/${scenario.id}`)).json();

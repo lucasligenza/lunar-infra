@@ -1,5 +1,23 @@
 # LunarOS progress
 
+## Active visual redesign
+
+Mission workspace visual roadmap: [plan and observed audit](docs/mission-workspace-redesign.md).
+Baseline d852791 matches latest origin/main; its CI run 36930708483 passed.
+Fresh Build/Simulate screenshots at 1440×900 and 1366×768 were inspected.
+Python baseline: 106 tests plus eight subtests pass; two browser capture journeys
+pass. Active slice: one primary navigation row, contextual placement palette and
+surface control shelf; simulation stops opening duplicate telemetry by default.
+M1 is validated: the complete 53-browser first pass passed 47 journeys; all six
+affected disclosure/navigation journeys pass in the 26-test follow-up, including
+all five sizes and zoom-equivalent layouts. Typecheck and production build pass. Screenshots were
+inspected at 1440/1366 and mobile; no default side rails, compact contextual asset
+palette, one primary navigation, and no automatic duplicate simulation inspector.
+Existing persistence, revisions, placement, playback, terrain and real polar
+overlays pass. Latest successful pushed commit remains d852791 (baseline).
+Next: concise contextual inspectors, overlays, and refined playback drawer.
+No scientific/backend/data changes; no current acquisition or permission blockers.
+
 ## Current development phase
 
 Targeted frontend refactor: [four-milestone plan](docs/targeted-refactor.md).

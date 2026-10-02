@@ -95,12 +95,13 @@ export default function Explorer() {
   const simulation = useSimulation(scenario.active);
   const [intervalIndex, setIntervalIndex] = useState(0);
   useEffect(() => { setIntervalIndex(0); }, [simulation.run?.id]);
-  useEffect(()=>{if(simulation.run&&mode==='simulation'){setToolsOpen(false);setInspectorOpen(true);setMobilePane('map');}},[simulation.run?.id]);
+  useEffect(()=>{if(simulation.run&&mode==='simulation'){setToolsOpen(false);setInspectorOpen(false);setMobilePane('map');}},[simulation.run?.id]);
   const selectedInterval = simulation.run?.result.intervals[Math.min(intervalIndex, simulation.run.result.intervals.length - 1)];
   const selectedAsset = scenario.active?.assets.find(asset => asset.id === selectedAssetId);
   useEffect(() => { setScenarioName(scenario.active?.name ?? "South-pole outpost"); }, [scenario.active?.id, scenario.active?.name]);
   useEffect(() => { setSelectedAssetId(null); setPlacement(null);
-    if (scenario.active) void inspect(scenario.active.site.longitude_deg, scenario.active.site.latitude_deg);
+    setInspectorOpen(false);
+    if (scenario.active) void inspect(scenario.active.site.longitude_deg, scenario.active.site.latitude_deg,undefined,false);
   }, [scenario.active?.id]);
 
   useEffect(() => {
@@ -124,7 +125,7 @@ export default function Explorer() {
 
   useEffect(() => () => activeInspection.current?.abort(), []);
 
-  async function inspect(lon: number, lat: number,domain=globalPlanning||scenario.active?.region_id==='global-atlas'?'atlas':'polar') {
+  async function inspect(lon: number, lat: number,domain=globalPlanning||scenario.active?.region_id==='global-atlas'?'atlas':'polar',reveal=true) {
     activeInspection.current?.abort();
     const controller = new AbortController();
     activeInspection.current = controller;
@@ -132,11 +133,11 @@ export default function Explorer() {
     try {
       if(domain==='atlas') {
         const result=await fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${lat}&longitude=${lon}`,controller.signal);
-        if(!controller.signal.aborted){setAtlasSite(result);setInspectorOpen(true);setInspecting(false);setLocation({latitude_deg:result.latitude_deg,longitude_deg:result.longitude_deg});setCoverage(null);setLatitude(result.latitude_deg.toFixed(5));setLongitude(result.longitude_deg.toFixed(5));}return;
+        if(!controller.signal.aborted){setAtlasSite(result);if(reveal)setInspectorOpen(true);setInspecting(false);setLocation({latitude_deg:result.latitude_deg,longitude_deg:result.longitude_deg});setCoverage(null);setLatitude(result.latitude_deg.toFixed(5));setLongitude(result.longitude_deg.toFixed(5));}return;
       }
       const result = await fetchScientific<Site>(`/sites/inspect?latitude=${lat}&longitude=${lon}`, controller.signal);
       if (!controller.signal.aborted) {
-        setSite(result);setInspectorOpen(true); setInspecting(false);
+        setSite(result);if(reveal)setInspectorOpen(true); setInspecting(false);
         setLocation({latitude_deg:result.coordinates.latitude_deg,longitude_deg:result.coordinates.longitude_deg});
         setCoverage(null);
         setLatitude(result.coordinates.latitude_deg.toFixed(5));
@@ -169,11 +170,11 @@ export default function Explorer() {
   function discardAsset() { return !assetDirty || window.confirm("Discard unsaved asset changes?"); }
   function discardAll() { return !(assetDirty || missionDirty || (scenario.active && scenarioName !== scenario.active.name)) || window.confirm("Discard unsaved scenario changes and reopen?"); }
   function selectAsset(id: string) { if (id === selectedAssetId || discardAsset()) { setSelectedAssetId(id);setToolsOpen(false);setInspectorOpen(true); setPlacement(null);setMobilePane('inspector'); } }
-  function openTools(section:typeof toolsSection='all') { setToolsSection(section);setToolsOpen(true);setInspectorOpen(false);setMobilePane('tools'); }
+  function openTools(section:typeof toolsSection='all') { document.querySelectorAll<HTMLDetailsElement>('.mission-actions[open]').forEach(menu=>menu.open=false); setToolsSection(section);setToolsOpen(true);setInspectorOpen(false);setMobilePane('tools'); }
   async function openScenario(id: string) {
     if (!discardAll()) return;
     const opened = await scenario.open(id);
-    if (opened) { openTools(mode==='simulation'?'simulation':'assets'); setScenarioName(opened.name); setEditorEpoch(value => value + 1);setGlobalPlanning(opened.region_id==='global-atlas'); }
+    if (opened) { setToolsOpen(false);setInspectorOpen(false);setMobilePane('map'); setScenarioName(opened.name); setEditorEpoch(value => value + 1);setGlobalPlanning(opened.region_id==='global-atlas'); }
   }
 
   const layer = region?.layers.find(value => value.id === layerId);
@@ -182,12 +183,12 @@ export default function Explorer() {
 
   function switchMode(next:Mode) { if(next!==mode)recordActivity('MAP',`Activity changed: ${ACTIVITIES.find(activity=>activity.mode===next)?.label}`);setAtlasRequest(null);setNavigationRequest(null);setMode(next); setPlacement(null);setMobilePane('map');
     if(next==='mission'&&selectedAssetId){setToolsOpen(false);setInspectorOpen(true);}
-    if(next==='simulation'){if(simulation.run){setToolsOpen(false);setInspectorOpen(true);}else openTools(scenario.active?'simulation':'missions');}
+    if(next==='simulation'){setToolsOpen(false);setInspectorOpen(false);}
     if(next==='mission'&&toolsSection==='simulation')setToolsOpen(false);
     const url = new URL(window.location.href); url.searchParams.set('mode',next); window.history.replaceState(null,'',url);
     if(next==='mission'||next==='simulation') {
       const global=Boolean(!region||outsideFootprint||scenario.active?.region_id==='global-atlas');setGlobalPlanning(global);
-      if(location)void inspect(location.longitude_deg,location.latitude_deg,global?'atlas':'polar');
+      if(location)void inspect(location.longitude_deg,location.latitude_deg,global?'atlas':'polar',false);
     }else if(next==='regional' && location && !outsideFootprint) void inspect(location.longitude_deg,location.latitude_deg,'polar');
   }
   function startMission() { switchMode('mission');openTools('missions'); }
@@ -218,10 +219,10 @@ export default function Explorer() {
   return <main data-workspace-panel={mobilePane} className={`explorer mode-${mode}${atlasRegionalView?' atlas-workspace':''}${inspectorOpen?'':' inspector-collapsed'}`}>
     <MissionHeader mode={mode} context={scenario.active?.name ?? (location ? `${location.latitude_deg.toFixed(3)}° / ${location.longitude_deg.toFixed(3)}° E` : 'No location selected')}
       ready={scenario.active ? !working && !assetDirty && !missionDirty && scenarioName === scenario.active.name : Boolean(region)} busy={working} onMode={switchMode} onCommands={()=>setPaletteOpen(true)} onActivity={()=>setConsoleVisible(true)} onHelp={()=>openHelp()}
-      status={scenario.active ? scenario.busy ? 'Saving…' : simulation.busy ? 'Running simulation…' : assetDirty ? 'Unsaved asset changes' : missionDirty ? 'Unsaved simulation inputs' : scenarioName !== scenario.active.name ? 'Unsaved name' : `Saved / revision ${scenario.active.revision}` : region ? 'Polar data ready' : loading ? 'Loading polar data' : 'Polar data unavailable'}
+      status={scenario.active ? scenario.busy ? 'Saving…' : simulation.busy ? 'Running simulation…' : assetDirty ? 'Unsaved asset changes' : missionDirty ? 'Unsaved simulation inputs' : scenarioName !== scenario.active.name ? 'Unsaved name' : 'Saved' : region ? 'Polar data ready' : loading ? 'Loading polar data' : 'Polar data unavailable'}
       onSave={scenario.active?()=>void scenario.patch({name:scenarioName}):undefined} canSave={Boolean(scenario.active&&scenarioName!==scenario.active.name&&scenarioName.trim())}/>
 
-    {missionContext&&<nav className="mission-tasks" aria-label="Mission tasks"><button aria-pressed={mode==='mission'} onClick={()=>switchMode('mission')}>Design</button><button aria-pressed={mode==='simulation'} onClick={()=>switchMode('simulation')}>Simulate</button></nav>}
+
     {(mode==='global'||atlasRegionalView) && <GlobalExplorer location={location} camera={camera} onCamera={setCamera} onSelect={selectGlobal} onCoverage={setCoverage} onMode={next=>next==='mission'?startMission():switchMode(next)} assets={scenario.active?.assets ?? []} base={scenario.active?.site ?? null}
       atlasView={atlasView} onAtlasView={setAtlasView} sector={atlasSector} onSector={setAtlasSector} analysis={atlasAnalysis} onAnalysis={setAtlasAnalysis} analysisMode={atlasRegionalView}
       settlement={settlement} atlasRequest={atlasRequest} navigationRequest={navigationRequest} onLocal={atlasRegionalView&&!outsideFootprint?()=>setAtlasRegional(false):undefined}/>}
@@ -229,7 +230,7 @@ export default function Explorer() {
       <button onClick={()=>switchMode('global')}>Return to selected global location</button>
       <button onClick={()=>{setCoverage(null); void inspect(0,-89.5);}}>Explore the prepared south pole</button></section>}
     <div className="local-shell" hidden={mode==='global' || atlasRegionalView || unsupportedSelection}>
-    <MissionWorkspace toolsOpen={toolsOpen} inspectorOpen={inspectorOpen&&!toolsOpen} pane={mobilePane}
+    <MissionWorkspace toolsSection={toolsSection} toolsOpen={toolsOpen} inspectorOpen={inspectorOpen&&!toolsOpen} pane={mobilePane}
       onPane={pane=>{setMobilePane(pane);if(pane==='tools')openTools();if(pane==='inspector'){setInspectorOpen(true);setToolsOpen(false);}}}
       onCloseTools={()=>{setToolsOpen(false);setMobilePane('map');}} onCloseInspector={()=>{setInspectorOpen(false);setMobilePane('map');}}
       hasTimeline={Boolean(simulation.run&&mode==='simulation')}
@@ -275,18 +276,18 @@ export default function Explorer() {
           <details className="tool-section input-limit"><summary>Temporal data availability</summary><p>NASA solar visibility is a long-term average. Validated time-dependent illumination is not integrated; real-data mission playback is unavailable.</p></details>
           </div>
       </>}
-      toolbar={<><button aria-label={toolsOpen?toolsSection==='all'?'Close mission tools':'Show all mission tools':'Expand tools'} aria-expanded={toolsOpen&&toolsSection==='all'}
-        onClick={()=>{if(toolsOpen&&toolsSection==='all'){setToolsOpen(false);setMobilePane('map');}else openTools();}}>Advanced tools</button>
-
-        {missionContext&&<button disabled={working} onClick={()=>openTools('missions')}>Saved missions</button>}
-        {mode==='regional'&&<button className="primary-button" onClick={startMission}>Create mission here</button>}
+      toolbar={<>
+        {mode==='mission'&&scenario.active&&scenarioInView&&<button className="primary-button" disabled={working} onClick={()=>openTools('assets')}>+ Add Asset</button>}
         {mode==='mission'&&(!scenario.active||!scenarioInView)&&<button className="primary-button" disabled={working||!validLocation} onClick={startMission}>Create mission here</button>}
-        {mode==='mission'&&scenario.active&&scenarioInView&&<><button className="primary-button" disabled={working} onClick={()=>openTools('assets')}>Add infrastructure</button><button onClick={()=>{switchMode('simulation');openTools('simulation');}}>Configure simulation</button></>}
-        {mode==='simulation'&&<button onClick={()=>switchMode('mission')}>Return to mission design</button>}
-        {mode==='simulation'&&scenario.active&&scenarioInView&&<button className="primary-button" onClick={()=>openTools('simulation')}>Simulation inputs</button>}
-        <span>{globalMissionView?'Global mission terrain':'Lunar south-pole terrain'}</span><button className="inspector-toggle" aria-expanded={narrow?mobilePane==='inspector':inspectorOpen&&!toolsOpen} onClick={()=>{setInspectorOpen(narrow||toolsOpen||!inspectorOpen);setToolsOpen(false);if(narrow)setMobilePane('inspector');}}>{narrow?'Open inspector':inspectorOpen&&!toolsOpen?'Hide inspector':'Show inspector'}</button>
-        {mode==='regional'&&<button className="atlas-local-toggle" onClick={()=>{if(!location)setLocation({latitude_deg:-89.5,longitude_deg:0});setAtlasRegional(true);}}>3D atlas analysis</button>}
-
+        {mode==='regional'&&<button className="primary-button" onClick={startMission}>Create mission here</button>}
+        <button aria-label={toolsOpen&&toolsSection==='all'?'Close mission tools':'Expand tools'} aria-expanded={toolsOpen&&toolsSection==='all'} onClick={()=>{if(toolsOpen&&toolsSection==='all'){setToolsOpen(false);setMobilePane('map');}else openTools();}}>Overlays & tools</button>
+        <details className="mission-actions"><summary>Mission details</summary><div>
+          {missionContext&&<button disabled={working} onClick={()=>openTools('missions')}>Saved missions</button>}
+          {missionContext&&scenario.active&&<button onClick={()=>{switchMode('simulation');openTools('simulation');}}>Simulation inputs</button>}
+          <button className="inspector-toggle" aria-label="Show inspector" onClick={()=>{setInspectorOpen(true);setToolsOpen(false);setMobilePane('inspector');}}>Inspector</button>
+        </div></details>
+        {mode==='simulation'&&scenario.active&&!simulation.run&&<button className="primary-button" disabled={working} onClick={()=>openTools('simulation')}>Set up simulation</button>}
+        {mode==='regional'&&<button className="atlas-local-toggle" onClick={()=>{if(!location)setLocation({latitude_deg:-89.5,longitude_deg:0});setAtlasRegional(true);}}>3D analysis</button>}
       </>}
       viewport={<>
 

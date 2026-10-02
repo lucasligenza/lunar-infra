@@ -1,4 +1,4 @@
-import {missionInspector,missionTools,openActivity,openDestinations} from './workspace';
+import {missionInspector,missionDetails,missionTools,openActivity,openDestinations} from './workspace';
 import {test,expect} from '@playwright/test';
 import {lunarCoordinate} from '../lib/globe';
 import type {SimulationRun} from '../types/simulation';
@@ -93,7 +93,7 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
     await expect(page.getByRole('region',{name:'Mission timeline'})).toBeVisible();
     await expect(page.getByTestId('telemetry-demand')).toHaveText(run.result.intervals[0].demand_kw.toFixed(2));
-    await page.getByRole('button',{name:'Return to mission design',exact:true}).click();
+    await openActivity(page,'Build');
     await missionInspector(page);
     await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
     await openActivity(page,'Simulate');

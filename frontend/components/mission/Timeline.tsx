@@ -59,8 +59,9 @@ export default function Timeline({ run, index, onIndex, active = true, onExpande
     <div className="timeline-scrub"><input type="range" aria-label="Mission interval" aria-valuetext={`${current.start}, interval ${index + 1} of ${rows.length}`} min={0} max={rows.length - 1} step={1} value={index} onChange={event => select(Number(event.target.value))} />
       <span>Interval {index + 1} / {rows.length}</span></div>
     <div className="timeline-conditions">
-      <span>Battery at interval end <strong data-testid="timeline-soc">{current.soc_end === null ? "No batteries" : `${(current.soc_end * 100).toFixed(2)}%`}</strong>{current.soc_end !== null && <span> · {current.energy_end_kwh.toFixed(2)} kWh stored</span>}</span>
-      <span>Average power <strong data-testid="timeline-power">{current.generation_kw.toFixed(2)} kW generation / {current.demand_kw.toFixed(2)} kW demand</strong></span>
+      <span>Battery at interval end <strong data-testid="timeline-soc"><span data-testid="telemetry-soc">{current.soc_end === null ? "No batteries" : `${(current.soc_end * 100).toFixed(2)}%`}</span></strong>{current.soc_end !== null && <span> · {current.energy_end_kwh.toFixed(2)} kWh stored</span>}</span>
+      <span>Average power <strong data-testid="timeline-power"><span data-testid="telemetry-generation">{current.generation_kw.toFixed(2)}</span> kW generation / <span data-testid="telemetry-demand">{current.demand_kw.toFixed(2)}</span> kW demand</strong></span>
+      <span>Unserved <span data-testid="telemetry-unserved">{current.unserved_kw.toFixed(2)} kW</span></span>
       <strong data-testid="timeline-power-status" className={current.unserved_kw > 0 ? "failure" : "nominal"}>{current.unserved_kw > 0 ? `${current.unserved_kw.toFixed(2)} kW unserved` : "Demand served"}</strong>
     </div>
     {expanded && <div id="mission-timeline-details" className="timeline-details">

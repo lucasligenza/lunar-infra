@@ -1,9 +1,10 @@
 # LunarOS engineering rules
 
-Implement the targeted frontend roadmap in docs/targeted-refactor.md: repair
-scientific overlays, modular map-first workspace, compact playback, and clearer
-settlement-to-mission flow. Preserve existing science, missions, simulations and
-Moon/Mission navigation. No new datasets, numerical models, AI or habitability score.
+Implement the accepted visual roadmap in docs/mission-workspace-redesign.md:
+surface-first Build/Simulate, contextual infrastructure and inspectors, compact
+playback, and disclosed scientific metadata. Preserve existing science, missions,
+simulations and location state. Navigation is Explore / Analyze / Build / Simulate.
+No new datasets, numerical models, APIs, AI or habitability score.
 Use actual rendered browser review and journey tests.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.

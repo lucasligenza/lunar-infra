@@ -16,7 +16,7 @@ test('keyboard commands navigate real destinations, scientific tools and the act
   await search.fill('Open '); await search.press('ArrowDown');
   await expect(search).toHaveAttribute('aria-activedescendant', 'command-regional');
   await search.press('Enter');
-  await expect(page.getByRole('button', { name: 'Moon', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Analyze', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await command('Go to Shackleton');
   await expect(page.getByTestId('global-coordinate')).toContainText('89.67000');
   await command('Open Analyze');

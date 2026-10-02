@@ -1,4 +1,4 @@
-import {openActivity,openDestinations,closeDestinations} from './workspace';
+import {missionInspector,openActivity,openDestinations,closeDestinations} from './workspace';
 import {test,expect} from '@playwright/test';
 
 test('orbital drag, pan, keyboard selection, zoom bounds and idle rendering work',async({page})=>{
@@ -37,13 +37,13 @@ test('loading, missing global data and failed terrain are explicit and recoverab
   await page.screenshot({path:'../artifacts/phase3-missing-global.png'});
   await openActivity(page, 'Analyze');
   await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
-  await page.getByRole('button',{name:'Show inspector',exact:true}).click();
+  await missionInspector(page);
   const width=(await page.getByTestId('terrain-map').boundingBox())!.width;
-  await page.getByRole('button',{name:'Hide inspector',exact:true}).click();
+  await page.getByRole('button',{name:'Close inspector',exact:true}).click();
   await expect.poll(async()=>(await page.getByTestId('terrain-map').boundingBox())!.width).toBeGreaterThan(width);
   await page.screenshot({path:'../artifacts/phase3-regional-panels-closed.png'});
   await page.getByRole('button',{name:'Expand tools',exact:true}).click();
-  await page.getByRole('button',{name:'Show inspector',exact:true}).click();
+  await missionInspector(page);
   await openActivity(page, 'Explore');
   await page.unroute('**/api/globe');
   await page.route('**/api/globe/elevation.bin',route=>route.fulfill({status:503,body:'Unavailable'}));

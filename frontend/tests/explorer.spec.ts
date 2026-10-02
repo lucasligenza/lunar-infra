@@ -28,7 +28,7 @@ test("real NASA map selection, inspector, layers and navigation work", async ({ 
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/?mode=regional");
   await expect(page.getByTestId("layer-status")).toHaveText("Layer ready");
-  await page.getByRole("button",{name:"Show inspector",exact:true}).click();
+  await missionInspector(page);
   await expect(page.getByText("Select a location", { exact: true })).toBeVisible();
   await missionTools(page);
   await page.getByRole("button", { name: "Collapse tools" }).click();

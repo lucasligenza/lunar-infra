@@ -14,18 +14,23 @@ export async function openActivity(page:Page, name:string) {
 export async function missionTools(page:Page) {
   await expect(page.locator('.local-shell')).toBeVisible();
   const mobile=page.getByRole('navigation',{name:'Workspace navigation'});
-  if(await mobile.isVisible()){await mobile.getByRole('link',{name:'Tools',exact:true}).click();return;}
-  const all=page.getByRole('button',{name:'Show all mission tools',exact:true});
-  if(await all.isVisible())await all.click();
+  if(await mobile.isVisible())await mobile.getByRole('link',{name:'Tools',exact:true}).click();
   const button=page.getByRole('button',{name:'Expand tools',exact:true});
   if(await button.isVisible())await button.click();
   await expect(page.getByRole('complementary',{name:'Exploration tools'})).toBeVisible();
+  const placed=page.locator('.placed-assets:visible');
+  if(await placed.count()&&await placed.getAttribute('open')===null)await placed.locator('summary').click();
 }
 export async function missionInspector(page:Page) {
   const mobile=page.getByRole('navigation',{name:'Workspace navigation'});
   if(await mobile.isVisible()){await mobile.getByRole('link',{name:'Inspector',exact:true}).click();return;}
   const button=page.getByRole('button',{name:'Show inspector',exact:true});
+  if(!await button.isVisible())await page.locator('.mission-actions > summary').click();
   if(await button.isVisible())await button.click();
+}
+export async function missionDetails(page:Page) {
+  const menu=page.locator('.mission-actions');
+  if(await menu.getAttribute('open')===null)await menu.locator('summary').click();
 }
 export async function openDestinations(page:Page) {
   const open=page.getByRole('button',{name:'Open destinations',exact:true});

@@ -16,6 +16,7 @@ test("simulation inputs playback charts telemetry stale state and saved result r
     await page.goto("/?mode=simulation");
     await missionTools(page);
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
+    await missionTools(page);
     await expect(page.getByText("Real-data playback unavailable.", { exact: false })).toBeVisible();
     await missionTools(page);
     await page.getByRole("button", { name: "Run simulation", exact: true }).click();
@@ -63,7 +64,7 @@ test("simulation inputs playback charts telemetry stale state and saved result r
     await page.getByRole("button", { name: "Expand timeline", exact: true }).click();
     await expect(slider).toHaveValue(paused);
     await page.screenshot({path:'../artifacts/targeted-playback-expanded.png'});
-    await openActivity(page, 'Design');
+    await openActivity(page, 'Build');
     await missionTools(page);
     await page.getByRole("button", { name: "Select asset: Research habitat", exact: true }).click();
     await page.getByLabel("Continuous demand (kW)", { exact: true }).fill("10");

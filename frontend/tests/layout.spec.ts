@@ -24,8 +24,10 @@ test('context docks own space and mobile task navigation keeps controls reachabl
   await navigation.getByRole('link', { name: 'Map', exact: true }).click();
   const toolbar = (await page.locator('.workspace-toolbar').boundingBox())!;
   const map = (await page.locator('.terrain-viewport').boundingBox())!;
-  expect(toolbar.y + toolbar.height).toBeLessThanOrEqual(map.y + 1);
-  await expect(page.getByRole('button', { name: 'Open inspector', exact: true })).toBeInViewport();
+  expect(toolbar.y).toBeGreaterThan(map.y);
+  expect(toolbar.y + toolbar.height).toBeLessThan(map.y + map.height);
+  expect(toolbar.width).toBeLessThanOrEqual(map.width);
+  await expect(navigation.getByRole('link', { name: 'Inspector', exact: true })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: '../artifacts/phase5-layout-mobile-map.png' });
 });
@@ -48,6 +50,7 @@ test('mission workspace gives closed panels back to the map and selects one cont
       expect(closeBox.x+closeBox.width).toBeLessThanOrEqual(toolsBox.x+toolsBox.width+1);
       expect(await close.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
       await page.getByRole('button',{name:`Open scenario: ${scenario.name}`,exact:true}).click();
+      await missionTools(page);
       await page.getByRole('button',{name:'Select asset: Layout habitat',exact:true}).click();
       await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
       await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();

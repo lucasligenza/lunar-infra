@@ -16,7 +16,7 @@ test("independent drafts survive saves and stale revisions cannot overwrite serv
     await openActivity(page, 'Simulate');
     await simulationAdvanced(page);
     await page.getByLabel("Time step (seconds)", { exact: true }).fill("1800");
-    await openActivity(page, 'Design');
+    await openActivity(page, 'Build');
     await missionTools(page);
     await page.getByLabel("Scenario name", { exact: true }).fill(`${name} renamed`);
     await page.getByRole("button", { name: "Save scenario", exact: true }).click();
@@ -86,7 +86,7 @@ test("custom mission parameters reject missing illumination and preserve explici
     await expect(page.getByTestId("telemetry-generation")).toHaveText("10.00");
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Tools", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Mission tools", exact: true })).toBeInViewport();
+    await expect(page.getByRole("heading", { name: "Advanced tools", exact: true })).toBeInViewport();
     await page.getByRole("navigation", { name: "Workspace navigation" }).getByRole("link", { name: "Timeline", exact: true }).click();
     await expect(page.getByRole("button", { name: "Expand timeline", exact: true })).toBeInViewport();
     await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
