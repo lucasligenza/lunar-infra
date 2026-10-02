@@ -1,6 +1,7 @@
 import type { Dataset, Measurement, Site } from "../../types/scientific";
 import EnvironmentValue from './EnvironmentValue';
 import Icon from '../ui/Icon';
+import {GeologyAtLocation} from './GeologyReading';
 function Quantity({ name, measurement, testId }: { name: string; measurement: Measurement; testId: string }) {
   const value = measurement.value;
   const formatted = value === null ? "Unavailable" : (measurement.unit === "fraction" ? value * 100 : value)
@@ -33,6 +34,7 @@ export default function SiteInspector({ site, loading, error, datasets,activeLay
           {Math.abs(site.coordinates.latitude_deg).toFixed(5)}° S / {site.coordinates.longitude_defined ? `${site.coordinates.longitude_deg.toFixed(5)}° E` : "Pole (longitude undefined)"}</p>
 
         </div>
+        {activeLayer==='geology'&&<GeologyAtLocation latitude={site.coordinates.latitude_deg} longitude={site.coordinates.longitude_deg}/>}
         <Quantity name="Elevation" measurement={site.elevation} testId="elevation-value" />
         <Quantity name="Local slope" measurement={site.slope} testId="slope-value" />
         {activeLayer==='temperature'&&<EnvironmentValue layer={activeLayer} latitude={site.coordinates.latitude_deg} longitude={site.coordinates.longitude_deg}/>}

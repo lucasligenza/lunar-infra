@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {fetchScientific} from '../../lib/api';
 import type {AtlasDataset,AtlasPoint,AtlasView,AtlasLayer,AtlasSector,AtlasAnalysisState,DiscoveryProvider} from '../../types/atlas';
 import type {GlobeLocation} from '../../types/globe';
@@ -12,6 +12,7 @@ import DatasetDiscovery from './DatasetDiscovery';
 import DatasetAcquisition from './DatasetAcquisition';
 import LayerPicker from '../ui/LayerPicker';
 import Icon from '../ui/Icon';
+import GeologyReading from '../panels/GeologyReading';
 
 export default function AtlasPanel({location,onClose,view,onView,overlayStatus,sector,onSector,onSelect,analysis,onAnalysis,analysisMode=false,request,settlement,onMission}:{location:GlobeLocation|null;onClose:()=>void;view:AtlasView;onView:(view:AtlasView)=>void;overlayStatus:string;
   settlement:SettlementState;onMission:()=>void;
@@ -24,6 +25,9 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   const [query,setQuery]=useState('');
   const [tab,setTab]=useState(analysisMode?'analysis':'layers');
   const [advanced,setAdvanced]=useState(analysisMode);
+  const content=useRef<HTMLDivElement>(null);
+  const showGeology=Boolean(location)&&view.layer==='geology'&&['layers','analysis','regions'].includes(tab);
+  useEffect(()=>{if(showGeology&&content.current)content.current.scrollTop=0;},[location,showGeology,tab]);
   useEffect(()=>{if(request&&request.tab!=='layers'&&request.tab!=='sites')setAdvanced(true);},[request]);
   useEffect(()=>{if(analysisMode)setTab('analysis');},[analysisMode]);
   useEffect(()=>{if(request)setTab(request.tab);},[request]);
@@ -46,7 +50,8 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   return <aside className="atlas-panel" aria-label="Lunar atlas"><header><div><span className="eyebrow">LUNAR ATLAS</span><h2>{tab==='sites'?'Settlement suitability':'Scientific overlays'}</h2></div><button onClick={onClose} aria-label="Close atlas"><Icon name="close"/></button></header>
     <div className="atlas-disclosure"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button>
     {advanced&&<nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>}</div>
-    <div className="atlas-content">
+    <div ref={content} className="atlas-content">
+    {showGeology&&<GeologyReading geology={point?.geology??null} loading={loading||(!point&&!error)} error={point?null:error}/>}
     {tab==='sites'?<><button onClick={()=>setTab('layers')}>Back to overlays</button><SettlementPanel state={settlement} location={location} onSelect={candidate=>onSelect(candidate,1.08)} onMission={onMission}/></>:<><p className="atlas-description">Color the Moon with real scientific data.</p>
     {tab==='regions'&&<AtlasRegions location={location} sector={sector} onSector={onSector} onSelect={onSelect}/>}
     <div hidden={tab==='regions'||tab==='catalog'||tab==='sites'}>
@@ -59,7 +64,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
       <LayerPicker layers={availableLayers} value={view.layer} onChange={id=>{const next=availableLayers.find(value=>value.id===id);onView({...view,layer:id,tileUrl:next?.url_template,preparation:next?.preparation_status??'ready'});}}/>
       {layer&&<p className="active-layer-caption">{layer.name}</p>}
       {layer&&<><label>Layer opacity {Math.round(view.opacity*100)}%<input aria-label="Scientific layer opacity" type="range" min={0} max={1} step={.05} value={view.opacity} onChange={e=>onView({...view,opacity:Number(e.target.value)})} /></label>
-        <AtlasLegend layer={layer}/>
+        <AtlasLegend layer={layer} selectedCode={point?.geology?.status==='ok'?point.geology.category?.code:undefined}/>
         <p role={overlayStatus.includes('unavailable')?'alert':'status'} data-testid="atlas-overlay-status">{overlayStatus}</p>
         {overlayStatus.includes('unavailable')&&<button onClick={()=>onView({...view,reload:(view.reload??0)+1})}>Retry scientific layer</button>}
         {environmental&&layer.preparation_status!=='not_prepared'&&<div className="overlay-coverage"><p>{quantity?.status==='unavailable'?'Selected location is outside prepared geographic coverage.':quantity?.status==='nodata'?'Selected location has missing source data.': 'Prepared coverage is a roughly 96 km square around the south pole.'} Transparent areas have no supporting measurements.</p>
@@ -81,7 +86,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
       <dt hidden={!advanced}>Sampling</dt><dd hidden={!advanced}>{point.elevation.method}</dd><dt>Derived slope</dt><dd data-testid="atlas-slope">{point.slope.value===null?'Missing stencil':`${point.slope.value.toFixed(3)}°`}</dd>
       <dt hidden={!advanced}>Slope support</dt><dd hidden={!advanced}>{point.slope.support_north_m.toFixed(1)} m north / {point.slope.support_east_m.toFixed(1)} m east</dd><dt hidden={!advanced}>Terrain provenance</dt><dd hidden={!advanced}>{point.terrain_source}</dd></dl>
       {source&&<details><summary>Measurement metadata</summary><p>{source.citation}</p><p>{point.frame_note}</p>{source.limitations.map(note=><p key={note}>{note}</p>)}{point.temperature&&<p>{point.temperature.source_id} {point.temperature.version}: {point.temperature.method}. Surface brightness temperature is not habitat temperature.</p>}{point.solar_visibility&&<p>{point.solar_visibility.source_id} {point.solar_visibility.version}: {point.solar_visibility.method}. This is not current sunlight.</p>}<a href={source.source_url} target="_blank" rel="noreferrer">Original dataset documentation</a></details>}
-      <div hidden={view.layer!=='geology'&&!advanced} className="geologic-inspection" aria-label="Geological interpretation"><h3>Geological interpretation</h3>
+      <div hidden={!advanced||view.layer==='geology'} className="geologic-inspection" aria-label="Geological interpretation"><h3>Geological interpretation</h3>
         {point.geology?<><p data-testid="atlas-geology">{point.geology.category?`${point.geology.category.code} / ${point.geology.category.name}`:'Missing mapped class'}</p>
           <p>{point.geology.source_id} {point.geology.version} / 1:5,000,000 source map; categorical grid 16 ppd.</p>
           <details><summary>Geology source and interpretation</summary><p>{point.geology.category?.description}</p><p>{point.geology.category?.interpretation}</p>

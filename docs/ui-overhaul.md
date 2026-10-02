@@ -103,3 +103,15 @@ historical polar product; solar visibility is a modeled mean, not a temporal
 forecast. Mission playback retains explicitly hypothetical time-series inputs.
 Screenshots and temporary review scenarios remain outside Git. Final publication
 uses an ordinary follow-up commit; the earlier CI failure is not hidden or amended.
+
+## Clicked geological colors
+
+The follow-up color-inspection request exposes the existing geological lookup
+immediately after a surface click. `GeologyReading` presents the registered
+swatch, unit and published interpretation in Explore and mission inspectors.
+The atlas brings this readout into view even after scrolling through controls;
+its full categorical legend marks the selected unit. Source details retain
+descriptions, map scale, frame limitations and classification sampling method.
+The native polar inspector queries the existing atlas endpoint only when geology
+is active. Stale requests are cancelled; missing values never become a guessed
+class or color. Scientific preparation, rendering and calculations are unchanged.

@@ -66,7 +66,7 @@ export async function atlasAdvanced(page:Page) {
 }
 export async function regionAdvanced(page:Page) {
   const panel=page.getByRole('complementary',{name:'Selected lunar region'});
-  const details=panel.locator('details');
+  const details=panel.locator(':scope > details');
   if(await details.getAttribute('open')===null)await details.getByText('Advanced',{exact:true}).click();
 }
 export async function utilities(page:Page) {

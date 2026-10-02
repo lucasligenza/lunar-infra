@@ -7,6 +7,9 @@ The refreshed **Overlays** panel exposes registered scientific layers directly,
 with keyboard arrow-key selection, opacity and source legends. Temperature and
 solar visibility identify their limited polar coverage. Featured destinations
 and search navigate the same verified lunar catalog.
+With **Geology** enabled, click the surface to see **This color represents**:
+the original legend swatch, mapped unit and USGS interpretation. The matching
+legend entry is highlighted; **Source details** retains the description and scale.
 Use **Commands** or **Ctrl/Cmd+K** to
 search existing actions. The collapsible **Activity** console shows actual UTC
 requests, layer readiness and simulation results, with optional request details.

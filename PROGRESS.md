@@ -1,5 +1,29 @@
 # LunarOS progress
 
+## Map color inspection — verified
+
+User requested an explanation of the color at a clicked map location. The
+existing atlas API already returned USGS geological classes, but the explanation
+was below the layer controls and absent from the ordinary location inspector.
+The browser regression reproduced that missing readout before implementation.
+
+Implemented a shared color/unit/interpretation readout in the atlas, selected
+region and global/polar mission inspectors. Source descriptions and scientific
+limitations remain behind Source details. New selection brings the atlas readout
+into view and highlights its categorical legend entry. Loading, failed queries,
+unprepared sources and nodata clear stale colors. Classifications come from the
+existing numeric source grid; no values are read from screen colors.
+
+All 61 Chromium journeys passed against the production build (11.8m). A follow-up
+regional-analysis check exposed a retained Overlays tab; opening analysis now
+selects its actual tool and preserves the color readout. All four focused journeys
+pass after that repair (42.8s). Typecheck and production build pass. Desktop,
+regional-analysis and phone screenshots were inspected. No backend, dataset or
+model changes. Next: the user's spatial-workspace redesign, with three primary
+activities, a stable full-width canvas and temporary controls.
+Latest successful push: `fa83571`; GitHub run 37056922702 passed 57 browser tests,
+106 Python tests plus eight subtests, acquisition, types and build.
+
 ## UI overhaul — verified
 
 User requested a broader visual overhaul after reviewing the previous redesign.
@@ -38,10 +62,9 @@ The added reserve graphic is checked against returned SOC; map scale/control
 separation is verified at all five sizes. No current development blockers.
 
 Final milestone: `style: refine mission tools and simulation presentation`.
-Next release check: ordinary commit/push and full GitHub validation. Latest
-successful push before this milestone: `c224f35`; the follow-up corrects its CI
-layout regression. Approval access recovered after a temporary account-usage
-review block; no action was bypassed. Localhost serves the verified production UI.
+Pushed as `fa83571`; GitHub run 37056922702 passed all validation, correcting the
+earlier CI layout regression. Approval access recovered after a temporary
+account-usage review block; no action was bypassed.
 
 ## Prior mission workspace visual redesign — completed and pushed
 

@@ -277,6 +277,18 @@ button, input, select, textarea { border-radius:5px; }
 .timeline-summary h3 { font:10px var(--font-geist-mono),monospace; letter-spacing:.12em; }
 .timeline-details { background:var(--surface-inset); scrollbar-width:thin; scrollbar-color:var(--border) var(--surface-inset); }
 .mission-events { padding:16px 24px; border-color:var(--border-soft); }
+.geology-reading { margin:16px 0 20px; padding:16px; border:1px solid var(--border); border-radius:5px; background:var(--surface-inset); overflow-wrap:anywhere; }
+.geology-reading h3 { margin:0 0 12px; font-size:12px; font-weight:500; color:var(--quiet); }
+.geology-reading-unit { display:flex; gap:12px; align-items:center; }
+.geology-reading-unit > i { display:block; width:32px; height:32px; flex-shrink:0; border:1px solid var(--border); border-radius:3px; }
+.geology-reading-unit > strong { font-size:15px; line-height:1.5; font-weight:500; }
+.geology-reading p { margin:12px 0; font-size:12px; line-height:1.65; color:var(--ink); }
+.geology-reading > small { color:var(--quiet); font-size:11px; }
+.geology-reading details { margin-top:12px; padding-top:12px; border-top:1px solid var(--border-soft); }
+.geology-reading details p { color:var(--quiet); }
+.geology-reading summary { font-size:12px; }
+.geology-legend li[aria-current=true] { padding:8px; border:1px solid var(--accent); border-radius:3px; background:var(--accent-muted); }
+.geology-legend li small { display:block; color:var(--accent); font-size:11px; }
 @media(max-width:1200px) {
   .mission-header { grid-template-columns:auto auto minmax(0,1fr) auto auto; min-height:60px; gap:12px; padding:8px 16px; }
   .mission-header .mode-navigation,.mission-header .header-status,.mission-header .header-utilities,.mission-header .mission-context { grid-row:1; grid-column:auto; }

@@ -12,6 +12,7 @@ import {polarBoundary} from '../../lib/lunar';
 import type {Region} from '../../types/scientific';
 import Icon from '../ui/Icon';
 import {LAYER_PRESENTATION} from '../ui/LayerPicker';
+import GeologyReading from '../panels/GeologyReading';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
 
 export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest,settlement,preparedRegion }: {
@@ -42,7 +43,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
   useEffect(()=>{const narrow=window.matchMedia('(max-width: 900px)');const closeSearch=()=>{if(narrow.matches)setSearchOpen(false);};narrow.addEventListener('change',closeSearch);return()=>narrow.removeEventListener('change',closeSearch);},[]);
   const [atlasStatus,setAtlasStatus]=useState('Scientific overlay hidden');
   const boundaries=useMemo(()=>[...(preparedRegion&&["temperature","illumination"].includes(atlasView.layer)?[polarBoundary(preparedRegion)]:[]),...(sector?[sector.boundary]:[]),...(location&&analysisMode?[areaBoundary(location,analysis)]:[]),...(analysis.profile?[analysis.profile.samples]:[]),...(settlement.report?.candidates.map(point=>areaBoundary(point,{...analysis,radius:String(point.radius_km),kind:'circle'}))??[])],[sector,location,analysisMode,analysis,settlement.report,preparedRegion,atlasView.layer]);
-  useEffect(()=>{if(analysisMode){setAtlasOpen(true);setDrawerOpen(false);setSearchOpen(false);}},[analysisMode]);
+  useEffect(()=>{if(analysisMode){setPanelRequest({tab:'analysis',serial:++serial.current});setAtlasOpen(true);setDrawerOpen(false);setSearchOpen(false);}},[analysisMode]);
   useEffect(()=>{
     const abort = new AbortController(); setError(null);setDestinationError(null);setDestinationsLoading(true);
     fetchScientific<GlobeMetadata>('/globe',abort.signal)
@@ -121,6 +122,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         {destination && <p>{destination.description}</p>}
         {inspecting && <p role="status">Checking scientific coverage…</p>}
         {inspectionError && <p role="alert">{inspectionError}</p>}
+        {atlasView.layer==='geology'&&<GeologyReading geology={terrain?.geology??null} loading={!terrain&&!inspectionError} error={terrain?null:inspectionError}/>}
         {terrain&&<dl className="region-measurements"><div><dt>Elevation</dt><dd data-testid="global-elevation">{terrain.elevation.value===null?'Unavailable':`${terrain.elevation.value.toLocaleString('en-US')} m`}</dd></div><div><dt>Derived slope</dt><dd>{terrain.slope.value===null?'Missing stencil':`${terrain.slope.value.toFixed(2)}°`}</dd></div></dl>}
         {inspection && <>
           <div className="region-actions"><button className="primary-button" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}><Icon name="layers"/>View scientific overlays<Icon name="chevron"/></button>
