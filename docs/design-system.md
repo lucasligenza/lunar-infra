@@ -15,11 +15,13 @@ playback refinements after the legacy styles, using those same tokens.
 | Token | Value | Purpose |
 | --- | --- | --- |
 | base | #0B0F14 | Lunar night / viewport frame |
-| panel | #141A22 | Tools and scientific panels |
-| elevated | #1D2632 | Controls and selected surfaces |
+| panel | #131A23 | Tools and scientific panels |
+| elevated | #202C39 | Controls and hover surfaces |
+| surface-inset | #0E141C | Input and chart surfaces |
+| accent-muted | #1C3249 | Selected controls |
 | ink | #F0F3F6 | Primary text |
-| quiet | #99A6B5 | Secondary labels |
-| accent | #4C9BE8 | Actions, focus, selection |
+| quiet | #A3AEBC | Secondary labels |
+| accent | #82B8EF | Actions, focus, selection |
 | nominal | #53B987 | Calculated nominal conditions |
 | warning | #D7A44B | Actual limitations and warnings |
 | failure | #D96B6B | Errors / constraint violations |
@@ -35,6 +37,16 @@ contrast (at least 4.5:1), verify actual font families and visible keyboard focu
 Reduced-motion styles disable cosmetic animations/transitions. Existing globe
 keyboard selection and destination alternatives remain available. These checks
 are targeted improvements, not a claim of a full external WCAG conformance audit.
+
+The [visual overhaul](ui-overhaul.md) establishes shared line icons, visible
+scientific layer choices and a reserved toolbar band over the global viewport.
+Layer choices are native radios: Tab reaches the selected choice and arrows
+change it. Preparation and polar coverage remain explicit; a selected radio does
+not claim successful rendering. Original source-period labels remain visible.
+Contextual asset tools use the same glyphs as their inspectors, with grouped
+electrical inputs. Current playback figures have a compact two-level hierarchy;
+the battery reserve bar directly reflects the returned aggregate end-of-interval
+SOC. Ordinary demand charts are neutral; warnings remain tied to real conditions.
 
 Stacking tokens distinguish surfaces, viewport controls, deliberate popovers,
 console and dialogs. Primary structure uses Grid/Flexbox; absolute positioning

@@ -1,6 +1,6 @@
 # LunarOS progress
 
-## UI overhaul — active
+## UI overhaul — verified
 
 User requested a broader visual overhaul after reviewing the previous redesign.
 Current plan and fresh screenshot audit: [UI overhaul](docs/ui-overhaul.md).
@@ -18,9 +18,30 @@ all five viewport sizes, actual polar rendering, source/geometry preservation,
 keyboard selection, no-overlap/hit checks, missions and playback. Before/after
 screenshots inspected. Python: 106 tests plus eight subtests pass (133.88s), with
 nine dependency deprecation warnings. Typecheck and production build pass.
-Next: infrastructure and playback visual refinement.
-No external blockers.
-Latest successful pushed commit: `4d9372e` (previous redesign acceptance).
+M1 pushed as `c224f35`. GitHub run 37008949564 passed 56/57 journeys but found a
+mission-globe status-label overlap; the explorer-specific CSS offset is now
+scoped to Global Explorer. The local full run also caught a separating-space
+regression in telemetry text; it is restored without changing assertions.
+M2 implemented: contextual asset glyphs and grouped configuration, refined site
+and mission surfaces, compact hierarchy for current readings, real SOC reserve
+indicator, neutral demand chart and mobile scale/control separation. Existing
+draft, revision, simulation and geographic state ownership is preserved.
+Final local validation: all 57 Chromium journeys pass against the production
+build (9.0m). The three focused regression journeys also pass (1.5m). Frontend
+typecheck and production build pass; production startup took 287ms. Python's
+106 tests plus eight subtests passed during this overhaul; no backend code changed.
+Actual before/after screenshots reviewed across 1920×1080, 1440×900, 1366×768,
+1024×768 and 390×844, including compact/expanded playback, asset/site inspectors,
+polar layers and unsupported coverage. Tests retain numerical, source, revision,
+failure-recovery and contrast checks, plus 125%/200% zoom-equivalent layouts.
+The added reserve graphic is checked against returned SOC; map scale/control
+separation is verified at all five sizes. No current development blockers.
+
+Final milestone: `style: refine mission tools and simulation presentation`.
+Next release check: ordinary commit/push and full GitHub validation. Latest
+successful push before this milestone: `c224f35`; the follow-up corrects its CI
+layout regression. Approval access recovered after a temporary account-usage
+review block; no action was bypassed. Localhost serves the verified production UI.
 
 ## Prior mission workspace visual redesign — completed and pushed
 

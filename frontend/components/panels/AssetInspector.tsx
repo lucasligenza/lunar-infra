@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ASSET_NAMES, type Asset } from "../../types/mission";
 import { parseSeries } from "../../lib/series";
+import Icon from '../ui/Icon';
 
 type Parameter = { field: keyof Asset; label: string; max?: number; min?: number };
 const demand: Parameter = { field: "demand_kw", label: "Continuous demand (kW)" };
@@ -39,13 +40,13 @@ export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, 
     onSave(changes);
   }
   return <aside className="inspector asset-inspector" aria-label="Asset configuration">
-    <div className="inspector-title"><span className="asset-badge">{ASSET_NAMES[asset.kind][0]}</span><div><h2>{asset.name}</h2><p>{ASSET_NAMES[asset.kind]} · hypothetical</p></div></div>
+    <div className="inspector-title"><span className="asset-badge"><Icon name={asset.kind}/></span><div><h2>{asset.name}</h2><p>{ASSET_NAMES[asset.kind]} · hypothetical</p></div></div>
     <div className="inspector-content"><form className="configuration-form" onSubmit={submit}>
       <label>Asset name<input required maxLength={100} value={draft.name} onChange={event => setDraft({ ...draft, name: event.target.value })} /></label>
       <label className="checkbox-label"><input type="checkbox" checked={draft.operational} onChange={event => setDraft({ ...draft, operational: event.target.checked })} />Operational</label>
-      {PARAMETERS[asset.kind].filter(parameter=>['demand_kw','rated_power_kw','capacity_kwh','initial_soc','active_demand_kw','idle_demand_kw','duty_cycle'].includes(parameter.field)).map(parameter => <label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min ?? 0} max={parameter.max ?? 1e9}
-        value={draft[parameter.field] as number} onChange={event => setDraft({ ...draft, [parameter.field]: Number(event.target.value) })} /></label>)}
-      <p className="asset-location">{draft.location.latitude_deg.toFixed(5)}° / {draft.location.longitude_deg.toFixed(5)}° E</p>
+      <fieldset className="asset-primary-parameters"><legend>Electrical configuration</legend>{PARAMETERS[asset.kind].filter(parameter=>['demand_kw','rated_power_kw','capacity_kwh','initial_soc','active_demand_kw','idle_demand_kw','duty_cycle'].includes(parameter.field)).map(parameter => <label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min ?? 0} max={parameter.max ?? 1e9}
+        value={draft[parameter.field] as number} onChange={event => setDraft({ ...draft, [parameter.field]: Number(event.target.value) })} /></label>)}</fieldset>
+      <p className="asset-location"><Icon name="target"/>{draft.location.latitude_deg.toFixed(5)}° / {draft.location.longitude_deg.toFixed(5)}° E</p>
       <details className="asset-advanced" onInvalid={event=>{event.currentTarget.open=true;}}><summary>Advanced settings</summary>
       {PARAMETERS[asset.kind].filter(parameter=>!['demand_kw','rated_power_kw','capacity_kwh','initial_soc','active_demand_kw','idle_demand_kw','duty_cycle'].includes(parameter.field)).map(parameter=><label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min??0} max={parameter.max??1e9} value={draft[parameter.field] as number} onChange={event=>setDraft({...draft,[parameter.field]:Number(event.target.value)})}/></label>)}
       {asset.kind === "habitat" && <label>Optional load profile (kW per interval)<textarea aria-label="Optional load profile (kW per interval)" value={profile} onChange={event => setProfile(event.target.value)} placeholder="Blank uses continuous demand" /></label>}

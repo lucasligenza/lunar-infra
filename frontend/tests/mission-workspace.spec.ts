@@ -68,6 +68,8 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     await expect(page.getByRole('button',{name:/Electrical generation chart/})).toHaveCount(0);
     const battery=run.scenario_snapshot.assets.find(asset=>asset.kind==='battery')!;
     await expect(page.getByTestId('selected-asset-telemetry')).toHaveText(`${(run.result.intervals[0].batteries[battery.id].soc_end*100).toFixed(2)}% SOC at end`);
+    const reserve=()=>page.locator('.battery-reserve i').evaluate(element=>element.getBoundingClientRect().width/element.parentElement!.getBoundingClientRect().width);
+    expect(await reserve()).toBeCloseTo(run.result.intervals[0].soc_end!,2);
     const timeline=page.getByRole('region',{name:'Mission timeline'});
     const compact=(await timeline.boundingBox())!,surface=(await terrain.boundingBox())!;
     expect(compact.height).toBeLessThanOrEqual(page.viewportSize()!.height*.15);
@@ -78,6 +80,7 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     await expect(page.getByTestId('selected-asset-telemetry')).toHaveText(`${(run.result.intervals[47].batteries[battery.id].soc_end*100).toFixed(2)}% SOC at end`);
     await expect(page.getByTestId('telemetry-generation')).toHaveText(run.result.intervals[47].generation_kw.toFixed(2));
     await expect(page.getByTestId('telemetry-unserved')).toHaveText(`${run.result.intervals[47].unserved_kw.toFixed(2)} kW`);
+    expect(await reserve()).toBeCloseTo(run.result.intervals[47].soc_end!,2);
     await page.getByRole('button',{name:'Expand timeline',exact:true}).click();
     await expect(page.getByRole('heading',{name:'Mission summary (kWh)',exact:true})).toBeVisible();
     await expect(page.locator('.timeline-summary')).toContainText(`Generated: ${run.result.summary.generated_kwh.toFixed(2)} kWh`);

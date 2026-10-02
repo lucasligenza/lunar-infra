@@ -40,6 +40,9 @@ test('mission workspace gives closed panels back to the map and selects one cont
       await page.setViewportSize({width,height});
       await missionSurface(page);
       const map=page.locator('.map-workspace'),box=(await map.boundingBox())!;
+      const scale=(await page.locator('.ol-scale-line').boundingBox())!,shelf=(await page.locator('.workspace-toolbar').boundingBox())!;
+      const overlap=Math.min(scale.x+scale.width,shelf.x+shelf.width)>Math.max(scale.x,shelf.x)&&Math.min(scale.y+scale.height,shelf.y+shelf.height)>Math.max(scale.y,shelf.y);
+      expect(overlap,'The physical map scale must not sit underneath mission controls').toBe(false);
       if(width>900)expect(box.width).toBeGreaterThan(width*.9);
       await page.screenshot({path:`../artifacts/targeted-map-first-${width}.png`});
       await missionTools(page);

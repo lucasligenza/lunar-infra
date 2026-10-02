@@ -25,6 +25,14 @@ charts, cumulative energy, events and reproducibility metadata. Collapsing chart
 keeps the reporting interval and settings. No scientific logic moved to JavaScript;
 per-asset telemetry is read directly from the Python result dictionaries.
 
+The visual overhaul adds shared `Icon` and `LayerPicker` components. The latter
+uses native radio behavior and the existing registered layer list; both global
+and mission views call their original layer handlers. Short labels are a display
+mapping, not a second scientific registry. Original layer names, availability,
+coverage requests, render state, legends and sources remain authoritative.
+The global toolbar reserves a top band above contextual docks; mission tools
+and the compact simulation bar keep their existing Grid/Flex layout ownership.
+
 The command palette calls the existing mode, atlas-view and simulation handlers.
 Destination commands use the API's verified destination catalog. Native modal
 dialogs trap focus, handle Escape (including search inputs) and restore the opener.

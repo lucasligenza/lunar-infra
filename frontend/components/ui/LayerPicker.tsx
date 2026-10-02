@@ -2,7 +2,7 @@ import {useId} from 'react';
 import type {AtlasLayer} from '../../types/atlas';
 import Icon,{type IconName} from './Icon';
 
-const presentation:Record<string,{label:string;icon:IconName;note:string}>={
+export const LAYER_PRESENTATION:Record<string,{label:string;icon:IconName;note:string}>={
   none:{label:'Imagery',icon:'explore',note:'NASA surface mosaic'},
   elevation:{label:'Elevation',icon:'elevation',note:'Terrain height'},
   slope:{label:'Slope',icon:'slope',note:'Derived inclination'},
@@ -17,7 +17,7 @@ export default function LayerPicker({layers,value,onChange,label='Scientific ove
   const name=useId();
   return <fieldset className="layer-picker" aria-label={label}><legend>Surface layers</legend>
     {[{id:'none',name:'NASA surface imagery',preparation_status:'ready'},...layers].map(layer=>{
-      const item=presentation[layer.id]??{label:layer.name,icon:'layers' as const,note:'Registered data layer'};
+      const item=LAYER_PRESENTATION[layer.id]??{label:layer.name,icon:'layers' as const,note:'Registered data layer'};
       const unavailable=layer.preparation_status==='not_prepared';
       return <label className="layer-option" key={layer.id} data-unavailable={unavailable} title={layer.name}>
         <input type="radio" name={name} value={layer.id} checked={value===layer.id} aria-label={item.label} onChange={()=>onChange(layer.id)}/>

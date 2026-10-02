@@ -1,5 +1,6 @@
 import type { Dataset, Measurement, Site } from "../../types/scientific";
 import EnvironmentValue from './EnvironmentValue';
+import Icon from '../ui/Icon';
 function Quantity({ name, measurement, testId }: { name: string; measurement: Measurement; testId: string }) {
   const value = measurement.value;
   const formatted = value === null ? "Unavailable" : (measurement.unit === "fraction" ? value * 100 : value)
@@ -20,7 +21,7 @@ export default function SiteInspector({ site, loading, error, datasets,activeLay
   site: Site | null; loading: boolean; error: string | null; datasets: Dataset[];activeLayer?:string;
 }) {
   return <aside className="inspector" aria-label="Site inspector">
-    <div className="inspector-title"><span className="selection-symbol" aria-hidden="true">⌖</span><div><h2>Site inspector</h2><p>Scientific measurements</p></div></div>
+    <div className="inspector-title"><span className="asset-badge"><Icon name="target"/></span><div><h2>Site inspector</h2><p>Scientific measurements</p></div></div>
     <div className="inspector-content" aria-live="polite" aria-busy={loading}>
       {loading && <div className="empty-inspector"><span className="loading-ring" /><h3>Inspecting terrain</h3><p>Reading the registered NASA raster.</p></div>}
       {error && <div className="inspection-error" role="alert"><h3>Location unavailable</h3><p>{error}</p></div>}

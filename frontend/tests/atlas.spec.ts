@@ -112,7 +112,7 @@ test('scientific layers follow the 3D surface with legends opacity and synchroni
   await page.getByRole('button',{name:'Close atlas',exact:true}).click();
   const canvas=page.getByLabel('Interactive 3D Moon',{exact:true}),box=(await canvas.boundingBox())!;
   await page.mouse.move(box.x+box.width*.5,box.y+box.height*.6);await page.mouse.down();await page.mouse.move(box.x+box.width*.64,box.y+box.height*.6,{steps:12});await page.mouse.up();
-  await page.getByRole('button',{name:'slope / best prepared terrain',exact:true}).click();
+  await page.getByRole('button',{name:'Slope',exact:true}).click();
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await page.screenshot({path:'../artifacts/phase4-slope-overlay.png'});
   const layers=await (await request.get('/api/atlas/layers')).json();expect(layers.some((value:any)=>value.id==='slope'&&value.dataset_id==='gld100')).toBe(true);

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
 import MissionHeader, { ACTIVITIES } from "./MissionHeader";
+import Icon from './ui/Icon';
 import CommandPalette, { type Command } from './CommandPalette';
 import HelpPanel from './HelpPanel';
 import ActivityConsole from './ActivityConsole';
@@ -281,11 +282,11 @@ export default function Explorer() {
           </div>
       </>}
       toolbar={<>
-        {mode==='mission'&&scenario.active&&scenarioInView&&<button className="primary-button" disabled={working} onClick={()=>openTools('assets')}>+ Add Asset</button>}
+        {mode==='mission'&&scenario.active&&scenarioInView&&<button className="primary-button" aria-label="+ Add Asset" disabled={working} onClick={()=>openTools('assets')}><Icon name="plus"/>Add Asset</button>}
         {mode==='mission'&&(!scenario.active||!scenarioInView)&&<button className="primary-button" disabled={working||!validLocation} onClick={startMission}>Create mission here</button>}
         {mode==='regional'&&<button className="primary-button" onClick={startMission}>Create mission here</button>}
-        <button aria-expanded={toolsOpen&&toolsSection==='overlays'} onClick={()=>{if(toolsOpen&&toolsSection==='overlays'){setToolsOpen(false);setMobilePane('map');}else openTools('overlays');}}>Overlays</button>
-        <details className="mission-actions"><summary>{missionContext?'Mission details':'More tools'}</summary><div>
+        <button aria-expanded={toolsOpen&&toolsSection==='overlays'} onClick={()=>{if(toolsOpen&&toolsSection==='overlays'){setToolsOpen(false);setMobilePane('map');}else openTools('overlays');}}><Icon name="layers"/>Overlays</button>
+        <details className="mission-actions"><summary><Icon name="settings"/>{missionContext?'Mission details':'More tools'}</summary><div>
           <button aria-label="Expand tools" onClick={()=>openTools()}>Advanced tools</button>
           {missionContext&&<button disabled={working} onClick={()=>openTools('missions')}>Saved missions</button>}
           {missionContext&&scenario.active&&<button onClick={()=>{switchMode('simulation');openTools('simulation');}}>Simulation inputs</button>}
@@ -314,7 +315,7 @@ export default function Explorer() {
           <button className="primary-button" onClick={() => setReload(value => value + 1)}>Retry connection</button>
           <p className="quiet">Start the backend and prepare the NASA datasets using the README instructions.</p></div>}
         {region && layer && !globalMissionView && !missionGlobe && <>
-          <div className="map-heading"><h2>Lunar south pole</h2><p>{((region.bounds_m[2] - region.bounds_m[0]) / 1000).toFixed(0)} km region / {region.resolution_m} m terrain grid</p></div>
+          <div className="map-heading"><h2><Icon name="target"/>Lunar south pole</h2><p>{((region.bounds_m[2] - region.bounds_m[0]) / 1000).toFixed(0)} km region / {region.resolution_m} m terrain grid</p></div>
           <div className="map-instruction">Drag to pan · scroll to zoom · click to inspect</div>
         </>}
         <footer className="map-footer"><span>{globalMissionView?'Hypothetical infrastructure / native lunar terrain':pointer ? `${Math.abs(pointer[1]).toFixed(4)}° S / ${pointer[0].toFixed(4)}° E` : "Move across the map to read coordinates"}</span>

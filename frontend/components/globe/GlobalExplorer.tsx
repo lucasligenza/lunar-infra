@@ -11,6 +11,7 @@ import {areaBoundary} from '../../lib/atlas-area';
 import {polarBoundary} from '../../lib/lunar';
 import type {Region} from '../../types/scientific';
 import Icon from '../ui/Icon';
+import {LAYER_PRESENTATION} from '../ui/LayerPicker';
 const MoonCanvas = dynamic(()=>import('./MoonCanvas'), { ssr:false, loading:()=> <div className="globe-loading" role="status">Starting the lunar renderer…</div> });
 
 export default function GlobalExplorer({ location, assets, base, camera, onCamera, onSelect, onCoverage, onMode,atlasView,onAtlasView,sector,onSector,analysis,onAnalysis,analysisMode=false,onLocal,atlasRequest,navigationRequest,settlement,preparedRegion }: {
@@ -100,7 +101,7 @@ export default function GlobalExplorer({ location, assets, base, camera, onCamer
         <p>{error ?? (metadata ? 'Prepare the global NASA data and restart the API. The regional scientific map remains available.' : 'Loading verified global data metadata…')}</p>
         {(error || metadata) && <button onClick={()=>setReload(value=>value+1)}>Retry global data</button>}</div>}
     {!location && <div className="global-introduction"><span className="eyebrow">YOUR NEXT FRONTIER</span><h2>Explore the Moon.</h2><p>Find a place. Understand the terrain.<br/>Design what comes next.</p><div className="destination-shortcuts" aria-label="Featured destinations">{destinations.filter(place=>['shackleton','apollo-11','tycho'].includes(place.id)).map(place=><button key={place.id} aria-label={`Visit ${place.name}`} onClick={()=>choose(place.coordinates,place)}>{place.id==='apollo-11'?'Apollo 11':place.name}<Icon name="chevron"/></button>)}</div><span className="navigation-hint">Drag to orbit · scroll to approach · click to select</span></div>}
-    {atlasView.layer!=='none'&&!atlasOpen&&<button className="atlas-active" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}>{atlasView.layer} / {atlasView.dataset==='auto'?'best prepared terrain':atlasView.dataset}</button>}
+    {atlasView.layer!=='none'&&!atlasOpen&&<button className="atlas-active" onClick={()=>{setAtlasOpen(true);setDrawerOpen(false);}}><Icon name="layers"/>{LAYER_PRESENTATION[atlasView.layer]?.label??atlasView.layer}</button>}
       </div>
       {layersOpen && <aside className="globe-dock display-settings" aria-label="Globe display settings"><header><h2>Advanced map controls</h2><button onClick={()=>setLayersOpen(false)}>Close display settings</button></header>
         <details className="global-coordinates"><summary>Go to coordinates</summary><form onSubmit={event=>{event.preventDefault();choose({latitude_deg:Number(lat),longitude_deg:(Number(lon)+360)%360});}}>

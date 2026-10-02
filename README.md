@@ -3,6 +3,10 @@
 Use **Explore**, **Analyze**, **Build** and **Simulate** in one compact header.
 The Moon stays central; tools and details open when you need them. Location,
 atlas selection, drafts and playback position stay connected while switching.
+The refreshed **Overlays** panel exposes registered scientific layers directly,
+with keyboard arrow-key selection, opacity and source legends. Temperature and
+solar visibility identify their limited polar coverage. Featured destinations
+and search navigate the same verified lunar catalog.
 Use **Commands** or **Ctrl/Cmd+K** to
 search existing actions. The collapsible **Activity** console shows actual UTC
 requests, layer readiness and simulation results, with optional request details.
@@ -31,6 +35,8 @@ provenance. Power is interval-average kW; battery SOC is at interval end.
 Cumulative energy is kWh. Playback reads the saved Python results; no values are
 invented. On smaller screens, contextual panels become dismissible task sheets.
 See the [mission workspace redesign](docs/mission-workspace-redesign.md).
+See the [current visual overhaul](docs/ui-overhaul.md) for the rendered audit and
+validation record.
 
 From **Overlays**, use **Find settlement sites**, select a candidate and inspect
 **Why this candidate?**. **Create mission at selected location** opens the creation
