@@ -202,6 +202,17 @@ polar tile extents account for longitude convergence. Global cache budget stays
 32 tiles, with up to 96 for bounded environmental views (~24 MiB RGBA). Original
 nodata and real radial source patterns are retained; texture colors never provide
 numeric measurements.
+Interaction redesign (2026-10): `Explorer` owns one `menu` and one `drawer` state
+for Build/Simulate (`MissionWorkspace` renders slots; drafts stay mounted), and
+`GlobalExplorer` owns the same pair for Explore. `useAtlasCatalog` loads registered
+layers/datasets once for both. `LocationPanel` renders one `/atlas/inspect?dataset=best`
+sample everywhere. Screening scores and neighborhood cells come from Python
+(`services/screening_score.py`, `POST /atlas/suitability/neighborhood`). Playback
+explanations are formatted from stored intervals by `lib/power-flow.ts`; rover
+positions come from `simulation/rover.py` via each stored interval.
+`lib/surface-layers.ts` builds globe markers, candidate rings, rover routes and
+analysis grids; none of these geometries is a measurement source.
+
 - [Rasterio reprojection](https://rasterio.readthedocs.io/en/stable/topics/reproject.html)
 - [PyProj axis order](https://pyproj4.github.io/pyproj/stable/api/transformer.html)
 - [FastAPI testing](https://fastapi.tiangolo.com/tutorial/testing/)

@@ -1,15 +1,19 @@
 # Lunar mission control interface
 
-Explore, Build and Simulate share one compact header and geographic/mission
-context. Regional analysis remains available from the selected region, Advanced
-atlas tools and commands. The surface owns the flexible viewport. Build opens without rails;
-+ Add Asset reveals a compact palette that closes when placement begins.
-Selected equipment or terrain opens a contextual inspector. Overlays is separate
-from advanced tools; metadata and engineering settings use disclosures.
-Below 900 CSS pixels, contextual docks become dismissible task sheets; the three
-primary activities use a compact second header row. Closing a panel restores the
-map and retains draft state. A pending name edit exposes Save in the header even
-on a phone.
+Explore, Build and Simulate share one header and geographic/mission context. The
+canvas owns the viewport. Every activity uses the same surface model
+([interaction redesign](interaction-redesign.md)): a top-left toolbar, one left
+menu (Overlays, Places, Add asset), one right drawer (Location, Settlement sites,
+Analysis tools, Asset, Missions, Simulation setup), bottom-left selection and
+legend chips, bottom-right camera controls and, in Simulate, the playback bar
+with a power-flow card. Escape closes the newest surface. Below 900 CSS pixels
+surfaces are bottom sheets, one at a time, with the Moon visible above them.
+
+Controls avoid `<select>`: choices use segmented radios (`ui/Segmented`), layer
+rows, toggles or direct actions. Asset markers use one vector icon set
+(`lib/asset-icons.ts`) on the globe and the polar map; status color is always
+paired with text or a number. Screening bands: strong #53B987, promising
+#8FC79A, mixed #D7A44B, constrained #C97A72.
 
 `frontend/app/mission-control.css` owns shared spacing and stacking tokens.
 `spatial-workspace.css` consolidates the current palette, shell, temporary panels

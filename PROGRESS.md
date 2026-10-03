@@ -1,6 +1,6 @@
 # LunarOS progress
 
-## Interaction redesign — in progress
+## Interaction redesign — verified
 
 Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md).
 
@@ -91,13 +91,27 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   outcome, tutorial dismiss/reopen, rover start/mid/end, backward scrubbing,
   reload and UI route setup. Python rover tests 5; build passes. Rendered
   review at all five sizes (`artifacts/claude-m7`). Pushed `b6da0b5`.
-- **CI note.** GitHub runs for `70a7e69` and `524a27f` failed only the
-  zoom-bound journey (expected 1.08, now 1.03 by design); `b6da0b5` updates
-  that expectation. `611b889` and `3cc17f8` passed.
-- **Remaining (M9, not done):** confirm CI on `b6da0b5`; refresh stale lower
-  README sections and design-system/spatial docs; add explicit journeys for
-  overlay-menu rows, one-drawer-at-a-time and location unavailable states;
-  prune CSS rules for removed components; final five-size acceptance review.
+- **CI.** GitHub runs for `70a7e69` and `524a27f` failed only the zoom-bound
+  journey (1.08 → 1.03 radii by design); `b6da0b5` and `8aeb253` passed.
+- **M9 polish and acceptance.** Crossing into the phone layout now keeps a
+  single sheet (stacked sheets hid the menu's close button). New
+  `surfaces.spec.ts` covers overlay rows/badges and no visible `<select>`,
+  one drawer at a time with non-overlapping menu/drawer on desktop and one
+  sheet on phone, and location aggregation against the API with
+  *Unavailable here*, *Not prepared* and *Missing source data*. README,
+  design-system, spatial-workspace and architecture docs describe the new
+  surfaces. Final rendered review at 1920×1080, 1440×900, 1366×768, 1024×768
+  and 390×844 (`artifacts/claude-final`): Explore, Overlays, location,
+  candidates with grid, Build, palette, Missions, asset inspector, setup,
+  playback, shortage, rover outbound/returning, outcome and tutorial.
+  Python: 115 passed + 8 subtests; Playwright 71/71 (15.5m); typecheck and
+  production build pass.
+- **Limits kept.** Illumination inputs remain hypothetical; average solar
+  visibility and Diviner stay polar-only and descriptive; rover motion does not
+  change power; the score is a relative screening aid. CSS rules for removed
+  components remain in older stylesheets (inert); prune separately. Local test
+  runs may leave a default-named scenario in the ignored SQLite database when a
+  journey is aborted.
 
 ## Spatial workspace — verified and pushed
 

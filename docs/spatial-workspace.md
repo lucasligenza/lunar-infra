@@ -1,5 +1,9 @@
 # The Moon is the application
 
+> Accepted 2026-10-03; the surface model is now refined by the
+> [interaction redesign](interaction-redesign.md), which replaces the overlay
+> panel tabs, tool rail and dropdown menus described below.
+
 This frontend-only redesign supersedes the four-activity visual shell in
 `ui-overhaul.md`. Scientific sources, Three.js, OpenLayers, numerical queries,
 scenario hooks, API contracts and the Python simulation remain unchanged.

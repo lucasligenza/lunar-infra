@@ -66,11 +66,11 @@ the native 0.25 degree LOLA overview. See [global data](docs/global-data.md) for
 source integrity, coverage and the distinction between visualization and analysis.
 The atlas additionally obtains the pinned 133 MB GLD100 global 32 ppd product,
 preserving native values and PDS special codes. `--plan` reports acquisition/disk
-requirements, and `--offline` reuses verified source files. Open **Overlays**
-on the globe to inspect terrain from selectable registered global sources and
-search the scientific catalog. Discovered products are labeled separately from
-prepared numerical sources. See [Phase 4 plan](docs/phase4-plan.md).
-The Catalog tab previews acquisition/disk budgets and browses verified PDS
+requirements, and `--offline` reuses verified source files. **Overlays → Source
+details** chooses among registered global terrain sources; **Open dataset
+catalog** (Ctrl/Cmd K) searches the scientific catalog. Discovered products are
+labeled separately from prepared numerical sources. See [Phase 4 plan](docs/phase4-plan.md).
+The catalog previews acquisition/disk budgets and browses verified PDS
 collection metadata. Discovery preserves labels, coverage fields, file sizes,
 periods and source checksums; it downloads no numeric product and does not enable
 unvalidated thermal queries. See [data discovery](docs/dataset-discovery.md).
@@ -97,32 +97,33 @@ npm run dev
 
 Open **http://127.0.0.1:3000** for **Explore**. Drag to orbit, right-drag or
 use arrow keys to pan, scroll to zoom, and click the Moon to select a location.
-Focus the globe and press Enter to select the center of the view. Search seven
-destinations, fly to coordinates, reset the camera, or toggle imagery/graticule.
-The source drawer identifies coarse elevation and supported local coverage.
-Use **Analyze this region** or **Create mission here** at a selected location.
+Focus the globe and press Enter to select the center of the view. **Places**
+searches seven destinations and *Go to coordinates*; imagery and graticule toggles
+sit under Overlays → Source details. The Location drawer lists every prepared value
+and its coverage; its footer offers **Find settlement sites**, **Create mission
+here** and **Analyze this region**.
 Inside the prepared polar footprint, analysis retains the 240 m map. Elsewhere,
 regional analysis uses native global atlas data and the 3D surface. Global missions
 validate asset placement against GLD100 (or prepared LOLA if GLD100 is absent).
 These coarser samples cannot establish landing or construction safety. Global
 source frames retain their precision qualifications; no surveyed transform is implied.
 The top mode controls preserve location, camera, active scenario, drafts and the
-selected simulation interval. Hidden playback pauses. On phones, destination and
-region panels can be closed so they do not obstruct navigation.
+selected simulation interval. Hidden playback pauses. On phones each surface is a
+bottom sheet over the Moon, one at a time.
 
-In **Analyze**, drag or scroll the map, switch elevation/slope/solar
-visibility layers, and click a location to inspect it. The coordinate form also
-accepts planetocentric latitude and east-positive longitude. Source labels, units,
-methods and sampling footprints are available in the inspector. At latitude
+In 2D polar analysis, drag or scroll the map, choose elevation/slope/solar
+visibility in Overlays, and click a location to inspect it. The Location drawer's
+*Go to coordinates* accepts planetocentric latitude and east-positive longitude.
+Units, methods, sampling footprints and sources are disclosed in that drawer. At latitude
 `-89.5`, longitude `0`, the prepared raster reports -705 m elevation.
 
-In **Build**, select terrain, enter a scenario name and choose
-**Create scenario at selected site**.
-Use **+ Add Asset**, then click valid terrain to place the selected equipment.
-Click its symbol or list entry to configure it. **Save asset** persists parameters;
-**Move on map** relocates it. **Mission details → Saved missions** reopens,
-duplicates or deletes scenarios; deletion requires confirmation.
-**Save scenario** saves the edited name.
+In **Build**, select terrain, open **Missions → New mission at selected site**
+(or **Create mission here**), name it and choose **Create scenario at selected site**.
+Use **Add asset**, then click valid terrain to place the selected equipment.
+Click its icon or its entry in Missions to configure it. **Save asset** persists
+parameters; **Move on map** relocates it. A rover's **Set destination on map**
+adds a hypothetical route (speed, departure, dwell, return). **Missions** reopens,
+renames, duplicates or deletes scenarios; deletion requires confirmation.
 Placements save immediately through the API; unsaved form changes are labeled.
 Reopening restores the saved definition after confirming any discarded drafts.
 Simultaneous edits return a revision conflict; reopen before retrying your changes.
@@ -130,16 +131,16 @@ On small screens, contextual panels become task sheets with clear Close actions.
 The local database is `data/local/missions.sqlite`, separate from downloaded rasters.
 Set `LUNAROS_DB_PATH` before backend startup to use another database path.
 
-To exercise energy simulation, place a habitat, solar array and battery. Open
-**Simulation inputs**, set the UTC period/time step and choose **Fill constant
+To exercise energy simulation, place a habitat, solar array and battery. In
+**Simulate**, open **Set up simulation**, set the UTC period/time step and choose **Fill constant
 profile**, **Apply synthetic stress profile**, or enter one electrical input factor
 per interval. These are explicitly hypothetical inputs; NASA average visibility
 cannot reconstruct sunlight over time. **Run simulation** saves changed inputs
 and executes the Python engine. It never generates a lunar daily cycle.
 
-The bottom timeline shows computed generation, demand, battery SOC and shortage
-events. Scrub, play/pause, change speed, narrow the chart window, or select the
-first shortage. Right-panel telemetry follows that interval. Powers are interval
+The bottom timeline shows computed generation, demand, battery SOC and event
+marks. Scrub, play/pause, change speed, narrow the chart window, or jump to an
+event. The power-flow card and asset badges follow that interval. Powers are interval
 averages and SOC is the interval-end value. Saving any scenario edit clears stale
 telemetry; rerun to update it. Reopening an unchanged scenario restores its saved
 result. See the [energy model](docs/energy-model.md) for equations and omissions.
@@ -198,22 +199,22 @@ This prepares one Diviner southern-summer 00:00-00:15 local-time bolometric
 brightness-temperature climatology (2009-2019), cropped to about 96 km around the
 pole. It does not provide current temperature, thermal extrema or a mission time
 series. Source records, checksums, native grid validation and nodata are preserved.
-The Moon workspace exposes Overlays; Advanced retains the full catalog and tools.
+Choose **Temperature** in Overlays; the dataset catalog stays in Analysis tools.
 
 ### Find promising settlement sites
 
-In **Explore**, choose an overlay and a location, then **Find settlement sites**.
-Compare nearby neighborhoods, select a candidate, read its evidence, and create
-a mission at that location. The default search is 25 km; Screening settings expose
-the radius, neighborhood size, terrain dataset and editable slope threshold.
-Terrain-only results remain separate from results supported by average sunlight.
-No universal habitability score is calculated: human safety, life support and
-construction feasibility require further analysis. See the
-[screening method and limitations](docs/settlement-screening.md).
+In **Explore**, select a location, then **Find settlement sites**. Candidate cards
+show the preliminary screening score, band, criterion bars, data completeness and
+distance; selecting one flies to it and draws its evaluated native cells. Read
+*Why this score?* and *Why this candidate?*, then create a mission there. The
+default search is 25 km; Screening settings expose the radius, neighborhood size,
+terrain dataset and editable slope threshold. Terrain-only results stay separate
+from results supported by average sunlight. The score is a relative screening aid,
+not habitability: human safety, life support and construction feasibility require
+further analysis. See the [screening method and limitations](docs/settlement-screening.md).
 
-Basic controls emphasize Overlays. **Advanced** exposes coordinate navigation,
-display settings, the dataset catalog, sector browser, regional statistics and
-profiles. Detailed time steps and custom input series are under **Advanced
-simulation settings** in Simulate. Explore uses native 240 m point measurements inside
+Regional statistics, profiles, sectors and the dataset catalog are in **Analysis
+tools** (Location → Analyze this region, or Ctrl/Cmd K). Detailed time steps and
+custom input series are under **Advanced simulation settings** in Simulation setup. Explore uses native 240 m point measurements inside
 the prepared polar footprint; global coloring can be coarser and its legend names
 the supporting source. Existing saved mission/API dataset defaults are preserved.

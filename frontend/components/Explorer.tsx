@@ -100,6 +100,8 @@ export default function Explorer() {
   function openMenu(next:MissionMenu){setMenu(next);if(next&&isNarrow())setDrawer(null);}
   function openDrawer(next:MissionDrawer){setDrawer(next);if(next&&isNarrow())setMenu(null);}
   const closeMenu=useCallback(()=>setMenu(null),[]),closeDrawer=useCallback(()=>setDrawer(null),[]);
+  // Crossing into the phone layout keeps one task sheet.
+  useEffect(()=>{if(narrow&&menu&&drawer)setDrawer(null);},[narrow]);
   const settlement=useSettlement();
   const scenario = useScenario(true);
   const [scenarioName, setScenarioName] = useState("South-pole outpost");

@@ -51,6 +51,9 @@ export default function GlobalExplorer({ atlas, mission=null, location, assets, 
   const serial = useRef(0);
   // Narrow screens show one task sheet at a time; desktop keeps a menu and a drawer in separate regions.
   const narrow=()=>window.matchMedia('(max-width: 900px)').matches;
+  // Crossing into the phone layout keeps one sheet: the menu the user opened last stays.
+  useEffect(()=>{const media=window.matchMedia('(max-width: 900px)');const narrowed=()=>{if(media.matches&&surfaces.current.menu)setPanel(null);};
+    media.addEventListener('change',narrowed);return()=>media.removeEventListener('change',narrowed);},[]);
   function openMenu(next:Menu,toggle=true){setMenu(value=>toggle&&value===next?null:next);if(next&&narrow())setPanel(null);if(next==='overlays'&&menu!=='overlays')atlas.retry();}
   function openPanel(next:Panel){setPanel(next);if(next&&narrow())setMenu(null);}
   useEffect(()=>{if(!atlasRequest)return;
