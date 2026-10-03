@@ -49,6 +49,23 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   is gone (the polar map keeps a labeled "Base site" ring). Opening a mission
   frames all assets (previously 2 of 5 were off-screen). Journeys assert
   vector markers per kind; an icon unit test rejects letter glyphs.
+  Pushed `70a7e69`.
+- **M5+M6 screening score and analysis grid.** `settlement-screening-v2` adds a
+  Python preliminary screening score = 100 × (0.5 × low-slope area fraction +
+  0.5 × mean modeled solar visibility); unevaluated criteria contribute 0 and
+  lower data completeness (terrain-only ≤ 50%, labeled *Incomplete
+  evidence*). Bands strong/promising/mixed/constrained always pair color with
+  text and number; ranks are within evidence groups only. Temperature and
+  geology stay descriptive. Candidate cards show rank, score, band, criterion
+  bars, completeness and distance; *Why this score?* lists weights,
+  contributions and basis. `POST /atlas/suitability/neighborhood` returns the
+  candidate's exact native cells (same windows/weights); tests prove its
+  fractions reproduce each candidate on polar 240 m and global grids. The globe
+  draws those cells (low slope / steeper / missing) with a legend, hover
+  readout and toggle, flies to the candidate, and clears rings and grid when
+  the browser closes. Real Shackleton results score 24–49% (mixed or
+  constrained): rough terrain is not inflated. Python suitability: 11 tests;
+  settlement journeys 7/7; build passes.
 
 ## Spatial workspace — verified and pushed
 

@@ -28,9 +28,32 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     const result=button.locator('..');await expect(result).toContainText(`${(candidate.low_slope_fraction*100).toFixed(0)}% low-slope terrain`);
     await result.getByText('Why this candidate?',{exact:true}).click();
     await expect(result).toContainText(candidate.source_id);await expect(result).toContainText('No location-accurate time-resolved sunlight');
-    expect(Number(await page.getByTestId('moon-canvas').getAttribute('data-sector-boundaries'))).toBeGreaterThan(0);
+    // Preliminary screening score: the card shows the stored Python score, band and completeness.
+    await expect(page.getByTestId(`score-${candidate.id}`)).toHaveText(`${candidate.screening_score.toFixed(0)}%`);
+    expect(candidate.screening_score).toBeCloseTo(100*(.5*candidate.low_slope_fraction+.5*candidate.solar_visibility!),9);
+    const group=report.candidates.filter(item=>item.evidence_group===candidate.evidence_group);
+    expect(group.map(item=>item.rank_in_group)).toEqual(group.map((_,index)=>index+1));
+    expect(group.map(item=>item.screening_score)).toEqual([...group.map(item=>item.screening_score)].sort((a,b)=>b-a));
+    const host=page.getByTestId('moon-canvas');
+    expect(Number(await host.getAttribute('data-candidate-rings'))).toBe(report.candidates.length);
+    // The grid is the candidate's actual evaluated native cells, fetched from the typed endpoint.
+    const cells=await(await request.post('/api/atlas/suitability/neighborhood',{data:{latitude_deg:candidate.latitude_deg,longitude_deg:candidate.longitude_deg,
+      radius_km:candidate.radius_km,dataset_id:candidate.dataset_id,max_slope_deg:report.request.max_slope_deg}})).json();
+    expect(cells.low_slope_fraction).toBeCloseTo(candidate.low_slope_fraction,12);
+    await expect(host).toHaveAttribute('data-grid-cells',String(cells.cells.length));
+    await expect(page.getByTestId('grid-status')).toContainText(`${cells.cells.length} native cells · ${Math.round(cells.spacing_m)} m spacing`);
+    // Selecting a candidate focuses the camera on it.
+    await expect.poll(async()=>{const [x,y,z]=(await host.getAttribute('data-camera'))!.split(',').map(Number),r=Math.hypot(x,y,z);
+      const lat=Math.asin(y/r)*180/Math.PI;return Math.abs(lat-candidate.latitude_deg)<.2&&r<1.05;}).toBe(true);
+    await page.getByRole('checkbox',{name:'Show analysis grid on the Moon'}).uncheck();
+    await expect(host).toHaveAttribute('data-grid-cells','0');
+    await page.getByRole('checkbox',{name:'Show analysis grid on the Moon'}).check();
+    await expect(host).toHaveAttribute('data-grid-cells',String(cells.cells.length));
+    await result.getByText('Why this score?',{exact:true}).click();
+    await expect(result.locator('.score-breakdown')).toContainText(`+${(50*candidate.low_slope_fraction).toFixed(1)}`);
     await page.screenshot({path:'../artifacts/simple-settlement-evidence.png'});
     await page.getByRole('button',{name:'Create mission at selected location',exact:true}).click();
+    // Leaving the candidate browser removes its rings and grid from the Moon.
     await expect(page.getByTestId('mission-site-handoff')).toContainText('Selected screening candidate');
     await expect(page.getByTestId('mission-site-handoff')).toContainText(`${candidate.latitude_deg.toFixed(5)}° / ${candidate.longitude_deg.toFixed(5)}° E`);
     await expect(page.getByLabel('Scenario name',{exact:true})).toBeVisible();
@@ -99,6 +122,11 @@ test('global screening exposes missing evidence, editable assumptions, loading, 
   await expect(page.getByTestId('candidate-search-context')).toContainText('Within 10 km');
   await expect(page.getByRole('region',{name:'Terrain-only candidates'})).toBeVisible();
   await expect(page.getByRole('region',{name:'Terrain and sunlight candidates'})).toHaveCount(0);
+  // Missing sunlight never raises a score: terrain-only candidates top out at 50% and say why.
+  for(const item of report.candidates){expect(item.data_completeness).toBe(.5);expect(item.screening_score).toBeLessThanOrEqual(50);
+    expect(item.score_components[1]).toMatchObject({evaluated:false,contribution:0});}
+  await expect(page.locator('.candidate-card').first()).toContainText('Incomplete evidence');
+  await expect(page.locator('.candidate-card').first()).toContainText('Not evaluated');
   await page.getByText('Why this candidate?',{exact:true}).first().click();
   await expect(page.getByRole('region',{name:'Settlement suitability'})).toContainText('Comparable average sunlight coverage is unavailable');
 });
@@ -124,5 +152,10 @@ for(const [width,height] of [[1920,1080],[1440,900],[1366,768],[1024,768],[390,8
       await expect(page.getByRole('button',{name:'Reset globe',exact:true})).toBeInViewport();
     }
     await page.screenshot({path:`../artifacts/simple-settlement-${width}.png`});
+    // Candidate rings and grids belong to the browser: closing it clears the Moon.
+    await expect.poll(async()=>Number(await page.getByTestId('moon-canvas').getAttribute('data-candidate-rings'))).toBeGreaterThan(0);
+    await page.getByRole('button',{name:'Close settlement sites',exact:true}).click();
+    await expect(page.getByTestId('moon-canvas')).toHaveAttribute('data-candidate-rings','0');
+    await expect(page.getByTestId('moon-canvas')).toHaveAttribute('data-grid-cells','0');
   });
 }

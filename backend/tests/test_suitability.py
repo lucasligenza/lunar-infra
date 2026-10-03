@@ -103,7 +103,88 @@ def test_suitability_api_validates_inputs_and_returns_no_composite_score(tmp_pat
         response=client.post('/atlas/suitability',json=body);assert response.status_code==200
         report=SuitabilityReport.model_validate(response.json());assert report.candidates
         assert all(item.solar_visibility is None for item in report.candidates)
-        assert 'score' not in response.text
+        # Preliminary screening score: bounded, explained and never a habitability claim.
+        assert 'habitab' not in response.text.lower().replace('not habitability','')
+        for item in report.candidates:
+            assert 0<=item.screening_score<=100 and item.data_completeness==.5 and item.screening_score<=50
+            assert [component.criterion for component in item.score_components]==['low_slope_terrain','solar_visibility']
         body['max_slope_deg']=-1;assert client.post('/atlas/suitability',json=body).status_code==422
         body['max_slope_deg']=5;body['area']['latitude_deg']=91
         assert client.post('/atlas/suitability',json=body).status_code==422
+
+
+def test_screening_score_formula_bands_and_missing_evidence():
+    from backend.app.services.screening_score import screening_score,band,WEIGHTS
+    assert WEIGHTS=={'low_slope_terrain':.5,'solar_visibility':.5}
+    score,completeness,name,components=screening_score(.8,.6,5)
+    assert score==pytest.approx(70) and completeness==1 and name=='promising'
+    assert [c.contribution for c in components]==pytest.approx([40,30])
+    assert all(c.evaluated for c in components)
+    # Missing solar evidence contributes zero and halves completeness; it can never raise a score.
+    for terrain in [0,.25,.5,.9,1]:
+        missing,missing_completeness,_,parts=screening_score(terrain,None,5)
+        assert missing==pytest.approx(50*terrain) and missing_completeness==.5
+        assert parts[1].evaluated is False and parts[1].value is None and parts[1].contribution==0
+        for sun in [0,.3,1]:
+            assert missing<=screening_score(terrain,sun,5)[0]+1e-12
+    assert screening_score(1,1,5)[0]==100 and screening_score(0,0,5)[0]==0
+    assert [band(value) for value in [100,80,79.99,60,59.99,40,39.99,0]]==['strong','strong','promising','promising','mixed','mixed','constrained','constrained']
+    with pytest.raises(ValueError):screening_score(1.2,None,5)
+    with pytest.raises(ValueError):screening_score(.5,-.1,5)
+
+
+def test_real_scores_match_evaluated_criteria_and_rank_within_groups():
+    atlas=AtlasStore(polar=TerrainStore())
+    report=screen(atlas,SuitabilityRequest(area=CircleArea(latitude_deg=-89.67,longitude_deg=129.78,radius_km=25)))
+    assert report.model_version=='settlement-screening-v2' and report.score_method=='preliminary-screening-score-v1'
+    assert report==screen(atlas,SuitabilityRequest(area=CircleArea(latitude_deg=-89.67,longitude_deg=129.78,radius_km=25)))
+    for item in report.candidates:
+        expected=100*(.5*item.low_slope_fraction+.5*(item.solar_visibility if item.solar_visibility is not None else 0))
+        assert item.screening_score==pytest.approx(expected,abs=1e-9)
+        assert item.data_completeness==(1 if item.solar_visibility is not None else .5)
+        assert sum(c.contribution for c in item.score_components)==pytest.approx(item.screening_score)
+    for group in {item.evidence_group for item in report.candidates}:
+        members=[item for item in report.candidates if item.evidence_group==group]
+        assert [item.rank_in_group for item in members]==list(range(1,len(members)+1))
+        assert [item.screening_score for item in members]==sorted((item.screening_score for item in members),reverse=True)
+    completeness=[item.data_completeness for item in report.candidates]
+    assert completeness==sorted(completeness,reverse=True)
+    atlas.close()
+
+
+def test_neighborhood_cells_reproduce_candidate_screening_on_polar_and_global_grids():
+    from backend.app.models.suitability import NeighborhoodRequest
+    from backend.app.services.suitability import neighborhood
+    atlas=AtlasStore(polar=TerrainStore())
+    for area in [CircleArea(latitude_deg=-89.67,longitude_deg=129.78,radius_km=25),CircleArea(latitude_deg=.67,longitude_deg=23.47,radius_km=25)]:
+        report=screen(atlas,SuitabilityRequest(area=area))
+        for candidate in report.candidates[:3]:
+            cells=neighborhood(atlas,NeighborhoodRequest(latitude_deg=candidate.latitude_deg,longitude_deg=candidate.longitude_deg,
+                radius_km=candidate.radius_km,dataset_id=candidate.dataset_id,max_slope_deg=report.request.max_slope_deg))
+            assert cells.dataset_id==candidate.dataset_id and cells.spacing_m==pytest.approx(candidate.spacing_m)
+            assert cells.low_slope_fraction==pytest.approx(candidate.low_slope_fraction,abs=1e-12)
+            assert cells.valid_terrain_fraction==pytest.approx(candidate.valid_terrain_fraction,abs=1e-12)
+            assert cells.solar_valid_fraction==pytest.approx(candidate.solar_valid_fraction,abs=1e-12)
+            assert (cells.solar_visibility is None)==(candidate.solar_visibility is None)
+            if candidate.solar_visibility is not None:assert cells.solar_visibility==pytest.approx(candidate.solar_visibility,abs=1e-12)
+            assert len(cells.cells)>=7
+            for cell in cells.cells:
+                distance=float(angular_distance(cell.center[0],cell.center[1],candidate.longitude_deg,candidate.latitude_deg))*RADIUS_M/1000
+                assert distance<=candidate.radius_km+1e-6
+                assert len(cell.polygon)==4 and cell.area_km2>0
+                assert cell.low_slope is None or cell.low_slope==(cell.slope_deg<=report.request.max_slope_deg)
+                # Cell edges follow native spacing; no finer grid is drawn than the data supports.
+                edge=float(angular_distance(*cell.polygon[0],*cell.polygon[1]))*RADIUS_M
+                assert edge==pytest.approx(cells.spacing_m*(1 if candidate.dataset_id=='lola-south' else math.cos(math.radians(cell.center[1]))),rel=.05)
+    with pytest.raises(ValueError,match='outside the prepared south-pole'):
+        neighborhood(atlas,NeighborhoodRequest(latitude_deg=0,longitude_deg=0,radius_km=5,dataset_id='lola-south'))
+    atlas.close()
+
+
+def test_neighborhood_api_is_typed_and_rejects_invalid_requests(tmp_path):
+    with TestClient(create_app(db_path=tmp_path/'missions.sqlite')) as client:
+        body={'latitude_deg':.67,'longitude_deg':23.47,'radius_km':5,'dataset_id':'gld100'}
+        response=client.post('/atlas/suitability/neighborhood',json=body);assert response.status_code==200
+        assert response.json()['cells'] and response.json()['source_id']
+        assert client.post('/atlas/suitability/neighborhood',json=body|{'dataset_id':'mock'}).status_code==422
+        assert client.post('/atlas/suitability/neighborhood',json=body|{'radius_km':0}).status_code==422

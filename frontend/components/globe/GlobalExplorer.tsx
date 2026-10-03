@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState,useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { fetchScientific } from '../../lib/api';
+import { calculateScientific, fetchScientific } from '../../lib/api';
+import type { NeighborhoodReport } from '../../types/suitability';
 import type {SettlementState} from '../../lib/useSettlement';
 import {overlayLayers,type AtlasCatalog} from '../../lib/useAtlasCatalog';
 import AnalysisTools,{type AnalysisTab} from './AnalysisTools';
@@ -67,9 +68,27 @@ export default function GlobalExplorer({ atlas, mission=null, location, assets, 
   const boundaries=useMemo(()=>[...(preparedRegion&&environmental?[polarBoundary(preparedRegion)]:[]),
     ...(panel==='analysis'&&sector?[sector.boundary]:[]),
     ...(panel==='analysis'&&location&&analysisTab==='analysis'?[areaBoundary(location,analysis)]:[]),
-    ...(panel==='analysis'&&analysis.profile?[analysis.profile.samples]:[]),
-    ...(panel==='candidates'?settlement.report?.candidates.map(point=>areaBoundary(point,{...analysis,radius:String(point.radius_km),kind:'circle'}))??[]:[])],
-    [sector,location,panel,analysisTab,analysis,settlement.report,preparedRegion,environmental]);
+    ...(panel==='analysis'&&analysis.profile?[analysis.profile.samples]:[])],
+    [sector,location,panel,analysisTab,analysis,preparedRegion,environmental]);
+  // Candidate rings (score-band colors) and the selected candidate's native analysis
+  // cells exist only while the candidate browser is open.
+  const selectedCandidate=settlement.report?.candidates.find(candidate=>candidate.latitude_deg===location?.latitude_deg&&candidate.longitude_deg===location?.longitude_deg)??null;
+  const [gridVisible,setGridVisible]=useState(true);
+  const [neighborhood,setNeighborhood]=useState<{id:string;report:NeighborhoodReport|null;error:string|null}|null>(null);
+  useEffect(()=>{
+    if(panel!=='candidates'||!selectedCandidate||!gridVisible||!settlement.report){return;}
+    if(neighborhood?.id===selectedCandidate.id)return;
+    const abort=new AbortController();setNeighborhood({id:selectedCandidate.id,report:null,error:null});
+    calculateScientific<NeighborhoodReport>('/atlas/suitability/neighborhood',{latitude_deg:selectedCandidate.latitude_deg,longitude_deg:selectedCandidate.longitude_deg,
+      radius_km:selectedCandidate.radius_km,dataset_id:selectedCandidate.dataset_id,max_slope_deg:settlement.report.request.max_slope_deg},abort.signal)
+      .then(report=>{if(!abort.signal.aborted)setNeighborhood({id:selectedCandidate.id,report,error:null});})
+      .catch(error=>{if(!abort.signal.aborted)setNeighborhood({id:selectedCandidate.id,report:null,error:error instanceof Error?error.message:'Analysis cells unavailable'});});
+    return ()=>abort.abort();
+  },[panel,selectedCandidate?.id,gridVisible,settlement.report]);
+  useEffect(()=>{if(!settlement.report)setNeighborhood(null);},[settlement.report]);
+  const candidateRings=useMemo(()=>panel==='candidates'?settlement.report?.candidates.map(candidate=>({id:candidate.id,latitude_deg:candidate.latitude_deg,longitude_deg:candidate.longitude_deg,
+    radius_km:candidate.radius_km,band:candidate.score_band,selected:candidate.id===selectedCandidate?.id}))??[]:[],[panel,settlement.report,selectedCandidate?.id]);
+  const gridReport=panel==='candidates'&&gridVisible&&neighborhood?.id===selectedCandidate?.id?neighborhood?.report??null:null;
   useEffect(()=>{
     const abort = new AbortController(); setError(null);setDestinationError(null);setDestinationsLoading(true);
     fetchScientific<GlobeMetadata>('/globe',abort.signal)
@@ -133,7 +152,7 @@ export default function GlobalExplorer({ atlas, mission=null, location, assets, 
       <div className="globe-viewport">
     {metadata?.available ? <MoonCanvas metadata={metadata} location={location} flight={flight} assets={assets} base={base}
       texture={texture} grid={grid} camera={camera} onCamera={onCamera} onReady={setReady} atlas={atlasView} onAtlasStatus={setAtlasStatus}
-      boundaries={boundaries}
+      boundaries={boundaries} candidates={candidateRings} neighborhood={gridReport}
       onSelect={point=>{onSelect(point);setSelected(null);if(narrow())setMenu(null);setPanel(current=>current==='analysis'?'analysis':'location');}} /> :
       <div className="globe-loading" role={error || metadata ? 'alert':'status'}><h2>{error || metadata ? 'Global data unavailable':'Preparing the lunar view'}</h2>
         <p>{error ?? (metadata ? 'Prepare the global NASA data and restart the API. The regional scientific map remains available.' : 'Loading verified global data metadata…')}</p>
@@ -179,7 +198,14 @@ export default function GlobalExplorer({ atlas, mission=null, location, assets, 
         </LocationPanel>
       </Drawer>}
     {panel==='candidates'&&<Drawer label="Settlement sites" title="Settlement sites" eyebrow="SCREENING" closeLabel="Close settlement sites" onClose={()=>setPanel(null)} onBack={location?()=>setPanel('location'):undefined} backLabel="Back to location" className="candidate-drawer">
-      <SettlementPanel state={settlement} location={location} onSelect={candidate=>choose(candidate,null,1.08,true)} onMission={()=>onMode('mission')}/>
+      <SettlementPanel state={settlement} location={location} selected={selectedCandidate} onSelect={candidate=>choose(candidate,null,Math.max(1.035,1+candidate.radius_km*7/1737.4),true)} onMission={()=>onMode('mission')}
+        gridControls={selectedCandidate&&<div className="grid-controls" aria-label="Analysis grid">
+          <label className="toggle"><input type="checkbox" checked={gridVisible} onChange={event=>setGridVisible(event.target.checked)}/>Show analysis grid on the Moon</label>
+          {gridVisible&&<>
+            <div className="grid-legend"><span><i style={{background:'rgba(83,185,135,.6)'}}/>Slope ≤ {settlement.report?.request.max_slope_deg}°</span><span><i style={{background:'rgba(201,122,114,.6)'}}/>Steeper</span><span><i style={{background:'rgba(125,135,148,.6)'}}/>Missing data</span></div>
+            <p className="grid-cell-readout" data-testid="grid-status">{neighborhood?.error?`Analysis cells unavailable: ${neighborhood.error}`:!gridReport?'Loading evaluated cells…':
+              `${gridReport.cells.length} native cells · ${Math.round(gridReport.spacing_m)} m spacing · ${gridReport.source_id}. Hover a cell for its values.`}</p></>}
+        </div>}/>
     </Drawer>}
     {panel==='analysis'&&<AnalysisTools location={location} dataset={atlasView.dataset} tab={analysisTab} onTab={setAnalysisTab} atlas={atlas} onClose={()=>setPanel(null)} onBack={location?()=>setPanel('location'):undefined}
       sector={sector} onSector={onSector} onSelect={(point,distance)=>choose(point,null,distance,true)} analysis={analysis} onAnalysis={onAnalysis}/>}

@@ -1,4 +1,4 @@
-"""Deterministic, area-weighted terrain/solar tradeoffs on a lunar sphere."""
+"""Deterministic, area-weighted terrain/solar tradeoffs and preliminary screening scores on a lunar sphere."""
 import math
 import numpy as np
 from backend.app.models.analysis import CircleArea
@@ -6,8 +6,9 @@ from backend.app.models.suitability import Candidate, SuitabilityReport
 from backend.app.geospatial.terrain import RADIUS_M, project, INVERSE
 from backend.app.geospatial.global_terrain import slope_rows
 from backend.app.services.regional_analysis import angular_distance, selection
+from backend.app.services.screening_score import SCORE_METHOD, screening_score
 
-MODEL = 'settlement-screening-v1'
+MODEL = 'settlement-screening-v2'
 MAX_CELLS = 2_000_000
 MIN_COVERAGE = .9
 UNKNOWN = ['Radiation protection, communications, subsurface bearing strength and accessible resources are not evaluated.',
@@ -133,9 +134,11 @@ def screen(atlas,request):
         if thermal is None or thermal.status!='ok':unknowns.append('Selected local-time thermal bin has no supported center measurement.')
         else:reasons.append(f'{thermal.value:.1f} K center brightness temperature in one summer/local-time bin; descriptive only.')
         if radius>request.candidate_radius_km:reasons.append('Neighborhood enlarged to span at least three native terrain pixels across its diameter.')
-        candidates.append(Candidate(id=f'candidate-{index+1}',longitude_deg=lon,latitude_deg=lat,radius_km=radius,
+        low_fraction=float(np.clip(low/support,0,1))
+        score,completeness,score_band,components=screening_score(low_fraction,solar,request.max_slope_deg)
+        candidates.append(Candidate(screening_score=min(100.0,score),score_band=score_band,data_completeness=completeness,score_components=components,id=f'candidate-{index+1}',longitude_deg=lon,latitude_deg=lat,radius_km=radius,
             dataset_id=source.id,source_id=source.product_id,version=source.version,spacing_m=native,
-            valid_terrain_fraction=float(np.clip(support/total,0,1)),low_slope_fraction=float(np.clip(low/support,0,1)),low_slope_area_km2=low/1e6,
+            valid_terrain_fraction=float(np.clip(support/total,0,1)),low_slope_fraction=low_fraction,low_slope_area_km2=low/1e6,
             mean_slope_deg=float(np.sum(slopes[valid]*weights[valid])/support),solar_visibility=solar,
             solar_valid_fraction=solar_fraction,temperature_at_center=thermal,
             evidence_group=source.id+('/terrain-and-sunlight' if solar is not None else '/terrain-only'),
@@ -151,11 +154,70 @@ def screen(atlas,request):
             if all(float(angular_distance(item.longitude_deg,item.latitude_deg,prior.longitude_deg,prior.latitude_deg))*RADIUS_M/1000>=min(item.radius_km,prior.radius_km) for prior in selected):
                 selected.append(item)
     if not selected:warnings.append('No neighborhoods have at least 90% valid terrain support at the selected resolution.')
-    return SuitabilityReport(model_version=MODEL,request=request,candidates=selected,evaluated_centers=len(points),
+    # Present the most complete evidence first, then score within each evidence group.
+    # Ranks never compare groups with different supporting evidence.
+    selected.sort(key=lambda item:(-item.data_completeness,item.evidence_group,-item.screening_score,item.id))
+    for group in {item.evidence_group for item in selected}:
+        for rank,item in enumerate((item for item in selected if item.evidence_group==group),start=1):item.rank_in_group=rank
+    return SuitabilityReport(model_version=MODEL,score_method=SCORE_METHOD,request=request,candidates=selected,evaluated_centers=len(points),
         supported_candidates=len(candidates),search_spacing_km=spacing,sources=[atlas.definitions[key].model_dump() for key in sorted(source_ids)],
         assumptions=['Protected human outpost screening, not a human safety or construction certification.',
             'Equal-distance ring search, at most eight rings; not exhaustive site optimization.',
             'At least 90% valid area required per ranked criterion; missing evidence never increases suitability.',
             'Tradeoff fronts compare low-slope area fraction and sunlight only within the same terrain source/evidence group.',
             'Spherical surface distances; center-inclusion boundaries; stereographic cell areas corrected by local scale squared.',
-            'Temperature and geology are descriptive; no universal thermal preference or resource inference.'],warnings=warnings)
+            'Temperature and geology are descriptive; no universal thermal preference or resource inference.',
+            'Preliminary screening score = 100 x (0.5 x low-slope area fraction + 0.5 x mean modeled solar visibility). An unevaluated criterion contributes 0 and lowers data completeness; it never raises the score.',
+            'The score is a relative engineering-screening aid within one evidence group, not habitability, construction safety or mission-success probability.'],warnings=warnings)
+
+
+NEIGHBORHOOD_MAX_CELLS=20000
+
+
+def neighborhood(atlas,request):
+    """Return the exact native cells a candidate's screening evaluated, with their own values.
+
+    Uses the same windows, weights and thresholds as `screen`, so aggregate fractions
+    reproduce the candidate. No finer grid or interpolated cell is created.
+    """
+    from backend.app.models.suitability import NeighborhoodCell,NeighborhoodReport
+    from backend.app.geospatial.terrain import FORWARD
+    lon,lat,radius=request.longitude_deg%360,request.latitude_deg,request.radius_km
+    if request.dataset_id=='lola-south':
+        local=polar_window(atlas.polar,lon,lat,radius)
+        if local is None:raise ValueError('Neighborhood is outside the prepared south-pole terrain')
+        elevation,slopes,weights,longitude,latitude=local
+        source=atlas.definitions['lola-south'];spacing=float(atlas.polar.transform.a)
+        hx,hy=atlas.polar.transform.a/2,abs(atlas.polar.transform.e)/2
+        x,y=FORWARD.transform(longitude,latitude)
+        corners=[INVERSE.transform(x+dx,y+dy) for dx,dy in ((-hx,-hy),(hx,-hy),(hx,hy),(-hx,hy))]
+        method='Native 240 m south polar stereographic cells; cell-center inclusion within the great-circle radius; stereographic scale-corrected areas.'
+    else:
+        grid=atlas.grid(request.dataset_id)
+        elevation,slopes,weights,longitude,latitude=terrain_window(grid,lon,lat,radius)
+        source=grid.source;spacing=float(grid.step_m);half=.5/grid.ppd
+        corners=[((longitude+dx)%360,np.clip(latitude+dy,-90,90)) for dx,dy in ((-half,-half),(half,-half),(half,half),(-half,half))]
+        method='Native equirectangular cells of the screening grid; cell-center inclusion within the great-circle radius; spherical cell areas.'
+    inside=weights>0
+    if int(inside.sum())>NEIGHBORHOOD_MAX_CELLS:raise ValueError('Neighborhood exceeds 20000 native cells; choose a smaller radius')
+    illumination=atlas.environment.get('solar-visibility')
+    solar=illumination.at(longitude,latitude) if illumination is not None else np.full(weights.shape,np.nan)
+    total=float(weights[inside].sum())
+    valid=np.isfinite(elevation)&np.isfinite(slopes)&inside
+    support=float(weights[valid].sum())
+    valid_sun=np.isfinite(solar)&valid;light=float(weights[valid_sun].sum())
+    solar_fraction=float(np.clip(light/total,0,1)) if total else 0.0
+    def finite(value):return float(value) if np.isfinite(value) else None
+    cells=[]
+    for index in zip(*np.nonzero(inside)):
+        slope=finite(slopes[index]);ok=bool(valid[index])
+        cells.append(NeighborhoodCell(center=(float(longitude[index])%360,float(latitude[index])),
+            polygon=[(float(corner[0][index])%360,float(corner[1][index])) for corner in corners],
+            elevation_m=finite(elevation[index]),slope_deg=slope,low_slope=(slope<=request.max_slope_deg) if ok else None,
+            solar_visibility=finite(solar[index]) if ok else None,area_km2=float(weights[index])/1e6))
+    return NeighborhoodReport(dataset_id=source.id,source_id=source.product_id,version=source.version,spacing_m=spacing,
+        radius_km=radius,max_slope_deg=request.max_slope_deg,center=(lon,lat),cells=cells,
+        valid_terrain_fraction=float(np.clip(support/total,0,1)) if total else 0.0,
+        low_slope_fraction=float(np.clip(weights[valid&(slopes<=request.max_slope_deg)].sum()/support,0,1)) if support else None,
+        solar_visibility=float(np.sum(solar[valid_sun]*weights[valid_sun])/light) if solar_fraction>=MIN_COVERAGE else None,
+        solar_valid_fraction=solar_fraction,method=method)

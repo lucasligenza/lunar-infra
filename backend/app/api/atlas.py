@@ -1,5 +1,5 @@
-from backend.app.models.suitability import SuitabilityRequest,SuitabilityReport
-from backend.app.services.suitability import screen
+from backend.app.models.suitability import SuitabilityRequest,SuitabilityReport,NeighborhoodRequest,NeighborhoodReport
+from backend.app.services.suitability import screen,neighborhood
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
@@ -91,4 +91,10 @@ def inspect(request:Request,
 @router.post('/suitability',response_model=SuitabilityReport)
 def settlement_screening(body:SuitabilityRequest,request:Request):
     try:return screen(request.app.state.atlas,body)
+    except ValueError as error:raise HTTPException(422,detail=str(error))
+
+
+@router.post('/suitability/neighborhood',response_model=NeighborhoodReport)
+def screening_neighborhood(body:NeighborhoodRequest,request:Request):
+    try:return neighborhood(request.app.state.atlas,body)
     except ValueError as error:raise HTTPException(422,detail=str(error))
