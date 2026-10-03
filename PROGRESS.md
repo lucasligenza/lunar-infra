@@ -90,7 +90,14 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   and re-run; new journeys cover explanation vs interval math, event marks,
   outcome, tutorial dismiss/reopen, rover start/mid/end, backward scrubbing,
   reload and UI route setup. Python rover tests 5; build passes. Rendered
-  review at all five sizes (`artifacts/claude-m7`).
+  review at all five sizes (`artifacts/claude-m7`). Pushed `b6da0b5`.
+- **CI note.** GitHub runs for `70a7e69` and `524a27f` failed only the
+  zoom-bound journey (expected 1.08, now 1.03 by design); `b6da0b5` updates
+  that expectation. `611b889` and `3cc17f8` passed.
+- **Remaining (M9, not done):** confirm CI on `b6da0b5`; refresh stale lower
+  README sections and design-system/spatial docs; add explicit journeys for
+  overlay-menu rows, one-drawer-at-a-time and location unavailable states;
+  prune CSS rules for removed components; final five-size acceptance review.
 
 ## Spatial workspace — verified and pushed
 
