@@ -1,13 +1,25 @@
 # LunarOS engineering rules
 
-Implement the spatial workspace redesign in docs/spatial-workspace.md, preserving the
-accepted workspace behavior in docs/mission-workspace-redesign.md:
-surface-first Build/Simulate, contextual infrastructure and inspectors, compact
-playback, and disclosed scientific metadata. Preserve existing science, missions,
-simulations and location state. Primary navigation is Explore / Build / Simulate;
-regional analysis remains available contextually and through commands.
-No new datasets, numerical models, APIs, AI or habitability score.
+Implement the interaction redesign in docs/interaction-redesign.md on top of the
+accepted spatial workspace (docs/spatial-workspace.md): one canvas, one contextual
+surface per screen region, separate Overlays / Location / Asset / Candidate /
+Simulation surfaces, vector asset icons, explained simulation playback.
+Preserve existing science, missions, simulations and location state. Primary
+navigation is Explore / Build / Simulate; regional analysis remains available
+contextually and through commands. No new datasets, AI or LLM-generated text.
+User-authorized additions for this phase only: the preliminary screening score,
+a typed candidate-neighborhood endpoint, and deterministic rover kinematics.
 Use actual rendered browser review and journey tests.
+
+Preliminary screening score (settlement-screening-v2, docs/settlement-screening.md):
+- A 0–100% relative engineering-screening aid computed in Python from criteria
+  the screening actually evaluates. Never call it habitability, safety,
+  construction suitability or mission-success probability.
+- Deterministic, with per-criterion contributions shown. Unevaluated criteria
+  contribute zero; missing data must never raise a score. Show data
+  completeness separately and keep evidence groups explicit.
+- Temperature and geology stay descriptive, outside the score. Keep the
+  detailed evidence view.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.
 

@@ -1,5 +1,20 @@
 # LunarOS progress
 
+## Interaction redesign — in progress
+
+Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md).
+
+- **M1 onboarding (2026-10-03).** Baseline `b8422f6` matched origin/main.
+  Production build captured and inspected at 1920×1080, 1440×900, 1366×768,
+  1024×768 and 390×844 (ignored `artifacts/claude-baseline`). Baseline
+  `uv run pytest`: 106 passed, 8 subtests, 9 dependency warnings (114.9s).
+  Orange marks traced to persistent amber settlement rings and the amber base
+  sphere in `MoonCanvas`. Added Claude project skills (`lunar-science`,
+  `lunaros-ui`, `lunar-simulation`, `lunar-validation`) and root `CLAUDE.md`.
+  AGENTS.md now permits the user-requested *preliminary screening score*
+  (never habitability/safety), the candidate-neighborhood endpoint and
+  deterministic rover kinematics. No code changed in this milestone.
+
 ## Spatial workspace — verified and pushed
 
 The new accepted plan is [The Moon is the application](docs/spatial-workspace.md).
