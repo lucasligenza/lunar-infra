@@ -1,5 +1,26 @@
 # LunarOS UX audit and Phase 5 plan
 
+## Spatial workspace follow-up, baseline a0ecd7d
+
+The latest accepted direction is [The Moon is the application](spatial-workspace.md).
+Actual before/after screenshots at 1920x1080, 1440x900, 1366x768 and 1024x768
+show the former reserved full-height rails replaced by bounded floating context.
+Explore / Build / Simulate are the three primary activities; regional analysis
+remains available contextually and through commands. Places is opened on demand,
+Overlays uses compact rows, and source details remain disclosed.
+
+The canvas keeps its exact width and camera position when desktop panels open.
+Tests bound those panels to less than 25% of canvas area and verify reachable
+close/camera controls. Build retains its closed palette/inspector default;
+Simulate retains its compact current-interval strip and explicit chart drawer.
+Rendered phone review corrected a wrapped toolbar covering Reset and removed
+redundant map-footer text beneath it. Dirty mission names retain access to Save.
+Global mission tools revealed another real collision with the layer legend;
+status, fly-to and legend now use the free edge while those tools are open.
+
+All older sections below describe their historical baselines. Current acceptance,
+scientific limitations and validation status are recorded in PROGRESS.md.
+
 ## Mission workspace visual follow-up, baseline d852791
 
 Fresh 1440×900 and 1366×768 Build/Simulate screenshots showed three competing

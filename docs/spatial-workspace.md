@@ -69,3 +69,29 @@ No scientific measurements, source grids or backend contracts changed.
 Before/after images remain in ignored `artifacts/spatial-before-*` and
 `artifacts/spatial-final-*`, with mission and environmental screenshots produced
 by the existing journeys. See PROGRESS.md for final validation and commit status.
+
+## Verification scope and retained limitations
+
+- Rendered Chromium review: 1920x1080, 1440x900, 1366x768, 1024x768 and 390x844.
+  Short-window checks use CSS viewport equivalents of 125% and 200% zoom;
+  native browser zoom and other browser engines were not independently certified.
+- Existing journeys cover placement, moving/editing/removing equipment, revision
+  conflicts, saved missions, mode transitions, real Python playback, commands,
+  help, missing data and source-linked geological color inspection.
+- Global and local data keep their original sampling resolution. Temperature
+  and average solar visibility retain their prepared polar footprints and gaps.
+  No time-resolved sunlight or new human-safety assessment is introduced.
+- Screenshots prove visual layout and visible rendering only. Native numeric
+  raster comparisons and Python tests continue to validate measurements.
+- Local production preview runs at http://localhost:3000 with the API on 8000;
+  it requires those processes and the existing prepared cache to remain available.
+
+## Acceptance — 2026-10-03
+
+Implementation `c66a398` was committed and pushed to main. GitHub
+[validation 37130522577](https://github.com/lucasligenza/lunar-infra/actions/runs/37130522577)
+passed all 64 Chromium journeys (9.9m), 106 Python tests plus eight subtests,
+real NASA acquisition, types and production build. The final local production
+run independently passed all 64 journeys (10.5m). Screenshots at the listed
+sizes were inspected, including the repaired mission legend with tools open.
+The remaining follow-up is user review, not unimplemented scientific work.
