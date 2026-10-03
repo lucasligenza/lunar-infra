@@ -5,15 +5,27 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { lunarCoordinate, lunarVector, terrainHeight } from '../../lib/globe';
 import { ScientificOverlay } from '../../lib/atlas-render';
+import { MarkerTextures, disposeObject, greatCircle, neighborhoodGrid, surfaceLine, surfacePoint } from '../../lib/surface-layers';
+import type { MarkerTone } from '../../lib/asset-icons';
 import type { AtlasView } from '../../types/atlas';
 import type { CameraState, GlobeLocation, GlobeMetadata } from '../../types/globe';
-import {ASSET_SYMBOLS,type Asset} from '../../types/mission';
+import type { NeighborhoodReport, ScoreBand } from '../../types/suitability';
+import {ASSET_NAMES,type Asset} from '../../types/mission';
+
+/** Per-asset visual state during playback; derived from stored interval values by the caller. */
+export type AssetVisual={tone:MarkerTone;soc?:number|null;dim?:boolean;position?:GlobeLocation;note?:string};
+export type CandidateRing={id:string;latitude_deg:number;longitude_deg:number;radius_km:number;band:ScoreBand;selected:boolean};
+const BAND_COLOR:Record<ScoreBand,number>={strong:0x53b987,promising:0x8fc79a,mixed:0xd7a44b,constrained:0xc97a72};
+// Closest orbit: about 52 km above the reference sphere, enough to read a 5 km analysis grid.
+export const MIN_DISTANCE=1.03;
 
 type Props = { metadata: GlobeMetadata; location: GlobeLocation | null; flight: { coordinates: GlobeLocation; distance: number; serial: number } | null;
   assets: Asset[]; base: GlobeLocation | null; texture: boolean; grid: boolean; camera: CameraState | null;
   onCamera: (state: CameraState) => void; onSelect: (location: GlobeLocation) => void; onReady: (milliseconds: number) => void;
   atlas?:AtlasView; onAtlasStatus?:(value:string)=>void;boundaries?:GlobeLocation[][];
-  onAssetSelect?:(id:string)=>void;selectedAssetId?:string|null;placementActive?:boolean;controls?:ReactNode };
+  onAssetSelect?:(id:string)=>void;selectedAssetId?:string|null;placementActive?:boolean;controls?:ReactNode;
+  assetStates?:Record<string,AssetVisual>;routes?:{id:string;from:GlobeLocation;to:GlobeLocation;moving?:boolean}[];
+  candidates?:CandidateRing[];neighborhood?:NeighborhoodReport|null };
 
 export default function MoonCanvas(props: Props) {
   const host = useRef<HTMLDivElement>(null), latest = useRef(props);
@@ -22,7 +34,8 @@ export default function MoonCanvas(props: Props) {
   const [status, setStatus] = useState('Loading NASA imagery…');
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
-  const [tooltip,setTooltip]=useState<{name:string;x:number;y:number}|null>(null);
+  const [tooltip,setTooltip]=useState<{name:string;detail?:string;x:number;y:number}|null>(null);
+  const markerTextures=useRef<MarkerTextures|null>(null),analysisGroup=useRef<THREE.Group|null>(null);
   useEffect(()=>{if(status.includes('LOLA terrain ready'))recordActivity('DATA','Global terrain layer loaded',status);if(error)recordActivity('WARN','Global terrain unavailable',error);},[status,error]);
   const overlay=useRef<ScientificOverlay|null>(null);
   const boundaryGroup=useRef<THREE.Group|null>(null);
@@ -44,7 +57,7 @@ export default function MoonCanvas(props: Props) {
     const camera = new THREE.PerspectiveCamera(42, 1, .002, 30);
     camera.position.set(3.2, .6, .45);
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; controls.dampingFactor = .1; controls.minDistance = 1.08; controls.maxDistance = 6;
+    controls.enableDamping = true; controls.dampingFactor = .1; controls.minDistance = MIN_DISTANCE; controls.maxDistance = 6;
     controls.enablePan = true; controls.maxPolarAngle = Math.PI; controls.minPolarAngle = 0;
     controls.listenToKeyEvents(renderer.domElement);
     if (latest.current.camera) { camera.position.fromArray(latest.current.camera.position); camera.up.fromArray(latest.current.camera.up); controls.target.fromArray(latest.current.camera.target); }
@@ -59,6 +72,7 @@ export default function MoonCanvas(props: Props) {
     const key = new THREE.DirectionalLight(0xffffff, 2); key.position.set(3, 2, 4); scene.add(key);
     const markers = new THREE.Group(), grid = new THREE.Group(); scene.add(markers, grid);
     const boundaries=new THREE.Group();scene.add(boundaries);boundaryGroup.current=boundaries;
+    const analysis=new THREE.Group();scene.add(analysis);analysisGroup.current=analysis;markerTextures.current=new MarkerTextures();
     const gridMaterial = new THREE.LineBasicMaterial({ color: 0x8ecfe4, transparent: true, opacity: .22 });
     for (let latitude = -60; latitude <= 60; latitude += 30) {
       const points = Array.from({ length: 181 }, (_, i) => new THREE.Vector3(...lunarVector(i * 2, latitude, 1.012)));
@@ -98,11 +112,20 @@ export default function MoonCanvas(props: Props) {
       if (hit) { const [lon, lat] = lunarCoordinate(...hit.point.toArray()); latest.current.onSelect({ longitude_deg: lon, latitude_deg: lat, longitude_defined: Math.abs(lat) !== 90 }); }
     };
     const hover=(event:PointerEvent)=>{
-      if(!latest.current.onAssetSelect)return;
       const bounds=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();
       ray.setFromCamera(new THREE.Vector2((event.clientX-bounds.left)/bounds.width*2-1,-(event.clientY-bounds.top)/bounds.height*2+1),camera);
-      const hit=ray.intersectObjects([mesh,...markers.children.filter(marker=>marker.userData.assetId)])[0];
-      setTooltip(hit?.object.userData.assetName?{name:hit.object.userData.assetName,x:event.clientX-bounds.left,y:event.clientY-bounds.top}:null);
+      const at={x:event.clientX-bounds.left,y:event.clientY-bounds.top};
+      const marker=ray.intersectObjects(markers.children.filter(item=>item.userData.assetId))[0];
+      if(marker){setTooltip({name:marker.object.userData.assetName,detail:marker.object.userData.assetDetail,...at});return;}
+      // Hovering an analysis cell reads its own stored values; colors never supply numbers.
+      const fill=analysis.children.flatMap(child=>child.children).find(child=>child.userData.cellOfFace);
+      const cell=fill&&fill.visible?ray.intersectObject(fill)[0]:undefined;
+      const report=latest.current.neighborhood;
+      if(cell&&report&&cell.faceIndex!=null){const value=report.cells[fill!.userData.cellOfFace[cell.faceIndex]];
+        setTooltip({name:value.low_slope===true?`Low slope (≤ ${report.max_slope_deg}°)`:value.low_slope===false?`Steeper than ${report.max_slope_deg}°`:'Missing terrain data',
+          detail:[value.slope_deg!=null?`slope ${value.slope_deg.toFixed(2)}°`:null,value.elevation_m!=null?`elevation ${value.elevation_m.toLocaleString('en-US')} m`:null,
+            value.solar_visibility!=null?`avg. solar visibility ${(value.solar_visibility*100).toFixed(1)}%`:null,`${Math.round(report.spacing_m)} m native cell`].filter(Boolean).join(' · '),...at});return;}
+      setTooltip(null);
     };
     const keyboard = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
@@ -154,7 +177,9 @@ export default function MoonCanvas(props: Props) {
       if (controls.target.length() > .35) controls.target.setLength(.35);
       controls.update();
       scientific.update(camera);
-      if (camera.position.length() < 1.08) {camera.position.setLength(1.08);dirty=true;}
+      if (camera.position.length() < MIN_DISTANCE) {camera.position.setLength(MIN_DISTANCE);dirty=true;}
+      // The analysis grid draws over terrain; hide it when its neighborhood faces away.
+      for(const child of analysis.children)if(child.userData.center){const facing=child.userData.center.dot(camera.position.clone().normalize())>.15;if(child.visible!==facing){child.visible=facing;dirty=true;}}
       if (camera.position.length() > 6) {camera.position.setLength(6);dirty=true;}
       if(grid.visible!==latest.current.grid) {grid.visible=latest.current.grid;dirty=true;}
       const color = latest.current.texture ? 0xffffff : 0xa9b2ba;
@@ -180,7 +205,7 @@ export default function MoonCanvas(props: Props) {
         container.dataset.camera = camera.position.toArray().join(',');
         container.dataset.renderCalls = String(renderer.info.render.calls);
         container.dataset.gpuResources = JSON.stringify(renderer.info.memory);
-        container.dataset.markers = JSON.stringify(markers.children.map(object=>({position:object.position.toArray(),scale:object.scale.x,pixels:object.userData.pixelRadius,assetId:object.userData.assetId})));
+        container.dataset.markers = JSON.stringify(markers.children.map(object=>({position:object.position.toArray(),scale:object.scale.x,pixels:object.userData.pixelRadius,assetId:object.userData.assetId,kind:object.userData.kind,tone:object.userData.tone,icon:object.userData.icon})));
       }
       frame = requestAnimationFrame(render);
     }; render();
@@ -189,42 +214,54 @@ export default function MoonCanvas(props: Props) {
       renderer.domElement.removeEventListener('pointermove',hover);
       scene.traverse(object => { if(object instanceof THREE.Mesh || object instanceof THREE.Line) { object.geometry.dispose(); const mats = Array.isArray(object.material) ? object.material : [object.material]; mats.forEach(m=>m.dispose()); }
         else if(object instanceof THREE.Sprite){object.material.map?.dispose();object.material.dispose();} });
-      textures.forEach(texture=>texture.dispose()); renderer.dispose(); renderer.forceContextLoss(); container.replaceChildren(); runtime.current = null;boundaryGroup.current=null; };
+      textures.forEach(texture=>texture.dispose());
+      markerTextures.current?.dispose();markerTextures.current=null;analysisGroup.current=null;
+      renderer.dispose(); renderer.forceContextLoss(); container.replaceChildren(); runtime.current = null;boundaryGroup.current=null; };
   }, [props.metadata, retry]);
   useEffect(()=>{if(props.atlas)overlay.current?.configure(props.atlas);},[props.atlas]);
   useEffect(()=>{
     const group=boundaryGroup.current;if(!group)return;
-    for(const child of [...group.children]){group.remove(child);if(child instanceof THREE.Line){child.geometry.dispose();(child.material as THREE.Material).dispose();}}
-    for(const boundary of props.boundaries??[]) {
-      const points=boundary.map(point=>new THREE.Vector3(...lunarVector(point.longitude_deg,point.latitude_deg,1.008)));
-      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xe7b879,transparent:true,opacity:.85})));
-    }runtime.current?.invalidate();if(host.current)host.current.dataset.sectorBoundaries=String(group.children.length);
+    for(const child of [...group.children]){group.remove(child);disposeObject(child);}
+    // Navigation guides (coverage outline, sector, analysis area, profile) are explained by their open panel.
+    for(const boundary of props.boundaries??[])group.add(surfaceLine(boundary,runtime.current?.heights??null,0x91bdf0,.75));
+    runtime.current?.invalidate();if(host.current)host.current.dataset.sectorBoundaries=String(group.children.length);
   },[props.boundaries,props.metadata,status]);
+  useEffect(()=>{
+    const group=analysisGroup.current;if(!group)return;const heights=runtime.current?.heights??null;
+    for(const child of [...group.children]){group.remove(child);disposeObject(child);}
+    for(const ring of props.candidates??[]){
+      const circle=Array.from({length:97},(_,i)=>{const bearing=i*2*Math.PI/96,distance=ring.radius_km/1737.4,lat=ring.latitude_deg*Math.PI/180,lon=ring.longitude_deg*Math.PI/180;
+        const latitude=Math.asin(Math.sin(lat)*Math.cos(distance)+Math.cos(lat)*Math.sin(distance)*Math.cos(bearing));
+        const longitude=lon+Math.atan2(Math.sin(bearing)*Math.sin(distance)*Math.cos(lat),Math.cos(distance)-Math.sin(lat)*Math.sin(latitude));
+        return {latitude_deg:latitude*180/Math.PI,longitude_deg:((longitude*180/Math.PI)%360+360)%360};});
+      const line=surfaceLine(circle,heights,BAND_COLOR[ring.band],ring.selected?1:.6);line.userData.candidate=ring.id;group.add(line);
+    }
+    for(const route of props.routes??[])group.add(surfaceLine(greatCircle(route.from,route.to),heights,0x91bdf0,route.moving?.9:.55,true));
+    if(props.neighborhood&&props.neighborhood.cells.length){const {group:grid}=neighborhoodGrid(props.neighborhood,heights);group.add(grid);}
+    runtime.current?.invalidate();
+    if(host.current){host.current.dataset.candidateRings=String(props.candidates?.length??0);host.current.dataset.gridCells=String(props.neighborhood?.cells.length??0);host.current.dataset.routes=String(props.routes?.length??0);}
+  },[props.candidates,props.routes,props.neighborhood,props.metadata,status]);
   useEffect(() => { if(props.flight) runtime.current?.animateTo(props.flight.coordinates,props.flight.distance); },[props.flight]);
   useEffect(() => {
     const state = runtime.current; if(!state) return;
     for(const child of [...state.markers.children]) { state.markers.remove(child); if(child instanceof THREE.Mesh) { child.geometry.dispose(); (child.material as THREE.Material).dispose(); }
-      else if(child instanceof THREE.Sprite){child.material.map?.dispose();child.material.dispose();} }
-    const marker = (location: GlobeLocation,color:number,size:number,asset?:Asset) => {
-      let object:THREE.Mesh|THREE.Sprite;
-      if(asset){const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;const context=canvas.getContext('2d')!;
-        context.fillStyle='#14232e';context.strokeStyle=`#${color.toString(16).padStart(6,'0')}`;context.lineWidth=3;context.beginPath();context.arc(32,32,27,0,Math.PI*2);context.fill();context.stroke();
-        context.fillStyle=context.strokeStyle;context.font='bold 30px Segoe UI';context.textAlign='center';context.textBaseline='middle';context.fillText(ASSET_SYMBOLS[asset.kind],32,33);
-        const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;object=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthWrite:false}));object.renderOrder=10;
-        object.userData.assetId=asset.id;object.userData.assetName=asset.name;object.userData.pixelRadius=28;
-      }else{object=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshBasicMaterial({color}));object.userData.pixelRadius=size===.007?6:4;}
-      object.scale.setScalar(.001);
-      const height = state.heights ? terrainHeight(state.heights,location.longitude_deg,location.latitude_deg) : 0;
-      object.position.set(...lunarVector(location.longitude_deg,location.latitude_deg,1 + (height ?? 0)/props.metadata.reference_radius_m + .0003)); state.markers.add(object);
-    };
-    if(props.location) marker(props.location,0x8ecfe4,.007);
-    if(props.base) marker(props.base,0xe7b879,.004);
-    for(const asset of props.assets) marker(asset.location,props.selectedAssetId===asset.id?0x8ecfe4:asset.operational ? 0x9ed1ad : 0x8795a1,.002,asset);
+      else if(child instanceof THREE.Sprite)child.material.dispose(); }
+    // The selected location is the single accent dot; there is no separate base-site dot.
+    if(props.location){const dot=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshBasicMaterial({color:0x8ecfe4}));dot.userData.pixelRadius=6;dot.scale.setScalar(.001);
+      dot.position.copy(surfacePoint(state.heights,props.location,300));state.markers.add(dot);}
+    for(const asset of props.assets){
+      const visual=props.assetStates?.[asset.id],selected=props.selectedAssetId===asset.id;
+      const style={kind:asset.kind,tone:visual?.tone??(asset.operational?'neutral':'idle'),selected,soc:visual?.soc,dim:visual?.dim??!asset.operational} as const;
+      const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:markerTextures.current!.get(style),depthWrite:false}));sprite.renderOrder=10;
+      // Screen-sized vector badge: constant pixel size at any camera distance.
+      sprite.userData={assetId:asset.id,assetName:asset.name,assetDetail:`${ASSET_NAMES[asset.kind]}${visual?.note?` · ${visual.note}`:''}`,pixelRadius:selected?40:34,kind:asset.kind,tone:style.tone,icon:'vector'};
+      sprite.scale.setScalar(.001);sprite.position.copy(surfacePoint(state.heights,visual?.position??asset.location,600));state.markers.add(sprite);
+    }
     state.invalidate();
-  },[props.location,props.assets,props.base,props.metadata,status,props.selectedAssetId]);
+  },[props.location,props.assets,props.metadata,status,props.selectedAssetId,props.assetStates]);
   return <div className="moon-stage">
     <div ref={host} className="moon-canvas" data-testid="moon-canvas" />
-    {tooltip&&<div className="globe-asset-tooltip" style={{left:tooltip.x+14,top:tooltip.y+14}}>{tooltip.name}</div>}
+    {tooltip&&<div className="globe-asset-tooltip" role="tooltip" style={{left:tooltip.x+14,top:tooltip.y+14}}><strong>{tooltip.name}</strong>{tooltip.detail&&<small>{tooltip.detail}</small>}</div>}
     {props.atlas?.compare&&props.atlas.layer!=='none'&&<div className="atlas-reveal" style={{left:`${props.atlas.reveal*100}%`}} aria-hidden="true"><span>Imagery / science</span></div>}
     <div className="globe-render-status" role="status" data-testid="globe-status" data-ready={status.includes('terrain ready')||undefined}>{status}</div>
     {error && <div className="globe-render-error" role="alert"><p>{error}</p><button onClick={()=>setRetry(v=>v+1)}>Retry globe</button></div>}

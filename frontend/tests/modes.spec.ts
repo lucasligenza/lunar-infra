@@ -32,10 +32,12 @@ test('global selection connects to local science and preserves mission drafts, a
     await openActivity(page, 'Explore');
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
     const canvas=page.getByTestId('moon-canvas');
-    await expect.poll(async()=>JSON.parse((await canvas.getAttribute('data-markers'))??'[]').length).toBe(4);
+    // Selected-location dot plus one vector badge per asset; no separate base-site dot.
+    await expect.poll(async()=>JSON.parse((await canvas.getAttribute('data-markers'))??'[]').length).toBe(3);
     const markers=JSON.parse((await canvas.getAttribute('data-markers'))!);
     for(const [index,asset] of scenario.assets.entries()) {
-      const point=lunarCoordinate(...markers[index+2].position as [number,number,number]);
+      expect(markers[index+1]).toMatchObject({assetId:asset.id,kind:asset.kind,icon:'vector'});
+      const point=lunarCoordinate(...markers[index+1].position as [number,number,number]);
       expect(point[0]).toBeCloseTo(asset.location.longitude_deg,6);expect(point[1]).toBeCloseTo(asset.location.latitude_deg,6);
     }
     expect(markers[0].pixels).toBe(6);

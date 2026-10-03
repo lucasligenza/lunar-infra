@@ -54,7 +54,10 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await expect.poll(async()=>JSON.parse((await host.getAttribute('data-markers'))??'[]').filter((m:any)=>m.assetId).length).toBe(3);
     const markers=JSON.parse((await host.getAttribute('data-markers'))!);
     for(const asset of moved.assets) {
-      const marker=markers.find((m:any)=>m.assetId===asset.id),[lon,lat]=lunarCoordinate(...marker.position as [number,number,number]);
+      const marker=markers.find((m:any)=>m.assetId===asset.id);
+      // Vector icon badges per kind; letter symbols are gone.
+      expect(marker).toMatchObject({kind:asset.kind,icon:'vector'});
+      const[lon,lat]=lunarCoordinate(...marker.position as [number,number,number]);
       expect(lon).toBeCloseTo(asset.location.longitude_deg,6);expect(lat).toBeCloseTo(asset.location.latitude_deg,6);
     }
     const slopeTile=page.waitForResponse(response=>response.url().includes('/atlas/tiles/gld100/slope/')&&response.ok());

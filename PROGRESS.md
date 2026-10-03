@@ -37,6 +37,18 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   updated only where controls intentionally moved, numeric/provenance
   assertions retained. Python 115 passed + 8 subtests (includes the in-progress
   M5/M8 backend). Rendered review at all five sizes (`artifacts/claude-m3`).
+  Pushed `611b889`.
+- **M4 icons and orange cleanup.** Letter sprites (H/S/B/C/R) replaced by one
+  local vector icon set (`lib/asset-icons.ts`: dome, panel, cell, dish,
+  rover) drawn with Path2D on the globe and as inline SVG on the polar map;
+  screen-sized badges, accent ring + halo when selected, hover shows name and
+  type. Orange cause: settlement-candidate rings (`0xe7b879`) persisted after
+  the panel closed and collapsed into squiggles at globe zoom, and the base site
+  was an unexplained amber sphere. Rings now belong to the candidate browser,
+  guides are accent blue and draped on the display mesh, and the base sphere
+  is gone (the polar map keeps a labeled "Base site" ring). Opening a mission
+  frames all assets (previously 2 of 5 were off-screen). Journeys assert
+  vector markers per kind; an icon unit test rejects letter glyphs.
 
 ## Spatial workspace — verified and pushed
 

@@ -13,11 +13,13 @@ import Feature from "ol/Feature.js";
 import Point from "ol/geom/Point.js";
 import LineString from "ol/geom/LineString.js";
 import Polygon from "ol/geom/Polygon.js";
-import { Circle as CircleStyle, Fill, Stroke, Style, Text } from "ol/style.js";
+import { Circle as CircleStyle, Fill, Icon as IconStyle, Stroke, Style, Text } from "ol/style.js";
 import { defaults as controls } from "ol/control/defaults.js";
 import ScaleLine from "ol/control/ScaleLine.js";
 import { groundScale, toGeographic, toPolar } from "../../lib/lunar";
-import { ASSET_SYMBOLS, type Asset, type Location } from "../../types/mission";
+import { ASSET_NAMES, type Asset, type Location } from "../../types/mission";
+import { markerSvg } from "../../lib/asset-icons";
+import type { AssetVisual } from "../globe/MoonCanvas";
 import type { Layer, Region, Site } from "../../types/scientific";
 
 type Props = {
@@ -26,9 +28,10 @@ type Props = {
   onPointer: (coordinate: [number, number]) => void;
   assets?: Asset[]; baseSite?: Location; selectedAssetId?: string | null;
   onAssetSelect?: (id: string) => void; placementActive?: boolean;
+  assetStates?: Record<string, AssetVisual>; routes?: { id: string; from: Location; to: Location; moving?: boolean }[];
 };
 
-export default function TerrainMap({ region, layer, site, grid, opacity=1, onSelect, onPointer, assets, baseSite, selectedAssetId, onAssetSelect, placementActive }: Props) {
+export default function TerrainMap({ region, layer, site, grid, opacity=1, onSelect, onPointer, assets, baseSite, selectedAssetId, onAssetSelect, placementActive, assetStates, routes }: Props) {
   const target = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const raster = useRef<ImageLayer<ImageStatic> | null>(null);
@@ -118,17 +121,23 @@ export default function TerrainMap({ region, layer, site, grid, opacity=1, onSel
     source.clear();
     if (baseSite) {
       const base = new Feature(new Point(toPolar(baseSite.longitude_deg, baseSite.latitude_deg, region.reference_radius_m)));
-      base.setStyle(new Style({ image: new CircleStyle({ radius: 14, stroke: new Stroke({ color: "#e9bd72", width: 2, lineDash: [3, 3] }) }),
-        text: new Text({ text: "Base site", offsetY: -24, fill: new Fill({ color: "#ffe0a9" }), stroke: new Stroke({ color: "#142331", width: 3 }) }) }));
+      base.setStyle(new Style({ image: new CircleStyle({ radius: 14, stroke: new Stroke({ color: "#91bdf0", width: 1.5, lineDash: [3, 3] }) }),
+        text: new Text({ text: "Base site", offsetY: -24, fill: new Fill({ color: "#cfd8e3" }), stroke: new Stroke({ color: "#142331", width: 3 }) }) }));
       source.addFeature(base);
     }
+    for (const route of routes ?? []) {
+      const path = new Feature(new LineString([route.from, route.to].map(point => toPolar(point.longitude_deg, point.latitude_deg, region.reference_radius_m))));
+      path.setStyle(new Style({ stroke: new Stroke({ color: route.moving ? "#91bdf0" : "rgba(145,189,240,.6)", width: 2, lineDash: [6, 5] }) }));
+      source.addFeature(path);
+    }
     for (const asset of assets ?? []) {
-      const feature = new Feature(new Point(toPolar(asset.location.longitude_deg, asset.location.latitude_deg, region.reference_radius_m)));
+      const visual = assetStates?.[asset.id], position = visual?.position ?? asset.location, selected = asset.id === selectedAssetId;
+      const feature = new Feature(new Point(toPolar(position.longitude_deg, position.latitude_deg, region.reference_radius_m)));
       feature.set("assetId", asset.id);
-      feature.set("assetName", `${asset.name} / hypothetical ${asset.kind.replaceAll("_", " ")}`);
-      feature.setStyle(new Style({ image: new CircleStyle({ radius: asset.id === selectedAssetId ? 13 : 10,
-        fill: new Fill({ color: asset.operational ? "#183c4f" : "#38434a" }), stroke: new Stroke({ color: asset.id === selectedAssetId ? "#90d5ed" : "#d0e1e7", width: 2 }) }),
-        text: new Text({ text: ASSET_SYMBOLS[asset.kind], font: "bold 12px sans-serif", fill: new Fill({ color: "#e8f3f7" }) }) }));
+      feature.set("assetName", `${asset.name} · hypothetical ${ASSET_NAMES[asset.kind].toLowerCase()}${visual?.note ? ` · ${visual.note}` : ""}`);
+      // Locally generated vector badge (no network); constant screen size like the globe sprites.
+      feature.setStyle(new Style({ image: new IconStyle({ src: markerSvg({ kind: asset.kind, tone: visual?.tone ?? (asset.operational ? "neutral" : "idle"), selected, soc: visual?.soc, dim: visual?.dim ?? !asset.operational }, 40),
+        width: selected ? 38 : 32, height: selected ? 38 : 32 }), zIndex: selected ? 2 : 1 }));
       source.addFeature(feature);
       if (asset.id !== selectedAssetId) continue;
       const label = new Feature(new Point(toPolar(asset.location.longitude_deg, asset.location.latitude_deg, region.reference_radius_m)));
@@ -137,7 +146,7 @@ export default function TerrainMap({ region, layer, site, grid, opacity=1, onSel
       label.setStyle(new Style({ text: new Text({ text: asset.name, offsetY: 24, font: "12px sans-serif", fill: new Fill({ color: "#e8f3f7" }), stroke: new Stroke({ color: "#142331", width: 3 }) }) }));
       source.addFeature(label);
     }
-  }, [assets, baseSite, selectedAssetId, region]);
+  }, [assets, baseSite, selectedAssetId, region, assetStates, routes]);
 
   useEffect(() => {
     if (!map.current || !raster.current) return;
