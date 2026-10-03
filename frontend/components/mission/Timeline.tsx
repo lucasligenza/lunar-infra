@@ -28,7 +28,7 @@ export default function Timeline({ run, index, onIndex, active = true, onExpande
   }, [playing, speed, rows.length, onIndex]);
   function select(value: number) { setPlaying(false); onIndex(value); }
   return <section ref={container} id="mission-timeline" className={expanded ? "mission-timeline expanded" : "mission-timeline"} aria-label="Mission timeline">
-    <SimulationBar asset={asset} current={current} index={index} count={rows.length} playing={playing} expanded={expanded} speed={speed} inputKind={run.result.input_kind}
+    <SimulationBar events={run.result.events} asset={asset} current={current} index={index} count={rows.length} playing={playing} expanded={expanded} speed={speed} inputKind={run.result.input_kind}
       onToggle={()=>changeExpanded(!expanded)} onPlay={()=>{if(index===rows.length-1)onIndex(0);setPlaying(value=>!value);}}
       onSpeed={setSpeed} onSelect={select}/>
     {expanded&&<SimulationDrawer run={run} index={index} windowSize={windowSize} onWindow={setWindowSize} onSelect={select}/>}

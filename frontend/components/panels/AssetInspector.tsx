@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ASSET_NAMES, type Asset } from "../../types/mission";
 import { parseSeries } from "../../lib/series";
 import Icon from '../ui/Icon';
+import { surfaceDistanceKm } from "../../lib/lunar";
 
 type Parameter = { field: keyof Asset; label: string; max?: number; min?: number };
 const demand: Parameter = { field: "demand_kw", label: "Continuous demand (kW)" };
@@ -17,8 +18,8 @@ const PARAMETERS: Record<Asset["kind"], Parameter[]> = {
   robot: [{ field: "active_demand_kw", label: "Active demand (kW)" }, { field: "idle_demand_kw", label: "Idle demand (kW)" }, { field: "duty_cycle", label: "Duty cycle (0–1)", max: 1 }],
 };
 
-export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, onInspect, onDirty, globalDomain=false }: {
-  asset: Asset; busy: boolean; onSave: (changes: object) => void; onMove: () => void; onRemove: () => void; onInspect: () => void;
+export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, onInspect, onDirty, onRoute, globalDomain=false }: {
+  asset: Asset; busy: boolean; onSave: (changes: object) => void; onMove: () => void; onRemove: () => void; onInspect: () => void; onRoute?: () => void;
   onDirty: (dirty: boolean) => void; globalDomain?:boolean;
 }) {
   const [draft, setDraft] = useState(asset);
@@ -47,6 +48,17 @@ export default function AssetInspector({ asset, busy, onSave, onMove, onRemove, 
       <fieldset className="asset-primary-parameters"><legend>Electrical configuration</legend>{PARAMETERS[asset.kind].filter(parameter=>['demand_kw','rated_power_kw','capacity_kwh','initial_soc','active_demand_kw','idle_demand_kw','duty_cycle'].includes(parameter.field)).map(parameter => <label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min ?? 0} max={parameter.max ?? 1e9}
         value={draft[parameter.field] as number} onChange={event => setDraft({ ...draft, [parameter.field]: Number(event.target.value) })} /></label>)}</fieldset>
       <p className="asset-location"><Icon name="target"/>{draft.location.latitude_deg.toFixed(5)}° / {draft.location.longitude_deg.toFixed(5)}° E</p>
+      {asset.kind === "robot" && <fieldset className="rover-route"><legend>Route · hypothetical</legend>
+        {draft.route ? <>
+          <p className="asset-location" data-testid="rover-destination"><Icon name="route"/>To {draft.route.destination.latitude_deg.toFixed(5)}° / {draft.route.destination.longitude_deg.toFixed(5)}° E · {surfaceDistanceKm(draft.location, draft.route.destination).toFixed(2)} km</p>
+          <label>Speed (km/h)<input type="number" required min={0.001} max={50} step="any" value={draft.route.speed_kmh} onChange={event => setDraft({ ...draft, route: { ...draft.route!, speed_kmh: Number(event.target.value) } })} /></label>
+          <label>Depart after (hours)<input type="number" required min={0} max={1e6} step="any" value={draft.route.departure_hours} onChange={event => setDraft({ ...draft, route: { ...draft.route!, departure_hours: Number(event.target.value) } })} /></label>
+          <label>Dwell at destination (hours)<input type="number" required min={0} max={1e6} step="any" value={draft.route.dwell_hours} onChange={event => setDraft({ ...draft, route: { ...draft.route!, dwell_hours: Number(event.target.value) } })} /></label>
+          <label className="checkbox-label"><input type="checkbox" checked={draft.route.return_to_start} onChange={event => setDraft({ ...draft, route: { ...draft.route!, return_to_start: event.target.checked } })} />Return to start</label>
+          <div className="button-row"><button type="button" disabled={busy || dirty} title={dirty ? "Save or discard changes first" : undefined} onClick={onRoute}>Change destination</button><button type="button" onClick={() => setDraft({ ...draft, route: null })}>Remove route</button></div>
+        </> : <><p>No route: the rover stays parked at its placed location.</p><button type="button" disabled={busy || dirty} onClick={onRoute}>Set destination on map</button></>}
+        <small>Straight great-circle traverse at constant speed; no path planning or terrain traversability. Motion does not change power demand (energy-1.0 duty-cycle load).</small>
+      </fieldset>}
       <details className="asset-advanced" onInvalid={event=>{event.currentTarget.open=true;}}><summary>Advanced settings</summary>
       {PARAMETERS[asset.kind].filter(parameter=>!['demand_kw','rated_power_kw','capacity_kwh','initial_soc','active_demand_kw','idle_demand_kw','duty_cycle'].includes(parameter.field)).map(parameter=><label key={parameter.field}>{parameter.label}<input type="number" required step="any" min={parameter.min??0} max={parameter.max??1e9} value={draft[parameter.field] as number} onChange={event=>setDraft({...draft,[parameter.field]:Number(event.target.value)})}/></label>)}
       {asset.kind === "habitat" && <label>Optional load profile (kW per interval)<textarea aria-label="Optional load profile (kW per interval)" value={profile} onChange={event => setProfile(event.target.value)} placeholder="Blank uses continuous demand" /></label>}

@@ -39,7 +39,8 @@ def translate(operation):
 
 def validate_locations(store, definition):
     terrain=store.resolve(definition)
-    for location in [definition.site, *[asset.location for asset in definition.assets]]:
+    routes = [asset.route.destination for asset in definition.assets if asset.kind == "robot" and asset.route is not None]
+    for location in [definition.site, *[asset.location for asset in definition.assets], *routes]:
         try:
             sample = terrain.inspect(location.longitude_deg, location.latitude_deg)
         except ValueError as error:

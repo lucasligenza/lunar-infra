@@ -17,6 +17,17 @@ class BatteryInterval(Definition):
     limits: list[str]
 
 
+class RoverState(Definition):
+    """Deterministic rover position at a reporting instant (rover-kinematics-1)."""
+    latitude_deg: float
+    longitude_deg: float
+    state: Literal["parked", "outbound", "at_destination", "returning", "returned"]
+    moving: bool
+    distance_from_start_km: float
+    odometer_km: float
+    moving_hours: float
+
+
 class Interval(Definition):
     index: int
     start: AwareDatetime
@@ -37,6 +48,8 @@ class Interval(Definition):
     asset_load_kw: dict[str, float]
     batteries: dict[str, BatteryInterval]
     constraint_violations: list[str]
+    # End-of-interval rover states; absent in runs stored before rover kinematics.
+    rovers: dict[str, RoverState] = Field(default_factory=dict)
 
 
 class Event(Definition):
@@ -67,6 +80,7 @@ class SimulationResult(Definition):
     input_kind: Literal["synthetic", "custom_hypothetical"]
     input_label: str
     assumptions: list[str]
+    motion_model_version: str | None = None
     intervals: list[Interval]
     events: list[Event]
     summary: Summary

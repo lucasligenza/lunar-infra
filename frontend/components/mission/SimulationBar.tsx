@@ -1,11 +1,13 @@
 "use client";
-import type {Interval} from '../../types/simulation';
+import type {Interval,MissionEvent} from '../../types/simulation';
 import type {Asset} from '../../types/mission';
 import Icon from '../ui/Icon';
 import Segmented from '../ui/Segmented';
 
-export default function SimulationBar({current,index,count,playing,expanded,speed,inputKind,asset,onToggle,onPlay,onSpeed,onSelect}:{
-  current:Interval;index:number;count:number;playing:boolean;expanded:boolean;speed:number;inputKind:string;
+const EVENT_LABEL:Record<string,string>={power_shortage:'Shortage begins',power_restored:'Power restored',battery_full:'Battery full',battery_reserve:'Battery reserve reached'};
+
+export default function SimulationBar({current,index,count,playing,expanded,speed,inputKind,asset,events=[],onToggle,onPlay,onSpeed,onSelect}:{
+  current:Interval;index:number;count:number;playing:boolean;expanded:boolean;speed:number;inputKind:string;events?:MissionEvent[];
   asset?:Asset;
   onToggle:()=>void;onPlay:()=>void;onSpeed:(speed:number)=>void;onSelect:(index:number)=>void;
 }) {
@@ -18,7 +20,12 @@ export default function SimulationBar({current,index,count,playing,expanded,spee
     <div className="simulation-controls">
       <button className="play-button" aria-label={playing?'Pause playback':'Play mission'} onClick={onPlay}><Icon name={playing?'pause':'play'}/>{playing?'Pause':'Play'}</button>
       <time className="timeline-time" data-testid="timeline-time" dateTime={current.start}>{current.start.replace('T',' ').replace('Z',' UTC')}</time>
-      <div className="timeline-scrub"><input type="range" aria-label="Mission interval" aria-valuetext={`${current.start}, interval ${index+1} of ${count}`} min={0} max={count-1} step={1} value={index} onChange={event=>onSelect(Number(event.target.value))}/><span>{index+1} / {count}</span></div>
+      <div className="timeline-scrub" data-tour="timeline">
+        {/* Event marks: actual event intervals from the stored run; first of each kind per interval. */}
+        <div className="timeline-events" role="group" aria-label="Mission events">{events.filter((event,position,all)=>all.findIndex(other=>other.interval_index===event.interval_index&&other.kind===event.kind)===position).slice(0,200).map(event=>
+          <button key={`${event.kind}-${event.interval_index}-${event.time}`} data-kind={event.kind} style={{left:`calc(${count>1?event.interval_index/(count-1)*100:0}% )`}}
+            aria-label={`${EVENT_LABEL[event.kind]??event.kind} at ${event.time.replace('T',' ').replace('Z',' UTC')}`} title={`${EVENT_LABEL[event.kind]??event.kind} · ${event.time.slice(0,16).replace('T',' ')} UTC`} onClick={()=>onSelect(event.interval_index)}/>)}</div>
+        <input type="range" aria-label="Mission interval" aria-valuetext={`${current.start}, interval ${index+1} of ${count}`} min={0} max={count-1} step={1} value={index} onChange={event=>onSelect(Number(event.target.value))}/><span>{index+1} / {count}</span></div>
       <Segmented className="speed" label="Playback speed" value={speed} onChange={onSpeed} options={[1,4,16].map(value=>({value,label:`${value}×`,title:`${value} simulation interval${value>1?'s':''} per real second`}))}/>
       <button className="timeline-toggle" onClick={onToggle} aria-expanded={expanded} aria-controls="mission-timeline-details" aria-label={expanded?'Collapse timeline':'Expand timeline'}>{expanded?'Close details':'View details'}<Icon name={expanded?'close':'simulate'}/></button>
     </div>

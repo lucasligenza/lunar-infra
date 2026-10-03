@@ -14,8 +14,9 @@ test('orbital drag, pan, keyboard selection, zoom bounds and idle rendering work
   await page.getByRole('button',{name:'Close region details',exact:true}).click();
   await page.mouse.move(box.x+box.width*.5,box.y+box.height*.6);await page.mouse.down({button:'right'});
   await page.mouse.move(box.x+box.width*.52,box.y+box.height*.61,{steps:5});await page.mouse.up({button:'right'});
+  // Closest orbit is MIN_DISTANCE = 1.03 radii (~52 km), close enough to read a 5 km analysis grid.
   for(let i=0;i<12;i++) await page.getByRole('button',{name:'Zoom globe in',exact:true}).click();
-  await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeGreaterThanOrEqual(1.08-1e-8);
+  await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeGreaterThanOrEqual(1.03-1e-8);
   for(let i=0;i<15;i++) await page.getByRole('button',{name:'Zoom globe out',exact:true}).click();
   await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeLessThanOrEqual(6+1e-8);
   await page.getByRole('button',{name:'Reset globe',exact:true}).click();

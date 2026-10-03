@@ -5,6 +5,7 @@ from math import fsum
 
 from backend.app.models.mission import ScenarioCreate
 from backend.app.models.simulation import BatteryInterval, Event, Interval, SimulationResult, Summary
+from backend.app.simulation.rover import MOTION_MODEL, rover_state
 
 ASSUMPTIONS = [
     "Hypothetical electrical input factors, not NASA average visibility or actual solar irradiance.",
@@ -17,6 +18,8 @@ ASSUMPTIONS = [
     "No thermal effects, degradation, voltage dynamics, startup surges, orientation geometry or power conversion beyond derating/efficiency.",
     "Numerical threshold: storage dispatch below 1e-12 kW is ignored; shortage events use 1e-9 kW tolerance.",
 ]
+ROVER_ASSUMPTION = ("Rover positions (rover-kinematics-1) follow an explicit hypothetical great-circle route at constant speed and are "
+    "reported at interval end; terrain, obstacles and traction are not modeled and motion does not change duty-cycle demand.")
 
 
 def simulate(definition: ScenarioCreate) -> SimulationResult:
@@ -30,6 +33,7 @@ def simulate(definition: ScenarioCreate) -> SimulationResult:
         raise ValueError("Simulation exceeds 100000 asset-intervals; increase timestep or reduce duration/assets")
     assets = sorted(definition.assets, key=lambda item: str(item.id))
     batteries = [asset for asset in assets if asset.kind == "battery"]
+    robots = [asset for asset in assets if asset.kind == "robot"]
     for asset in assets:
         if asset.kind == "habitat" and asset.load_profile_kw is not None and len(asset.load_profile_kw) != mission.intervals:
             raise ValueError("Habitat load profile requires one kW value per mission interval")
@@ -155,7 +159,9 @@ def simulate(definition: ScenarioCreate) -> SimulationResult:
                 soc_start=before[str(b.id)] / b.capacity_kwh, soc_end=energy[str(b.id)] / b.capacity_kwh,
                 charge_kw=charged[str(b.id)] / dt, discharge_kw=discharged[str(b.id)] / dt,
                 losses_kwh=losses[str(b.id)], limits=sorted(limits[str(b.id)])) for b in batteries},
-            constraint_violations=["unserved_demand"] if interval_shortage else []))
+            constraint_violations=["unserved_demand"] if interval_shortage else [],
+            # Kinematics only: positions derive from mission time and never feed back into energy.
+            rovers={str(r.id): rover_state(r, mission.start, start + timedelta(seconds=mission.timestep_seconds), index * dt) for r in robots}))
     generated = fsum(row.generation_kw * dt for row in rows)
     demanded = fsum(row.demand_kw * dt for row in rows)
     unserved = fsum(row.unserved_kw * dt for row in rows)
@@ -163,7 +169,8 @@ def simulate(definition: ScenarioCreate) -> SimulationResult:
     losses = fsum(row.losses_kwh for row in rows)
     final = fsum(energy.values())
     return SimulationResult(mission=mission, input_kind=mission.illumination_kind, input_label=mission.illumination_label,
-        assumptions=ASSUMPTIONS, intervals=rows, events=events,
+        assumptions=ASSUMPTIONS + ([ROVER_ASSUMPTION] if robots else []), motion_model_version=MOTION_MODEL if robots else None,
+        intervals=rows, events=events,
         summary=Summary(generated_kwh=generated, demanded_kwh=demanded, unserved_kwh=unserved,
             curtailed_kwh=curtailed, battery_losses_kwh=losses, initial_energy_kwh=initial, final_energy_kwh=final,
             minimum_soc=minimum_soc, first_power_shortage=first_shortage, shortage_duration_hours=shortage_hours,

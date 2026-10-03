@@ -50,3 +50,28 @@ segmented controls or rows unless a select is genuinely needed.
 
 Each milestone: tests, rendered review at all five sizes, PROGRESS.md, one
 conventional commit, ordinary push.
+
+## Implemented interaction model
+
+- **Overlays** — the only visualization control. Rows: Imagery, Elevation,
+  Slope, Solar visibility, Temperature, Geology (Polar / Not prepared badges);
+  the active row adds its product name, opacity, legend, render status and
+  coverage. Terrain source, comparison and display toggles are under Source
+  details. A compact legend chip stays on the canvas while a layer is active.
+- **Location** — every prepared value at the selected point from one
+  `/atlas/inspect?dataset=best` sample, grouped Terrain / Environment / Geology /
+  Data coverage / Mission context, then Technical details and Sources &
+  provenance. Footer actions: Find settlement sites, Create mission, Analyze.
+- **Settlement sites** — candidate cards with the preliminary screening score,
+  band, criterion bars, completeness and distance; selection flies to the
+  candidate and draws its native analysis cells (toggle, legend, hover).
+- **Analysis tools** — regional statistics, profiles, sectors and the dataset
+  catalog; opened from Location or commands, never by default.
+- **Build** — Add asset palette, Missions drawer (rename, saved missions,
+  placed assets, base site), Asset inspector (including rover routes).
+- **Simulate** — Setup drawer, power-flow card, event marks on the timeline,
+  outcome in View details, and an optional six-step tutorial (How it works).
+
+Escape closes the newest surface first (menu, then drawer). Below 900 px the
+surfaces are bottom sheets and only one is open at a time. Every colored mark
+on the Moon belongs to an open surface or is explained on hover.

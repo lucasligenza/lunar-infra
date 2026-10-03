@@ -1,5 +1,6 @@
 "use client";
 import Segmented from "../ui/Segmented";
+import {missionOutcome,pct} from "../../lib/power-flow";
 import type {Interval,SimulationRun} from '../../types/simulation';
 function Chart({ title, rows, values, unit, color, selected, onSelect, battery = false }: {
   title: string; rows: Interval[]; values: number[]; unit: string; color: string; selected: number; onSelect: (index: number) => void; battery?: boolean;
@@ -31,7 +32,20 @@ export default function SimulationDrawer({run,index,windowSize,onWindow,onSelect
   const visible=windowSize?rows.slice(start,start+windowSize):rows;
   const events=run.result.events.filter(event=>event.interval_index>=visible[0].index&&event.interval_index<=visible.at(-1)!.index).slice(0,100);
   const summary=run.result.summary;
+  const outcome=missionOutcome(run);
   return <div id="mission-timeline-details" className="timeline-details">
+      <section className="mission-outcome" aria-label="Mission outcome">
+        <header><span className="status-chip" data-tone={outcome.unserved_kwh>0?'failure':'nominal'}>{index===rows.length-1?'MISSION COMPLETE':'MISSION OUTCOME'}</span><h3>{outcome.verdict}</h3></header>
+        <dl className="outcome-grid">
+          <div><dt>Generated</dt><dd data-testid="outcome-generated">{outcome.generated_kwh.toFixed(2)} kWh</dd></div>
+          <div><dt>Consumed (served)</dt><dd data-testid="outcome-served">{outcome.served_kwh.toFixed(2)} kWh</dd></div>
+          <div><dt>Unserved</dt><dd data-testid="outcome-unserved">{outcome.unserved_kwh.toFixed(2)} kWh</dd></div>
+          <div><dt>Shortage duration</dt><dd data-testid="outcome-shortage-hours">{outcome.shortage_hours.toFixed(2)} h</dd></div>
+          <div><dt>Minimum battery SOC</dt><dd data-testid="outcome-minimum-soc">{outcome.minimum_soc===null?'No batteries':pct(outcome.minimum_soc)}</dd></div>
+          <div><dt>Curtailed / losses</dt><dd>{outcome.curtailed_kwh.toFixed(2)} / {outcome.losses_kwh.toFixed(2)} kWh</dd></div>
+        </dl>
+        {outcome.first_shortage_explanation&&<p data-testid="first-shortage-explanation">First shortage at {outcome.first_shortage!.slice(0,19).replace('T',' ')} UTC: {outcome.first_shortage_explanation.lines.join(' ')} {outcome.first_shortage_explanation.system}</p>}
+      </section>
       <div className="timeline-detail-heading"><h3>Interval-average power (kW) / battery at interval end (%)</h3><Segmented label="Chart window" value={windowSize} onChange={onWindow} options={[{value:0,label:'Entire mission'},{value:48,label:'48 intervals'},{value:12,label:'12 intervals'}]}/></div>
       <div className="timeline-charts"><Chart title="Electrical generation" rows={visible} values={visible.map(row => row.generation_kw)} unit="kW" color="var(--accent)" selected={index} onSelect={onSelect} />
         <Chart title="Electrical demand" rows={visible} values={visible.map(row => row.demand_kw)} unit="kW" color="var(--quiet)" selected={index} onSelect={onSelect} />

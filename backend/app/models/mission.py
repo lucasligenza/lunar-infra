@@ -62,11 +62,25 @@ class Communications(AssetBase):
     demand_kw: Nonnegative = 0.5
 
 
+class RoverRoute(Definition):
+    """Hypothetical straight great-circle traverse from the rover's placed location.
+
+    No path planning, traversability or terrain-following is modeled. Motion does
+    not change the rover's electrical demand in energy-1.0 (duty-cycle load).
+    """
+    destination: Location
+    departure_hours: float = Field(default=0, ge=0, le=1e6, allow_inf_nan=False)
+    speed_kmh: float = Field(default=1, gt=0, le=50, allow_inf_nan=False)
+    dwell_hours: float = Field(default=0, ge=0, le=1e6, allow_inf_nan=False)
+    return_to_start: bool = True
+
+
 class Robot(AssetBase):
     kind: Literal["robot"] = "robot"
     active_demand_kw: Nonnegative = 2
     idle_demand_kw: Nonnegative = 0.2
     duty_cycle: Fraction = 0.25
+    route: RoverRoute | None = None
 
 
 Asset = Annotated[Habitat | SolarArray | Battery | Communications | Robot, Field(discriminator="kind")]

@@ -115,8 +115,10 @@ class ScenarioRepository:
             run = SimulationRun.model_validate_json(document)
         except ValidationError as error:
             raise CorruptRun("Stored simulation has an invalid schema. Rerun from its saved scenario.") from error
-        if (digest({"scenario": run.scenario_snapshot.model_dump(mode="json"), "spatial_sources": run.scientific_provenance}) != run.input_sha256
-                or digest(run.result.model_dump(mode="json")) != run.result_sha256):
+        # Hash exactly the stored field set: optional fields added later (rover routes,
+        # rover states) are unset in older runs and must not change their digests.
+        if (digest({"scenario": run.scenario_snapshot.model_dump(mode="json", exclude_unset=True), "spatial_sources": run.scientific_provenance}) != run.input_sha256
+                or digest(run.result.model_dump(mode="json", exclude_unset=True)) != run.result_sha256):
             raise CorruptRun("Stored simulation failed integrity verification. Rerun from its saved scenario.")
         return run
 

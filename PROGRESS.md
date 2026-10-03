@@ -65,7 +65,32 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   readout and toggle, flies to the candidate, and clears rings and grid when
   the browser closes. Real Shackleton results score 24–49% (mixed or
   constrained): rough terrain is not inflated. Python suitability: 11 tests;
-  settlement journeys 7/7; build passes.
+  settlement journeys 7/7; build passes. Pushed `524a27f`.
+- **M7+M8 explained playback and rover routes.** A power-flow card restates
+  each stored interval with fixed templates (`lib/power-flow.ts`): solar →
+  bus → loads, battery charge/discharge with SOC start → end, curtailment,
+  unserved demand, events, and a status (NOMINAL, POWER LIMITED, BATTERY
+  RESERVE, POWER SHORTAGE; precedence documented in `docs/energy-model.md`).
+  The timeline shows event marks (clickable); View details opens with a
+  mission outcome (generated vs consumed kWh, unserved, shortage hours,
+  minimum SOC, first shortage explained, MISSION COMPLETE at the end). Asset
+  badges carry restrained state cues from the same interval. An optional
+  six-step tutorial (How it works) attaches to the real controls, states that
+  sunlight input is hypothetical, remembers dismissal and reopens. Rovers take
+  an explicit great-circle route (`rover-kinematics-1`, Python): departure,
+  speed, dwell, optional return; end-of-interval positions are stored in runs,
+  so scrubbing backward and reloading reproduce them exactly. Energy-1.0 is
+  unchanged (duty-cycle demand); stored runs from before still verify (digests
+  now cover the stored field set; 4/4 local runs checked). Routes are set by
+  clicking the Moon from the rover inspector and validated against terrain.
+  The closest orbit is now 1.03 radii (~52 km) so analysis grids are legible
+  (zoom-bound journey updated). One commit because the explanation, asset
+  cues and rover markers share the same playback wiring in Explorer.
+  Validation: full Playwright 67/68, then the zoom-bound expectation updated
+  and re-run; new journeys cover explanation vs interval math, event marks,
+  outcome, tutorial dismiss/reopen, rover start/mid/end, backward scrubbing,
+  reload and UI route setup. Python rover tests 5; build passes. Rendered
+  review at all five sizes (`artifacts/claude-m7`).
 
 ## Spatial workspace — verified and pushed
 

@@ -57,3 +57,41 @@ No random state, Earth daily cycle or automatic location-to-illumination inferen
 is used. At most 10000 reporting intervals and 100000 asset-intervals are supported
 to bound local work and output size. Thermal coupling, aging, battery voltage,
 startup transients, mechanical deployment and conversion physics are omitted.
+
+## Rover kinematics (rover-kinematics-1)
+
+A robot may carry an explicit hypothetical route: destination (validated against
+the scenario's terrain like every location), departure offset in hours, constant
+speed in km/h, optional dwell at the destination and optional return. The rover
+follows the shortest great circle on the 1,737.4 km reference sphere from its
+placed location. Position is a pure function of elapsed mission time
+(`backend/app/simulation/rover.py`), so scrubbing backward or forward and reopening
+a stored run reproduce identical positions. Each interval reports the
+end-of-interval state (parked, outbound, at destination, returning, returned),
+distance from start, odometer and hours moving within the interval.
+
+No path planning, traversability, relief, slope, obstacles or traction are
+modeled. Motion does **not** change electrical demand: energy-1.0 keeps the
+robot's duty-cycle interval-average load, and the shared ideal bus has no
+geography-dependent losses. Runs stored before this addition omit rover states;
+their integrity digests are verified over the stored field set and still pass.
+
+## Playback explanation semantics (presentation only)
+
+`frontend/lib/power-flow.ts` restates one stored interval with fixed templates;
+it computes no physics. Values are interval-average kW and end-of-interval SOC.
+Battery SOC at interval start is `energy_start_kwh / Σ installed capacity`.
+
+| Status | Rule (first match) |
+| --- | --- |
+| POWER SHORTAGE | `unserved_kw > 1e-9` |
+| BATTERY RESERVE | any battery reports the `reserve` limit in the interval |
+| POWER LIMITED | batteries discharge (`discharge_kw > 1e-9`) to cover demand |
+| NOMINAL | otherwise: generation covers demand |
+
+*Mission complete* is shown at the last interval with the stored kWh summary:
+generated, consumed (= demanded − unserved), unserved, shortage hours, minimum
+SOC and the first shortage explained with the same templates. Asset cues on the
+Moon use the same interval: arrays dim at zero output, batteries show an SOC arc
+(amber at or near reserve), loads turn red when any demand is unserved (the bus
+has no load-shedding priority), and rovers move to their stored position.

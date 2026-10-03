@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
 import MissionHeader, { ACTIVITIES } from "./MissionHeader";
 import Icon from './ui/Icon';
@@ -19,6 +19,9 @@ import { useAtlasCatalog, overlayLayers } from '../lib/useAtlasCatalog';
 import MissionInputs from "./panels/MissionInputs";
 import Telemetry from "./panels/Telemetry";
 import Timeline from "./mission/Timeline";
+import PowerFlow from "./mission/PowerFlow";
+import SimulationTutorial, { TUTORIAL_KEY } from "./mission/SimulationTutorial";
+import type { AssetVisual } from "./globe/MoonCanvas";
 import MissionWorkspace, { type MissionDrawer, type MissionMenu } from "./mission/MissionWorkspace";
 import ScenarioControls from "./mission/ScenarioControls";
 import InfrastructureCatalog, { ASSET_LABEL, MissionAssets } from "./mission/InfrastructureCatalog";
@@ -101,7 +104,11 @@ export default function Explorer() {
   const scenario = useScenario(true);
   const [scenarioName, setScenarioName] = useState("South-pole outpost");
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
-  const [placement, setPlacement] = useState<AssetKind | "move" | null>(null);
+  const [placement, setPlacement] = useState<AssetKind | "move" | "route" | null>(null);
+  const [flowExpanded,setFlowExpanded]=useState(true),[tutorialOpen,setTutorialOpen]=useState(false),[tutorialSeen,setTutorialSeen]=useState(true);
+  useEffect(()=>{try{setTutorialSeen(localStorage.getItem(TUTORIAL_KEY)==='1');}catch{}},[]);
+  useEffect(()=>{if(window.matchMedia('(max-width: 900px)').matches)setFlowExpanded(false);},[]);
+  function closeTutorial(){setTutorialOpen(false);setTutorialSeen(true);try{localStorage.setItem(TUTORIAL_KEY,'1');}catch{}}
   const [assetDirty, setAssetDirty] = useState(false);
   const [missionDirty, setMissionDirty] = useState(false);
   const [editorEpoch, setEditorEpoch] = useState(0);
@@ -169,10 +176,15 @@ export default function Explorer() {
 
   async function mapSelect(lon: number, lat: number) {
     if (scenario.busy || simulation.busy) return;
-    if (placement === "move" && selectedAsset) {
+    if (placement === "route" && selectedAsset?.kind === "robot") {
+      // The destination is validated against native terrain by the API like every location.
+      const route = { departure_hours: 0, speed_kmh: 1, dwell_hours: 0, return_to_start: true, ...(selectedAsset.route ?? {}), destination: { latitude_deg: lat, longitude_deg: lon } };
+      const updated = await scenario.editAsset(selectedAsset.id, { route });
+      if (updated) { setPlacement(null); openDrawer('asset'); }
+    } else if (placement === "move" && selectedAsset) {
       const updated = await scenario.editAsset(selectedAsset.id, { location: { latitude_deg: lat, longitude_deg: lon } });
       if (updated) {setPlacement(null);openDrawer('asset');}
-    } else if (placement && placement !== "move") {
+    } else if (placement && placement !== "move" && placement !== "route") {
       const updated = await scenario.place(placement, { latitude_deg: lat, longitude_deg: lon });
       if (updated) { setMenu(null); setSelectedAssetId(updated.assets.at(-1)!.id); setPlacement(null);openDrawer('asset'); }
     } else if (discardAsset()) { setSelectedAssetId(null); void inspect(lon, lat); }
@@ -231,6 +243,26 @@ export default function Explorer() {
     {id:'tour',label:'Start walkthrough',group:'Guidance',run:()=>openHelp(true)},
     {id:'activity',label:'Open activity console',group:'System',run:()=>setConsoleVisible(true)},
   ];
+
+  // Restrained surface cues during playback, derived only from the stored interval values.
+  const run=simulation.run;
+  const assetStates=useMemo<Record<string,AssetVisual>|undefined>(()=>{
+    if(mode!=='simulation'||!run||!selectedInterval)return undefined;
+    const states:Record<string,AssetVisual>={},short=selectedInterval.unserved_kw>1e-9;
+    for(const asset of run.scenario_snapshot.assets){
+      if(!asset.operational){states[asset.id]={tone:'idle',dim:true,note:'not operational'};continue;}
+      if(asset.kind==='solar_array'){const kw=selectedInterval.asset_generation_kw[asset.id]??0;states[asset.id]=kw>0?{tone:'nominal',note:`generating ${kw.toFixed(2)} kW`}:{tone:'idle',dim:true,note:'no output this interval'};}
+      else if(asset.kind==='battery'){const battery=selectedInterval.batteries[asset.id];if(!battery)continue;
+        const low=battery.limits.includes('reserve')||battery.soc_end<=(asset.minimum_soc??0)+.02;
+        states[asset.id]={tone:low?'warning':'nominal',soc:battery.soc_end,note:`${(battery.soc_end*100).toFixed(1)}% SOC at interval end${battery.charge_kw>0?' · charging':battery.discharge_kw>0?' · discharging':''}`};}
+      else {const rover=selectedInterval.rovers?.[asset.id];
+        states[asset.id]={tone:short?'failure':'nominal',position:rover?{latitude_deg:rover.latitude_deg,longitude_deg:rover.longitude_deg}:undefined,
+          note:[short?'demand not fully served':null,rover&&asset.kind==='robot'?`${rover.state.replace('_',' ')} · ${rover.distance_from_start_km.toFixed(2)} km from start`:null].filter(Boolean).join(' · ')||undefined};}
+    }
+    return states;
+  },[mode,run,selectedInterval]);
+  const routes=useMemo(()=>(scenario.active?.assets??[]).filter(asset=>asset.kind==='robot'&&asset.route).map(asset=>({id:asset.id,from:asset.location,to:asset.route!.destination,
+    moving:mode==='simulation'?Boolean(selectedInterval?.rovers?.[asset.id]?.moving):false})),[scenario.active?.assets,mode,selectedInterval]);
 
   // Mission overlays: prepared native polar rasters stay in 2D; other layers use the 3D surface.
   const nativeMap=!globalMissionView&&!missionGlobe;
@@ -306,6 +338,7 @@ export default function Explorer() {
             onDirty={setAssetDirty}
             onSave={changes => void scenario.editAsset(selectedAsset.id, changes)} onMove={() => {setPlacement("move");setDrawer(null);}}
             onRemove={() => { if (window.confirm(`Remove “${selectedAsset.name}”?`)) void scenario.removeAsset(selectedAsset.id); }}
+            onRoute={() => { if (discardAsset()) { setPlacement("route"); setDrawer(null); } }}
             onInspect={() => { if (discardAsset()) { setSelectedAssetId(null); void inspect(selectedAsset.location.longitude_deg, selectedAsset.location.latitude_deg); } }} />}</div>
         </Drawer>
         <Drawer hidden={drawer!=='missions'} label="Missions" title={createMission||!scenario.active?'New mission':'Missions'} eyebrow="MISSION" closeLabel="Close missions" onClose={closeDrawer} className="missions-drawer">
@@ -327,6 +360,7 @@ export default function Explorer() {
       toolbar={<>
         {mode==='mission'&&scenario.active&&scenarioInView&&<button className="primary-button" aria-label="+ Add Asset" aria-expanded={menu==='palette'} disabled={working} onClick={()=>menu==='palette'?closeMenu():openMenu('palette')}><Icon name="plus"/>Add asset</button>}
         {mode==='mission'&&(!scenario.active||!scenarioInView)&&<button className="primary-button" disabled={working||!validLocation} onClick={startMission}>Create mission here</button>}
+        {mode==='simulation'&&simulation.run&&<button className={tutorialSeen?'':'tutorial-invite'} onClick={()=>setTutorialOpen(true)} aria-label="How the simulation works"><Icon name="help"/><span className="optional-label">How it works</span></button>}
         {mode==='simulation'&&scenario.active&&<button className={simulation.run?'':'primary-button'} aria-expanded={drawer==='setup'} disabled={working} onClick={()=>drawer==='setup'?closeDrawer():openDrawer('setup')}><Icon name="settings"/>{simulation.run?'Setup':'Set up simulation'}</button>}
         {mode==='regional'&&<button className="primary-button" onClick={startMission}>Create mission here</button>}
         <button aria-label="Overlays" aria-expanded={menu==="overlays"} onClick={()=>menu==="overlays"?closeMenu():openMenu("overlays")}><Icon name="layers"/>Overlays{missionOverlay!=='none'&&<span className="active-overlay-name">{LAYER_PRESENTATION[missionOverlay]?.label??missionOverlay}</span>}</button>
@@ -338,16 +372,18 @@ export default function Explorer() {
         {/* One WebGL globe at a time: the mission globe mounts only while this shell is visible. */}
         {(globalMissionView||missionGlobe)&&localShell?<MissionMoon preparedRegion={region} navigationRequest={navigationRequest} location={location} assets={scenarioInView?scenario.active?.assets??[]:[]} base={scenarioInView?scenario.active?.site??null:null}
           scenarioId={scenarioInView?scenario.active?.id??null:null} selectedAssetId={selectedAssetId} placing={Boolean(placement)} camera={camera} onCamera={setCamera}
-          onSelect={(lon,lat)=>void mapSelect(lon,lat)} onAssetSelect={id=>{if(!working)selectAsset(id);}} view={atlasView} onView={setAtlasView} layer={missionLayer}/>:
+          onSelect={(lon,lat)=>void mapSelect(lon,lat)} onAssetSelect={id=>{if(!working)selectAsset(id);}} view={atlasView} onView={setAtlasView} layer={missionLayer}
+          assetStates={assetStates} routes={routes}/>:
           !(globalMissionView||missionGlobe)&&region && layer && <TerrainMap opacity={atlasView.opacity} region={region} layer={layer} site={site} grid={grid}
           onSelect={(lon, lat) => void mapSelect(lon, lat)} onPointer={setPointer}
           assets={scenario.active?.assets} baseSite={scenario.active?.site} selectedAssetId={selectedAssetId}
-          onAssetSelect={id => { if (!working) selectAsset(id); }} placementActive={Boolean(placement)} />}
+          onAssetSelect={id => { if (!working) selectAsset(id); }} placementActive={Boolean(placement)} assetStates={assetStates} routes={routes} />}
+        {mode==='simulation'&&run&&scenarioInView&&<PowerFlow run={run} index={Math.min(intervalIndex,run.result.intervals.length-1)} expanded={flowExpanded} onExpanded={setFlowExpanded} onTutorial={()=>setTutorialOpen(true)}/>}
         {nativeMap&&layer&&region&&menu!=='overlays'&&<div className="legend-chip" aria-label={`${layer.name} legend`}><strong>{layer.name}</strong><span className="legend-ramp-inline"><small>{legendValue(layer.minimum)}</small><i style={{background:`linear-gradient(90deg,${layer.colors.join(',')})`}}/><small>{legendValue(layer.maximum)}</small></span></div>}
         {scenario.error && <div className="mission-error" role="alert">{scenario.error}</div>}
         {simulation.error && <div className="mission-error" role="alert">{simulation.error}</div>}
         {simulation.notice && <div className="simulation-notice" role="status">{simulation.notice}</div>}
-        {placement && <div className="placement-prompt" role="status">{placement === "move" ? "Click terrain to move the selected asset" : `Click terrain to place ${ASSET_NAMES[placement].toLowerCase()}`}
+        {placement && <div className="placement-prompt" role="status">{placement === "move" ? "Click terrain to move the selected asset" : placement === "route" ? "Click terrain to set the rover destination" : `Click terrain to place ${ASSET_NAMES[placement].toLowerCase()}`}
           <button onClick={() => setPlacement(null)}>Cancel placement</button></div>}
         {!placement&&drawer!=='location'&&!(mode==='simulation'&&simulation.run)&&<div className="selection-strip" aria-label="Selected location summary"><Icon name="target"/><p className="region-coordinate">{coordinateLabel??'Click the surface or enter coordinates'}</p>
           <button className="region-drawer-toggle" onClick={()=>openDrawer('location')} aria-label="Open location details">{location?'Details':'Coordinates'}<Icon name="chevron"/></button></div>}
@@ -366,5 +402,6 @@ export default function Explorer() {
     <HelpPanel open={helpOpen} initial={helpInitial} onClose={()=>{setHelpOpen(false);dismissGuide();}} motion={motion} onMotion={setMotion}
       consoleVisible={consoleVisible} onConsole={setConsoleVisible} onTips={()=>openHelp(true)}/>
     <CommandPalette open={paletteOpen} onClose={()=>setPaletteOpen(false)} commands={commands}/>
+    <SimulationTutorial open={tutorialOpen&&mode==='simulation'&&Boolean(run)} onClose={closeTutorial}/>
   </main>;
 }
