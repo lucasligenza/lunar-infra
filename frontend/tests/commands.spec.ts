@@ -1,4 +1,4 @@
-import {missionTools,utilities} from './workspace';
+import {openMissions} from './workspace';
 import { test, expect } from '@playwright/test';
 
 test('keyboard commands navigate real destinations, scientific tools and the activity console', async ({ page }) => {
@@ -27,20 +27,19 @@ test('keyboard commands navigate real destinations, scientific tools and the act
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await command('Open dataset catalog');
   await expect(page.getByRole('searchbox', { name: 'Search science datasets' })).toBeVisible();
-  await utilities(page);
-  await page.getByRole('button', { name: 'Commands', exact: true }).click();
+  await page.getByRole('button', { name: 'Search commands', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Command palette' });
   await dialog.getByRole('combobox').fill('Run current simulation');
   await expect(dialog.getByRole('option')).toHaveAttribute('aria-disabled', 'true');
   await dialog.getByRole('combobox').press('Escape');
   await expect(dialog).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'Commands', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Search commands', exact: true })).toBeFocused();
   await page.keyboard.press('Meta+k');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('combobox')).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
-  await utilities(page); await page.getByRole('button',{name:'Activity',exact:true}).click();
+  await page.getByRole('button',{name:'Activity',exact:true}).click();
   await page.getByRole('button', { name: 'Open activity', exact: true }).click();
   const activity = page.getByRole('region', { name: 'System activity' });
   await expect(activity.getByRole('list')).toContainText('[MAP]');
@@ -49,7 +48,6 @@ test('keyboard commands navigate real destinations, scientific tools and the act
   await page.screenshot({ path: '../artifacts/phase5-commands-activity.png' });
   await page.getByRole('button', { name: 'Dismiss activity', exact: true }).click();
   await expect(activity).toHaveCount(0);
-  await utilities(page);
   await page.getByRole('button', { name: 'Activity', exact: true }).click();
   await expect(activity).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -67,7 +65,7 @@ test('run command consumes a saved explicit profile and console reports actual s
     illumination_kind: 'custom_hypothetical', illumination_label: 'Explicit UI integration test profile', illumination_factors: [1, 0] } } })).json();
   try {
     await page.goto('/?mode=mission');
-    await missionTools(page);
+    await openMissions(page);
     await page.getByRole('button', { name: `Open scenario: ${name}`, exact: true }).click();
     await page.keyboard.press('Control+k');
     await page.getByRole('combobox', { name: 'Search commands' }).fill('Run current simulation');
@@ -76,7 +74,7 @@ test('run command consumes a saved explicit profile and console reports actual s
     const run = await (await result).json();
     await expect(page.getByRole('button', { name: 'Simulate', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByTestId('telemetry-generation')).toHaveText(run.result.intervals[0].generation_kw.toFixed(2));
-    await utilities(page); await page.getByRole('button',{name:'Activity',exact:true}).click();
+    await page.getByRole('button',{name:'Activity',exact:true}).click();
   await page.getByRole('button', { name: 'Open activity', exact: true }).click();
     await page.getByRole('checkbox', { name: 'Request details' }).check();
     await expect(page.getByRole('list', { name: 'Recorded application events' })).toContainText('Power simulation completed');

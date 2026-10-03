@@ -1,4 +1,4 @@
-import {atlasAdvanced} from './workspace';
+import {openAnalysis} from './workspace';
 import {test,expect} from '@playwright/test';
 
 test('catalog previews real acquisition budgets and handles bounded metadata discovery and source failure',async({page})=>{
@@ -13,9 +13,7 @@ test('catalog previews real acquisition budgets and handles bounded metadata dis
         files:[{url:'https://pds.nasa.gov/test.tab',bytes:156211313,md5:null,media_type:'text/plain'}]}]}});
   });
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-  await page.getByRole('button',{name:'Overlays',exact:true}).click();
-  await atlasAdvanced(page);
-  await page.getByRole('button',{name:'Catalog',exact:true}).click();
+  await openAnalysis(page,'Catalog');
   const search=page.getByRole('searchbox',{name:'Search science datasets'});
   await search.fill('GLD100');await page.locator('.atlas-catalog > details > summary').click();
   await page.getByRole('button',{name:'Inspect acquisition budget',exact:true}).click();
@@ -33,5 +31,5 @@ test('catalog previews real acquisition budgets and handles bounded metadata dis
   await expect.poll(()=>attempts).toBe(3);
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
-  await expect(page.getByRole('button',{name:'Close atlas',exact:true})).toBeInViewport();
+  await expect(page.getByRole('button',{name:'Close analysis tools',exact:true})).toBeInViewport();
 });

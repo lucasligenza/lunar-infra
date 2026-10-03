@@ -1,27 +1,26 @@
 "use client";
-import {useEffect,type ReactNode} from 'react';
-import ContextInspector from './ContextInspector';
-import Icon from '../ui/Icon';
+import {useEffect,useRef,type ReactNode} from 'react';
+
+export type MissionMenu='overlays'|'palette'|null;
+export type MissionDrawer='location'|'asset'|'missions'|'setup'|null;
 
 // Visual ownership only. Scenario, map, scientific and playback state stay in
-// Explorer's existing hooks so closing a panel never discards an input draft.
-export default function MissionWorkspace({toolsOpen,toolsSection,inspectorOpen,onCloseTools,onCloseInspector,tools,toolbar,viewport,inspector}: {
-  toolsSection:string;
-  toolsOpen:boolean;inspectorOpen:boolean;
-  onCloseTools:()=>void;onCloseInspector:()=>void;tools:ReactNode;toolbar:ReactNode;viewport:ReactNode;inspector:ReactNode;
+// Explorer's hooks; every surface stays mounted while hidden so drafts survive.
+// One menu (left) and one drawer (right) at most; narrow screens show one.
+export default function MissionWorkspace({menu,drawer,onCloseMenu,onCloseDrawer,menus,drawers,toolbar,viewport}: {
+  menu:MissionMenu;drawer:MissionDrawer;onCloseMenu:()=>void;onCloseDrawer:()=>void;
+  menus:Record<Exclude<MissionMenu,null>,ReactNode>;drawers:ReactNode;toolbar:ReactNode;viewport:ReactNode;
 }) {
-  useEffect(()=>{const close=(event:KeyboardEvent)=>{if(event.key==='Escape'&&!document.querySelector('dialog[open]')){if(toolsOpen)onCloseTools();else if(inspectorOpen)onCloseInspector();}};
-    window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[toolsOpen,inspectorOpen,onCloseTools,onCloseInspector]);
-  return <>
-    <div className="workspace mission-workspace" data-tools-open={toolsOpen} data-tools-section={toolsSection} data-inspector-open={inspectorOpen}>
-      <aside id="exploration-tools" className="tool-rail" aria-label="Exploration tools" hidden={!toolsOpen}>
-        <div className="tool-rail-title"><h2>{toolsSection==='assets'?'Add asset':toolsSection==='missions'?'Missions':toolsSection==='simulation'?'Simulation inputs':toolsSection==='overlays'?'Overlays':'Advanced tools'}</h2><button aria-label="Collapse tools" onClick={onCloseTools}><Icon name="close"/></button></div>
-        <div className="map-controls-stack">{tools}</div>
-      </aside>
-      <section id="terrain-workspace" className="map-workspace" aria-label="Terrain exploration">
-        <div className="workspace-toolbar">{toolbar}</div><div className="terrain-viewport">{viewport}</div>
-      </section>
-      <ContextInspector open={inspectorOpen} onClose={onCloseInspector}>{inspector}</ContextInspector>
-    </div>
-  </>;
+  const state=useRef({menu,drawer});state.current={menu,drawer};
+  useEffect(()=>{const close=(event:KeyboardEvent)=>{if(event.key!=='Escape'||document.querySelector('dialog[open]'))return;
+      if(state.current.menu)onCloseMenu();else if(state.current.drawer)onCloseDrawer();};
+    window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[onCloseMenu,onCloseDrawer]);
+  return <div className="workspace mission-workspace" data-menu={menu??'none'} data-drawer={drawer??'none'}>
+    <section id="terrain-workspace" className="map-workspace" aria-label="Terrain exploration">
+      <div className="terrain-viewport">{viewport}</div>
+      <div className="workspace-toolbar surface-toolbar" role="toolbar" aria-label="Mission tools">{toolbar}</div>
+    </section>
+    {menu&&<div className="menu-slot">{menus[menu]}</div>}
+    <div className="drawer-slot" hidden={!drawer}>{drawers}</div>
+  </div>;
 }

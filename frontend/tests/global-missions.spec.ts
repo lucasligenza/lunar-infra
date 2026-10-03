@@ -1,5 +1,4 @@
-import {chooseOverlay} from './workspace';
-import {missionInspector,missionDetails,missionTools,openActivity,openDestinations} from './workspace';
+import {chooseOverlay,openLocation,openMissions,openPalette,openSetup,openActivity,openDestinations,reachable,separate} from './workspace';
 import {test,expect} from '@playwright/test';
 import {lunarCoordinate} from '../lib/globe';
 import type {SimulationRun} from '../types/simulation';
@@ -12,16 +11,16 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await openDestinations(page);
     await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
-    await page.getByRole('button',{name:'Overlays',exact:true}).click();
     await chooseOverlay(page,'illumination');
-    await expect(page.getByTestId('atlas-sunlight')).toHaveText('Unavailable here');
-    await page.getByRole('button',{name:'Close atlas',exact:true}).click();
+    await expect(page.getByRole('complementary',{name:'Overlays'}).locator('.overlay-coverage')).toContainText('Outside the prepared south-pole region');
+    await page.getByRole('button',{name:'Close overlays',exact:true}).click();
     await page.getByRole('button',{name:'Create mission here',exact:true}).click();
-    await missionInspector(page);
+    await openLocation(page);
     const sample=await(await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47')).json();
-    await expect(page.getByTestId('global-mission-elevation')).toHaveText(sample.elevation.value.toFixed(1));
-    await expect(page.getByRole('complementary',{name:'Global site inspector'})).toContainText('WAC_GLD100_E000N1800_032P');
-    await missionTools(page);
+    await expect(page.getByTestId('atlas-elevation')).toHaveText(`${sample.elevation.value.toLocaleString('en-US')} m`);
+    await page.getByRole('complementary',{name:'Location'}).getByText('Sources & provenance',{exact:true}).click();
+    await expect(page.getByRole('complementary',{name:'Location'})).toContainText('WAC_GLD100_E000N1800_032P');
+    await openMissions(page);
     await page.getByLabel('Scenario name',{exact:true}).fill(name);
     const creation=page.waitForResponse(r=>r.url().endsWith('/scenarios')&&r.request().method()==='POST');
     await page.getByRole('button',{name:'Create scenario at selected site',exact:true}).click();
@@ -34,18 +33,15 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await expect.poll(async()=>Math.hypot(...(await host.getAttribute('data-camera'))!.split(',').map(Number))).toBeCloseTo(1.18,2);
     const box=(await canvas.boundingBox())!;
     for(const [kind,x,y] of [['habitat',.54,.44],['solar array',.44,.52],['battery',.6,.6]] as const) {
-      await missionTools(page);
+      await openPalette(page);
       await page.getByRole('button',{name:`Place ${kind}`,exact:true}).click();
       await canvas.click({position:{x:box.width*x,y:box.height*y}});
       await expect(page.getByRole('button',{name:'Cancel placement',exact:true})).toHaveCount(0);
       await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
     }
-  await openDestinations(page);
-    await missionTools(page);
-    await page.getByRole('button',{name:/^Select asset: habitat /i}).click();
+    await (await openMissions(page)).getByRole('button',{name:/^Select asset: habitat /i}).click();
     await page.getByLabel('Asset name',{exact:true}).fill('Atlas habitat');
     await page.getByLabel('Continuous demand (kW)',{exact:true}).fill('9');
-    await missionInspector(page);
     await page.getByRole('button',{name:'Save asset',exact:true}).click();
     await expect(page.getByText('Asset configuration saved',{exact:true})).toBeVisible();
     const original=await(await request.get(`/api/scenarios/${id}`)).json();
@@ -61,33 +57,32 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
       const marker=markers.find((m:any)=>m.assetId===asset.id),[lon,lat]=lunarCoordinate(...marker.position as [number,number,number]);
       expect(lon).toBeCloseTo(asset.location.longitude_deg,6);expect(lat).toBeCloseTo(asset.location.latitude_deg,6);
     }
-    await missionTools(page);
     const slopeTile=page.waitForResponse(response=>response.url().includes('/atlas/tiles/gld100/slope/')&&response.ok());
-    await page.getByRole('combobox',{name:'Global mission surface',exact:true}).selectOption('slope');
+    await chooseOverlay(page,'slope');
     await slopeTile;
-    await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready');
-    const overlayDisclosure=page.locator('.mission-layer-status > summary');
-    await expect(overlayDisclosure).toHaveCount(1);
-    const tools=(await page.getByRole('complementary',{name:'Exploration tools'}).boundingBox())!;
-    for(const control of [overlayDisclosure,page.getByRole('button',{name:'Fly to selected site',exact:true})]) {
+    const legend=page.locator('.legend-chip');
+    await page.getByRole('button',{name:'Close overlays',exact:true}).click();
+    await expect(legend).toHaveAttribute('data-status',/Scientific overlay ready/);
+    await expect(legend).toContainText('30°');
+    // The active legend and site action stay reachable with Overlays or a drawer open.
+    const menu=await (async()=>{await page.getByRole('button',{name:'Overlays',exact:true}).click();return page.getByRole('complementary',{name:'Overlays'});})();
+    for(const control of [page.getByRole('button',{name:'Fly to selected site',exact:true}),page.getByRole('complementary',{name:'Asset',exact:true})]) {
       await expect(control).toBeInViewport();
-      const bounds=(await control.boundingBox())!;expect(bounds.x).toBeGreaterThan(tools.x+tools.width);
-      expect(await control.evaluate(element=>{const b=element.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return hit===element||element.contains(hit);})).toBe(true);
+      expect(await separate(control,menu)).toBe(true);
     }
-    await overlayDisclosure.click();
-    await expect(page.locator('.mission-layer-status')).toContainText('30 deg');
+    expect(await reachable(page.getByRole('button',{name:'Fly to selected site',exact:true}))).toBe(true);
     await page.screenshot({path:'../artifacts/spatial-mission-controls.png'});
-    await overlayDisclosure.click();
+    await page.getByRole('button',{name:'Close overlays',exact:true}).click();
     await openActivity(page, 'Simulate');
+    await openSetup(page);
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();
     const result=page.waitForResponse(r=>r.url().endsWith('/simulations')&&r.request().method()==='POST');
-    await missionTools(page);
     await page.getByRole('button',{name:'Run simulation',exact:true}).click();
     const run:SimulationRun=await(await result).json();
     await expect(page.getByTestId('telemetry-demand')).toHaveText(run.result.intervals[0].demand_kw.toFixed(2));
     await page.getByRole('slider',{name:'Mission interval'}).press('End');
     await expect(page.getByTestId('telemetry-generation')).toHaveText(run.result.intervals.at(-1)!.generation_kw.toFixed(2));
-    await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready');
+    await expect(page.locator('.legend-chip')).toHaveAttribute('data-status',/Scientific overlay ready/);
     await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
     await page.screenshot({path:'../artifacts/phase4-global-mission.png'});
     await openActivity(page, 'Explore');
@@ -97,13 +92,13 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await openActivity(page, 'Simulate');
     await expect(page.getByRole('slider',{name:'Mission interval'})).toHaveValue(String(run.result.intervals.length-1));
     await page.reload();
-    await missionTools(page);
+    await openMissions(page);
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
     await expect(page.getByRole('region',{name:'Mission timeline'})).toBeVisible();
     await expect(page.getByTestId('telemetry-demand')).toHaveText(run.result.intervals[0].demand_kw.toFixed(2));
     await openActivity(page,'Build');
-    await missionInspector(page);
-    await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
+    await openLocation(page);
+    await expect(page.getByTestId('atlas-elevation')).toBeVisible();
     await openActivity(page,'Simulate');
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
     await page.setViewportSize({width:390,height:844});
@@ -123,9 +118,9 @@ test('global mission and regional atlas remain usable when the polar cache is un
   await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
   await page.getByRole('button',{name:'Create mission here',exact:true}).click();
-  await missionInspector(page);
-  await expect(page.getByTestId('global-mission-elevation')).toBeVisible();
-  await missionTools(page);
+  await openLocation(page);
+  await expect(page.getByTestId('atlas-elevation')).toBeVisible();
+  await openMissions(page);
   await expect(page.getByRole('button',{name:'Create scenario at selected site',exact:true})).toBeEnabled();
   await expect(page.getByRole('alert').filter({hasText:'No prepared region'})).toHaveCount(0);
   await openActivity(page, 'Analyze');

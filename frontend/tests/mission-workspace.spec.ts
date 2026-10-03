@@ -1,6 +1,6 @@
 import {chooseOverlay} from './workspace';
 import {test,expect} from '@playwright/test';
-import {missionSurface,missionTools,openActivity,missionInspector,openDestinations} from './workspace';
+import {missionSurface,openActivity,openAsset,openLocation,openMissions,openSetup,openDestinations} from './workspace';
 import {polarBoundary,toPolar} from '../lib/lunar';
 import type {SimulationRun} from '../types/simulation';
 
@@ -31,13 +31,12 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     illumination_kind:'custom_hypothetical',illumination_label:'Explicit visual QA profile; not observed lunar sunlight',illumination_factors:Array.from({length:48},(_,i)=>i<24?1:0)}}});
   expect(response.status()).toBe(201);const scenario=await response.json();
   try{
-    await page.goto('/?mode=mission');await missionTools(page);
+    await page.goto('/?mode=mission');await openMissions(page);
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
-    await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
-    const close=page.getByRole('button',{name:'Close inspector',exact:true});if(await close.isVisible())await close.click();
+    await expect(page.getByRole('complementary',{name:'Missions'})).not.toBeVisible();
     await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
-    await expect(page.locator('#context-inspector')).not.toBeVisible();
-    await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+    // Opening a mission restores the full canvas: no menu or drawer remains open.
+    await expect(page.locator('.context-drawer:visible, .surface-menu:visible')).toHaveCount(0);
     await page.screenshot({path:`../artifacts/mission-after-build-${width}.png`});
     const map=(await page.getByTestId('terrain-map').boundingBox())!;
     expect(map.width).toBeGreaterThan(width*.9);
@@ -45,9 +44,9 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     await expect(page.getByRole('button',{name:'Place habitat',exact:true})).toBeVisible();
     await page.screenshot({path:`../artifacts/mission-after-palette-${width}.png`});
     await page.getByRole('button',{name:'Place habitat',exact:true}).click();
-    await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+    await expect(page.getByRole('complementary',{name:'Infrastructure catalog'})).not.toBeVisible();
     await page.getByRole('button',{name:'Cancel placement',exact:true}).click();
-    await missionTools(page);await page.getByRole('button',{name:'Select asset: Research habitat',exact:true}).click();
+    await openAsset(page,'Research habitat');
     await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
     await expect(page.getByLabel('Continuous demand (kW)',{exact:true})).toHaveValue('8');
     await expect(page.getByLabel('Optional load profile (kW per interval)',{exact:true})).not.toBeVisible();
@@ -55,16 +54,16 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     await missionSurface(page);
     const terrain=page.getByTestId('terrain-map'),bounds=(await terrain.boundingBox())!;
     await terrain.click({position:{x:bounds.width*.65,y:bounds.height*.45}});
-    await expect(page.getByRole('complementary',{name:'Site inspector'})).toBeVisible();
-    await expect(page.getByTestId('elevation-value')).toBeVisible();
+    await expect(page.getByRole('complementary',{name:'Location'})).toBeVisible();
+    await expect(page.getByTestId('atlas-elevation')).toBeVisible();
     await expect(page.locator('.site-provenance')).not.toHaveAttribute('open','');
     await page.screenshot({path:`../artifacts/mission-after-site-${width}.png`});
-    await missionTools(page);await page.getByRole('button',{name:'Select asset: Reserve battery',exact:true}).click();
-    await openActivity(page,'Simulate');await missionTools(page);
+    await openAsset(page,'Reserve battery');
+    await openActivity(page,'Simulate');await openSetup(page);
     const pending=page.waitForResponse(r=>r.url().endsWith('/simulations')&&r.request().method()==='POST');
     await page.getByRole('button',{name:'Run simulation',exact:true}).click();const run:SimulationRun=await(await pending).json();
     await expect(page.getByRole('region',{name:'Mission timeline'})).toBeVisible();
-    await expect(page.locator('#context-inspector')).not.toBeVisible();
+    await expect(page.locator('.context-drawer:visible')).toHaveCount(0);
     await expect(page.getByRole('button',{name:/Electrical generation chart/})).toHaveCount(0);
     const battery=run.scenario_snapshot.assets.find(asset=>asset.kind==='battery')!;
     await expect(page.getByTestId('selected-asset-telemetry')).toHaveText(`${(run.result.intervals[0].batteries[battery.id].soc_end*100).toFixed(2)}% SOC at end`);
@@ -102,17 +101,15 @@ test('mission environmental overlays disclose actual missing coverage and naviga
   await openDestinations(page);await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
   await page.screenshot({path:'../artifacts/mission-after-explore.png'});
   await page.getByRole('button',{name:'Build',exact:true}).click();
-  await page.getByRole('button',{name:'Overlays',exact:true}).click();
-
-  await chooseOverlay(page,'temperature',true);
-  await expect(page.getByRole('region',{name:'Mission scientific overlays'})).toContainText('Outside the prepared south-pole region.');
+  await chooseOverlay(page,'temperature');
+  await expect(page.getByRole('complementary',{name:'Overlays'}).locator('.overlay-coverage')).toContainText('Outside the prepared south-pole region.');
   await page.screenshot({path:'../artifacts/mission-after-unsupported-temperature.png'});
   await page.getByRole('button',{name:'Go to supported region',exact:true}).click();
-  await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready',{timeout:60000});
+  await expect(page.locator('.legend-chip')).toHaveAttribute('data-status',/Scientific overlay ready/,{timeout:60000});
   await expect.poll(async()=>Number(await page.getByTestId('moon-canvas').getAttribute('data-sector-boundaries'))).toBeGreaterThan(0);
   await page.screenshot({path:'../artifacts/mission-after-polar-temperature.png'});
-  await missionInspector(page);await expect(page.getByTestId('active-environment-value')).toContainText('K');await missionSurface(page);
-  await page.getByRole('button',{name:'Overlays',exact:true}).click();await chooseOverlay(page,'illumination',true);await missionSurface(page);
-  await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready',{timeout:60000});
+  await openLocation(page);await expect(page.getByTestId('atlas-temperature')).toContainText('K');await missionSurface(page);
+  await chooseOverlay(page,'illumination');await missionSurface(page);
+  await expect(page.locator('.legend-chip')).toHaveAttribute('data-status',/Scientific overlay ready/,{timeout:60000});
   await page.screenshot({path:'../artifacts/mission-after-polar-solar.png'});
 });

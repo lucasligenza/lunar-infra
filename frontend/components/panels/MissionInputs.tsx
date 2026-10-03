@@ -51,7 +51,7 @@ export default function MissionInputs({ scenario, busy, blocked, onSave, onRun, 
     const saved = dirty ? await onSave(mission) : scenario;
     if (saved && run) await onRun(saved);
   }
-  return <details open className="tool-section mission-inputs"><summary>Simulation inputs</summary><div className="mission-input-form">
+  return <section className="mission-inputs" aria-label="Simulation inputs"><div className="mission-input-form">
     <p className="warning">Real-data playback unavailable. NASA visibility is an average, not a temporal series.</p>
     <button disabled={busy} onClick={() => preset(true)}>Apply synthetic stress profile</button>
     <details className="simulation-advanced"><summary>Advanced simulation settings</summary>
@@ -69,5 +69,5 @@ export default function MissionInputs({ scenario, busy, blocked, onSave, onRun, 
     {error && <p role="alert" className="warning">{error}</p>}
     {blocked && <p className="warning">{blocked}</p>}
     <button className="primary-button" disabled={busy || Boolean(blocked)} title={blocked} onClick={() => void save(true)}>{busy ? "Working…" : "Run simulation"}</button>
-  </div></details>;
+  </div></section>;
 }

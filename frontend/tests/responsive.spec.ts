@@ -1,4 +1,4 @@
-import {missionSurface,missionInspector,missionTools,openActivity,openDestinations,utilities} from './workspace';
+import {missionSurface,openActivity,openAsset,openDestinations,openLocation,openMissions,openSetup} from './workspace';
 import { test, expect, type Locator, type Page } from '@playwright/test';
 
 async function reachable(control: Locator) {
@@ -18,10 +18,10 @@ async function header(page: Page, width: number) {
     await reachable(page.getByRole('button', { name: label, exact: true }));
   }
 }
-async function pane(page: Page, label: 'Map' | 'Tools' | 'Inspector' | 'Timeline', width: number) {
+async function pane(page: Page, label: 'Map' | 'Missions' | 'Location' | 'Timeline', width: number) {
   if(label==='Map'||label==='Timeline')await missionSurface(page);
-  else if(label==='Tools')await missionTools(page);
-  else if(label==='Inspector')await missionInspector(page);
+  else if(label==='Missions')await openMissions(page);
+  else if(label==='Location')await openLocation(page);
 }
 
 for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 768], [390, 844]]) {
@@ -49,37 +49,33 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await page.screenshot({ path: `../artifacts/phase5-final-explore-${width}.png` });
       await openActivity(page, 'Analyze');
       await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
-      await pane(page, 'Inspector', width);
-      await expect(page.getByTestId('elevation-value')).toBeVisible();
+      await pane(page, 'Location', width);
+      await expect(page.getByTestId('atlas-elevation')).toBeVisible();
       await page.screenshot({ path: `../artifacts/phase5-final-analysis-inspector-${width}.png` });
       await pane(page, 'Map', width);
       await reachable(page.getByRole('button', { name: 'Reset map view', exact: true }));
       await page.screenshot({ path: `../artifacts/phase5-final-analyze-${width}.png` });
       await openActivity(page, 'Build');
-      await pane(page, 'Tools', width);
-      await missionTools(page);
+      await pane(page, 'Missions', width);
       await page.getByRole('button', { name: `Open scenario: ${name}`, exact: true }).click();
-      await expect(page.locator('#context-inspector')).not.toBeVisible();
-      await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+      await expect(page.locator('.context-drawer:visible, .surface-menu:visible')).toHaveCount(0);
       await reachable(page.getByRole('button',{name:'+ Add Asset',exact:true}));
       await page.getByRole('button',{name:'+ Add Asset',exact:true}).click();
       for(const kind of ['habitat','solar array','battery','communications station','robotic equipment'])await reachable(page.getByRole('button',{name:`Place ${kind}`,exact:true}));
       await page.screenshot({path:`../artifacts/mission-final-palette-${width}.png`});
       await page.getByRole('button',{name:'Place solar array',exact:true}).click();
-      await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+      await expect(page.getByRole('complementary',{name:'Infrastructure catalog'})).not.toBeVisible();
       await reachable(page.getByRole('button',{name:'Cancel placement',exact:true}));
       await page.getByRole('button',{name:'Cancel placement',exact:true}).click();
-      await missionTools(page);
-      await page.getByRole('button', { name: 'Select asset: QA habitat', exact: true }).click();
+      await openAsset(page, 'QA habitat');
       await expect(page.getByLabel('Continuous demand (kW)', { exact: true })).toHaveValue('8');
       await page.screenshot({ path: `../artifacts/phase5-final-design-inspector-${width}.png` });
       await pane(page, 'Map', width);
       await header(page, width);
       await page.screenshot({ path: `../artifacts/phase5-final-design-${width}.png` });
       await openActivity(page, 'Simulate');
-      await pane(page, 'Tools', width);
+      await openSetup(page);
       const result = page.waitForResponse(response => response.url().endsWith('/simulations') && response.request().method() === 'POST');
-      await missionTools(page);
       await page.getByRole('button', { name: 'Run simulation', exact: true }).click();
       const run = await (await result).json();
       await pane(page, 'Timeline', width);
@@ -91,7 +87,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       if(width<=900)await expect(page.getByTestId('terrain-map')).toBeVisible();
       const compactBounds = (await page.getByRole('region',{name:'Mission timeline'}).boundingBox())!;
       expect(compactBounds.x+compactBounds.width).toBeLessThanOrEqual(width+1);
-      await reachable(page.getByRole('combobox',{name:'Playback speed',exact:true}));
+      await reachable(page.getByRole('radiogroup',{name:'Playback speed',exact:true}).getByText('4×',{exact:true}));
       await expect(page.getByTestId('timeline-power-status')).toBeInViewport();
       expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const surfaceBounds=(await page.getByTestId('terrain-map').boundingBox())!;
@@ -110,7 +106,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       expect(axisSize).toBeGreaterThanOrEqual(10.5);
       await page.screenshot({ path: `../artifacts/phase5-final-simulate-${width}.png` });
       await page.getByRole('button',{name:'Collapse timeline',exact:true}).click();
-      await pane(page, 'Inspector', width);
+      await openAsset(page, 'QA habitat');
       await expect(page.getByTestId('inspector-telemetry-generation')).toHaveText(run.result.intervals[2].generation_kw.toFixed(2));
       await expect(page.getByTestId('inspector-telemetry-unserved')).toHaveText(`${run.result.intervals[2].unserved_kw.toFixed(2)} kW`);
       await pane(page, 'Timeline', width);
@@ -123,7 +119,7 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await expect(slider).toBeVisible();await expect(slider).toHaveValue(paused);
       if(width<=900)await expect(page.getByTestId('terrain-map')).toBeVisible();
       await openActivity(page, 'Build');
-      await pane(page, 'Tools', width);
+      await pane(page, 'Missions', width);
       await expect(page.getByRole('button', { name: `Open scenario: ${name}`, exact: true })).toHaveAttribute('aria-pressed', 'true');
       const stored = await (await request.get(`/api/scenarios/${scenario.id}`)).json();
       expect(stored.assets).toEqual(scenario.assets); expect(stored.revision).toBe(scenario.revision);
@@ -145,8 +141,7 @@ test('125 and 200 percent zoom-equivalent CSS viewports retain accessible naviga
     await page.screenshot({ path: `../artifacts/phase5-zoom-before-${scale}.png`, fullPage: true });
     await reachable(page.getByRole('button', { name: 'Reset map view', exact: true }));
     await page.screenshot({ path: `../artifacts/phase5-zoom-equivalent-${scale}.png`, fullPage: true });
-  await utilities(page);
-    await page.getByRole('button', { name: 'Commands', exact: true }).click();
+    await page.getByRole('button', { name: 'Search commands', exact: true }).click();
     await expect(page.getByRole('combobox', { name: 'Search commands' })).toBeFocused();
     await reachable(page.getByRole('button', { name: 'Close command palette', exact: true }));
     await page.screenshot({ path: `../artifacts/phase5-final-palette-${scale}.png` });

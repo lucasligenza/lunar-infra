@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {calculateScientific} from '../../lib/api';
 import type {AtlasAnalysisState,AreaReport,ProfileReport} from '../../types/atlas';
 import type {GlobeLocation} from '../../types/globe';
+import Segmented from '../ui/Segmented';
 
 function download(name:string,payload:string,type:string) {
   const url=URL.createObjectURL(new Blob([payload],{type})),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -35,7 +36,7 @@ export default function AtlasAnalysis({location,dataset,state,onState}:{location
   const selected=cursor===null?null:profile?.samples[cursor];
   return <section className="atlas-analysis" aria-label="Regional atlas analysis"><h3>Regional analysis</h3>
     <p>{location?`Center / profile start: ${location.latitude_deg.toFixed(5)}° / ${location.longitude_deg.toFixed(5)}° E`:'Select a lunar location to analyze an area or profile.'}</p>
-    <form onSubmit={e=>{e.preventDefault();void run('area');}}><label>Analysis area<select value={state.kind} onChange={e=>onState({...state,kind:e.target.value as 'circle'|'box'})}><option value="circle">Radius around selected location</option><option value="box">Geographic extent</option></select></label>
+    <form onSubmit={e=>{e.preventDefault();void run('area');}}><Segmented label="Analysis area" value={state.kind} onChange={kind=>onState({...state,kind})} options={[{value:'circle',label:'Radius'},{value:'box',label:'Extent'}]}/>
       {state.kind==='circle'?<label>Analysis radius (km)<input required type="number" min={1} max={600} step="any" value={state.radius} onChange={e=>onState({...state,radius:e.target.value})}/></label>:
         <div className="area-bounds">{(['south','north','west','east'] as const).map(key=><label key={key}>{key} (°{key==='west'||key==='east'?' E':''})<input required type="number" min={key==='south'||key==='north'?-90:-180} max={key==='south'||key==='north'?90:360} step="any" value={state.bounds[key]} onChange={e=>onState({...state,bounds:{...state.bounds,[key]:e.target.value}})}/></label>)}<p>West to east wraps across 0° when east is smaller.</p></div>}
       <button className="primary-button" disabled={!location||busy}>Calculate regional statistics</button></form>

@@ -23,6 +23,13 @@ const paths = {
   pause: 'M7 4v16M17 4v16',
   plus: 'M12 4v16M4 12h16',
   folder: 'M3 6h7l2 3h9v11H3V6Z',
+  back: 'm15 4-8 8 8 8',
+  help: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01',
+  activity: 'M3 5h18v14H3V5Zm4 5 3 2-3 2M12 15h5',
+  mission: 'M4 21V4M4 4h11l-2 4 2 4H4',
+  grid: 'M4 4h16v16H4V4Zm0 5.3h16M4 14.7h16M9.3 4v16M14.7 4v16',
+  route: 'M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12-10a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 17h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6',
+  info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 11v6M12 7.5h.01',
 } as const;
 export type IconName = keyof typeof paths;
 

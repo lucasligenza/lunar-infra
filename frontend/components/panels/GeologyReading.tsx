@@ -1,7 +1,5 @@
 "use client";
-import {useEffect,useState} from 'react';
-import {fetchScientific} from '../../lib/api';
-import type {AtlasPoint,GeologyQuantity} from '../../types/atlas';
+import type {GeologyQuantity} from '../../types/atlas';
 
 export default function GeologyReading({geology,loading=false,error=null}:{
   geology:GeologyQuantity|null;loading?:boolean;error?:string|null;
@@ -24,20 +22,4 @@ export default function GeologyReading({geology,loading=false,error=null}:{
       </details>
     </>:<p>{geology?'No mapped geological unit at this location. Transparent areas have no supporting classification.':'Geology is not prepared locally. No color interpretation is available.'}</p>}
   </section>;
-}
-
-// The native polar inspector has a separate terrain response. Read geology from
-// the existing atlas API only when that overlay is active in this workspace.
-export function GeologyAtLocation({latitude,longitude}:{latitude:number;longitude:number}) {
-  const [sample,setSample]=useState<{key:string;point:AtlasPoint}|null>(null);
-  const [failure,setFailure]=useState<{key:string;message:string}|null>(null);
-  const key=`${latitude}/${longitude}`;
-  useEffect(()=>{const abort=new AbortController();setSample(null);setFailure(null);
-    fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${latitude}&longitude=${longitude}`,abort.signal)
-      .then(point=>{if(!abort.signal.aborted)setSample({key,point});})
-      .catch(error=>{if(!abort.signal.aborted)setFailure({key,message:error.message});});
-    return()=>abort.abort();
-  },[latitude,longitude,key]);
-  const point=sample?.key===key?sample.point:null,error=failure?.key===key?failure.message:null;
-  return <GeologyReading geology={point?.geology??null} loading={!point&&!error} error={error}/>;
 }

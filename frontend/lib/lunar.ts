@@ -25,3 +25,11 @@ export function polarBoundary(region:{bounds_m:number[];reference_radius_m:numbe
     const x=corners[edge][0]+fraction*(corners[edge+1][0]-corners[edge][0]),y=corners[edge][1]+fraction*(corners[edge+1][1]-corners[edge][1]);
     const [longitude_deg,latitude_deg]=toGeographic(x,y,region.reference_radius_m);return {longitude_deg,latitude_deg};});
 }
+
+// Great-circle surface distance on the 1,737.4 km reference sphere (haversine).
+// Display geometry for nearby-asset context; relief is not included.
+export function surfaceDistanceKm(a:{latitude_deg:number;longitude_deg:number},b:{latitude_deg:number;longitude_deg:number},radius_m=1737400) {
+  const rad=Math.PI/180,dLat=(b.latitude_deg-a.latitude_deg)*rad,dLon=(b.longitude_deg-a.longitude_deg)*rad;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.latitude_deg*rad)*Math.cos(b.latitude_deg*rad)*Math.sin(dLon/2)**2;
+  return 2*Math.asin(Math.min(1,Math.sqrt(h)))*radius_m/1000;
+}

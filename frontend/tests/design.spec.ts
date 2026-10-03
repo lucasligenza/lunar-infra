@@ -1,4 +1,4 @@
-import {openDestinations,regionAdvanced} from './workspace';
+import {openDestinations} from './workspace';
 import { test, expect } from '@playwright/test';
 
 function luminance(value: string) {
@@ -15,20 +15,20 @@ test('mission-control text, actions and technical typography remain readable', a
   await expect(page.locator('body')).toHaveCSS('font-family', /Geist/);
   await openDestinations(page);
   await page.getByRole('button', { name: /^Shackleton crater/ }).click();
-  const primary = page.getByRole('button', { name: 'View scientific overlays', exact: true });
+  const primary = page.getByRole('button', { name: 'Find settlement sites', exact: true });
   const colors = await primary.evaluate(element => {
     const style = getComputedStyle(element); return [style.color, style.backgroundColor];
   });
   const [a, b] = colors.map(luminance);
   expect((Math.max(a, b) + .05) / (Math.min(a, b) + .05)).toBeGreaterThanOrEqual(4.5);
-  await regionAdvanced(page); await page.getByRole('button',{name:'Analyze this region',exact:true}).click();
-  await expect(page.getByTestId('elevation-value')).toBeVisible();
-  await expect(page.getByTestId('elevation-value')).toHaveCSS('font-family', /GeistMono/);
-  await page.getByRole('button', { name: 'Create mission here', exact: true }).focus();
+  await page.getByRole('button',{name:'Analyze this region',exact:true}).click();
+  await expect(page.getByTestId('atlas-elevation')).toBeVisible();
+  await expect(page.getByTestId('atlas-elevation')).toHaveCSS('font-family', /GeistMono/);
+  await page.locator('.surface-toolbar').getByRole('button', { name: 'Create mission here', exact: true }).focus();
   await page.keyboard.press('Shift+Tab');
   await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Create mission here', exact: true })).toBeFocused();
-  await expect(page.getByRole('button', { name: 'Create mission here', exact: true })).toHaveCSS('outline-style', 'solid');
+  await expect(page.locator('.surface-toolbar').getByRole('button', { name: 'Create mission here', exact: true })).toBeFocused();
+  await expect(page.locator('.surface-toolbar').getByRole('button', { name: 'Create mission here', exact: true })).toHaveCSS('outline-style', 'solid');
   for (const [width, height] of [[1920, 1080], [1366, 768], [390, 844]]) {
     await page.setViewportSize({ width, height });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Dialog from './ui/Dialog';
+import Segmented from './ui/Segmented';
 const STEPS = [
   ['Navigate the Moon', 'Explore starts with the 3D Moon. Drag to orbit, scroll to approach, or choose a named destination. Reset globe returns to near-side orbit.'],
   ['Select a location', 'Click the surface or enter lunar coordinates. The location panel identifies the actual available data. Your selection stays with you across activities.'],
@@ -30,7 +31,7 @@ export default function HelpPanel({ open, initial, onClose, motion, onMotion, co
           {step < STEPS.length - 1 ? <button className="primary-button" onClick={() => setStep(value => value + 1)}>Next step</button> : <button className="primary-button" onClick={onClose}>Finish walkthrough</button>}
           <button onClick={onClose}>Dismiss walkthrough</button></div>
       </>}
-      {tab === 'settings' && <><label>Camera motion<select aria-label="Camera motion" value={motion} onChange={event => onMotion(event.target.value as 'system' | 'reduce')}><option value="system">Respect system preference</option><option value="reduce">Reduce motion</option></select></label>
+      {tab === 'settings' && <><Segmented label="Camera motion" value={motion} onChange={onMotion} options={[{value:'system',label:'Respect system preference'},{value:'reduce',label:'Reduce motion'}]}/>
         <p>Reduced motion uses immediate camera transitions and removes cosmetic animation. Scientific values and simulation time steps are unchanged.</p>
         <label className="checkbox-label"><input type="checkbox" checked={consoleVisible} onChange={event => onConsole(event.target.checked)} />Show activity console</label>
         <button onClick={onTips}>Open walkthrough</button>

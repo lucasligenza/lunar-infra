@@ -25,8 +25,6 @@ export default function MissionHeader({ mode, context, status, ready, busy, onMo
       {onSave && <button className="save-name" hidden={!canSave} disabled={busy || !canSave} onClick={onSave}>Save scenario</button>}
     </div>
     <button className="command-trigger" onClick={onCommands} aria-label="Search commands" title="Search commands (Ctrl / Cmd K)"><Icon name="search"/><span>Search</span><kbd>Ctrl K</kbd></button>
-    <details className="header-utilities utility-menu"><summary aria-label="Help and settings" title="Help and settings"><Icon name="settings"/></summary><div>
-      <button onClick={onCommands} title="Open commands (Ctrl / Cmd K)">Commands</button><button onClick={onActivity}>Activity</button><button onClick={onHelp}>Help</button>
-    </div></details>
+    <div className="header-utilities"><button onClick={onActivity} aria-label="Activity" title="Activity console"><Icon name="activity"/></button><button onClick={onHelp} aria-label="Help" title="Help, walkthrough and settings"><Icon name="help"/></button></div>
   </header>;
 }

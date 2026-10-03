@@ -14,6 +14,29 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   AGENTS.md now permits the user-requested *preliminary screening score*
   (never habitability/safety), the candidate-neighborhood endpoint and
   deterministic rover kinematics. No code changed in this milestone.
+  Pushed `3cc17f8`.
+- **M2+M3 surfaces and selected-location data.** One left menu (Overlays,
+  Places, Add asset) and one right drawer (Location, Settlement sites,
+  Analysis tools, Asset, Missions, Simulation setup); phones get bottom
+  sheets that keep the Moon visible. Overlays is one compact list with opacity,
+  legend, coverage and *Source details* (terrain source, compare, display).
+  The old atlas panel tabs became an explicit Analysis tools drawer. Eight
+  `<select>`s became segmented radios; the Mission-details, Advanced-tools and
+  header-utility dropdowns were removed. A shared location panel aggregates
+  every prepared value from one `/atlas/inspect?dataset=best` sample (terrain,
+  native resolution, solar visibility, Diviner temperature, geology, coverage,
+  nearby assets) with *Unavailable here / Missing source data / Not prepared*
+  states, then Technical details and Sources & provenance. Candidate rings,
+  sectors and analysis outlines now render only while their panel is open.
+  The mission globe mounts only while its shell is visible (it previously
+  kept a second WebGL renderer alive in Explore). Scientific tiles retry once
+  after a transient failure. M2 and M3 share one commit because the drawer
+  and the panel replaced the same components.
+  Validation: typecheck and production build pass; full Playwright run 63/64
+  then the remaining dev-server tile flake fixed and re-run (8/8); journeys
+  updated only where controls intentionally moved, numeric/provenance
+  assertions retained. Python 115 passed + 8 subtests (includes the in-progress
+  M5/M8 backend). Rendered review at all five sizes (`artifacts/claude-m3`).
 
 ## Spatial workspace — verified and pushed
 

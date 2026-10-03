@@ -1,4 +1,5 @@
 "use client";
+import Segmented from "../ui/Segmented";
 import type {Interval,SimulationRun} from '../../types/simulation';
 function Chart({ title, rows, values, unit, color, selected, onSelect, battery = false }: {
   title: string; rows: Interval[]; values: number[]; unit: string; color: string; selected: number; onSelect: (index: number) => void; battery?: boolean;
@@ -31,7 +32,7 @@ export default function SimulationDrawer({run,index,windowSize,onWindow,onSelect
   const events=run.result.events.filter(event=>event.interval_index>=visible[0].index&&event.interval_index<=visible.at(-1)!.index).slice(0,100);
   const summary=run.result.summary;
   return <div id="mission-timeline-details" className="timeline-details">
-      <div className="timeline-detail-heading"><h3>Interval-average power (kW) / battery at interval end (%)</h3><label>Chart window<select aria-label="Chart window" value={windowSize} onChange={event => onWindow(Number(event.target.value))}><option value={0}>Entire mission</option><option value={12}>12 intervals</option><option value={48}>48 intervals</option></select></label></div>
+      <div className="timeline-detail-heading"><h3>Interval-average power (kW) / battery at interval end (%)</h3><Segmented label="Chart window" value={windowSize} onChange={onWindow} options={[{value:0,label:'Entire mission'},{value:48,label:'48 intervals'},{value:12,label:'12 intervals'}]}/></div>
       <div className="timeline-charts"><Chart title="Electrical generation" rows={visible} values={visible.map(row => row.generation_kw)} unit="kW" color="var(--accent)" selected={index} onSelect={onSelect} />
         <Chart title="Electrical demand" rows={visible} values={visible.map(row => row.demand_kw)} unit="kW" color="var(--quiet)" selected={index} onSelect={onSelect} />
         {current.soc_end === null ? <div className="timeline-chart no-storage"><h3>Battery state of charge</h3><p>No batteries installed</p></div> :

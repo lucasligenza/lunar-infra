@@ -1,14 +1,15 @@
-import {chooseOverlay} from './workspace';
 import {test,expect} from '@playwright/test';
-import {missionDetails,missionTools,openDestinations,openActivity} from './workspace';
+import {chooseOverlay,openDestinations,openActivity,openMissions,openSetup,separate} from './workspace';
 import type {SuitabilityReport} from '../types/suitability';
 
 async function openFinder(page:import('@playwright/test').Page,destination='Shackleton crater') {
   await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await openDestinations(page);await page.getByRole('button',{name:new RegExp(`^${destination}`)}).click();
-  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   await chooseOverlay(page,'illumination');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
+  await page.getByRole('button',{name:'Close overlays',exact:true}).click();
+  const details=page.getByRole('button',{name:'Open region details',exact:true});
+  if(await details.isVisible())await details.click();
   await page.getByRole('button',{name:'Find settlement sites',exact:true}).click();
 }
 
@@ -46,7 +47,7 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     const map=page.getByTestId('terrain-map'),box=(await map.boundingBox())!;await map.click({position:{x:box.width*.55,y:box.height*.45}});
     await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
     await page.screenshot({path:'../artifacts/targeted-candidate-habitat.png'});
-    await missionDetails(page);await page.getByRole('button',{name:'Simulation inputs',exact:true}).click();
+    await openActivity(page,'Simulate');await openSetup(page);
     await expect(page.getByText('Real-data playback unavailable.',{exact:false})).toBeVisible();
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();
     const simulation=page.waitForResponse(result=>result.url().endsWith('/simulations')&&result.request().method()==='POST');
@@ -58,12 +59,12 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     await expect(page.getByRole('button',{name:'Expand timeline',exact:true})).toBeVisible();
     await page.screenshot({path:'../artifacts/targeted-candidate-playback.png'});
     await openActivity(page,'Build');
-    await missionDetails(page);await page.getByRole('button',{name:'Saved missions',exact:true}).click();
+    await openMissions(page);
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
-    await missionTools(page);await expect(page.getByRole('button',{name:/^Select asset: habitat /i})).toBeVisible();
+    await openMissions(page);await expect(page.getByRole('button',{name:/^Select asset: habitat /i})).toBeVisible();
     const saved=await(await request.get(`/api/scenarios/${id}`)).json();
     expect(saved.site).toEqual(scenario.site);expect(saved.assets).toHaveLength(1);
-    await openActivity(page,'Explore');await page.getByRole('button',{name:'Overlays',exact:true}).click();
+    await openActivity(page,'Explore');await page.getByRole('button',{name:'Open region details',exact:true}).click();
     await page.getByRole('button',{name:'Find settlement sites',exact:true}).click();
     await expect(page.getByRole('button',{name:`Inspect ${candidate.id}`,exact:true})).toHaveAttribute('aria-pressed','true');
     const alternative=report.candidates.find(item=>item.id!==candidate.id)!;expect(alternative).toBeTruthy();
@@ -110,10 +111,10 @@ for(const [width,height] of [[1920,1080],[1440,900],[1366,768],[1024,768],[390,8
     await page.getByText('Screening settings',{exact:true}).click();
     await page.getByLabel('Search radius (km)',{exact:true}).scrollIntoViewIfNeeded();
     await expect(page.getByLabel('Search radius (km)',{exact:true})).toBeInViewport();
-    await expect(page.getByRole('button',{name:'Close atlas',exact:true})).toBeInViewport();
+    await expect(page.getByRole('button',{name:'Close settlement sites',exact:true})).toBeInViewport();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    const toolbar=(await page.locator('.globe-toolbar').boundingBox())!,panel=(await page.getByRole('complementary',{name:'Lunar atlas'}).boundingBox())!;
-    expect(panel.y).toBeGreaterThanOrEqual(toolbar.y+toolbar.height-1);
+    const drawer=page.getByRole('complementary',{name:'Settlement sites'}),panel=(await drawer.boundingBox())!;
+    expect(await separate(page.locator('.globe-toolbar'),drawer)).toBe(true);
     if(width>900){
       const viewport=(await page.locator('.globe-viewport').boundingBox())!;
       expect(viewport.width).toBe(width);

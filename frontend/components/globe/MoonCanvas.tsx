@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {recordActivity} from '../../lib/activity';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -13,7 +13,7 @@ type Props = { metadata: GlobeMetadata; location: GlobeLocation | null; flight: 
   assets: Asset[]; base: GlobeLocation | null; texture: boolean; grid: boolean; camera: CameraState | null;
   onCamera: (state: CameraState) => void; onSelect: (location: GlobeLocation) => void; onReady: (milliseconds: number) => void;
   atlas?:AtlasView; onAtlasStatus?:(value:string)=>void;boundaries?:GlobeLocation[][];
-  onAssetSelect?:(id:string)=>void;selectedAssetId?:string|null;placementActive?:boolean };
+  onAssetSelect?:(id:string)=>void;selectedAssetId?:string|null;placementActive?:boolean;controls?:ReactNode };
 
 export default function MoonCanvas(props: Props) {
   const host = useRef<HTMLDivElement>(null), latest = useRef(props);
@@ -226,12 +226,13 @@ export default function MoonCanvas(props: Props) {
     <div ref={host} className="moon-canvas" data-testid="moon-canvas" />
     {tooltip&&<div className="globe-asset-tooltip" style={{left:tooltip.x+14,top:tooltip.y+14}}>{tooltip.name}</div>}
     {props.atlas?.compare&&props.atlas.layer!=='none'&&<div className="atlas-reveal" style={{left:`${props.atlas.reveal*100}%`}} aria-hidden="true"><span>Imagery / science</span></div>}
-    <div className="globe-render-status" role="status" data-testid="globe-status">{status}</div>
+    <div className="globe-render-status" role="status" data-testid="globe-status" data-ready={status.includes('terrain ready')||undefined}>{status}</div>
     {error && <div className="globe-render-error" role="alert"><p>{error}</p><button onClick={()=>setRetry(v=>v+1)}>Retry globe</button></div>}
     <div className="camera-controls" aria-label="Globe camera controls">
       <button title="Zoom toward the surface" aria-label="Zoom globe in" onClick={()=>{ if(runtime.current) runtime.current.camera.position.multiplyScalar(.8); }}>+</button>
       <button title="Zoom out" aria-label="Zoom globe out" onClick={()=>{ if(runtime.current) runtime.current.camera.position.multiplyScalar(1.25); }}>−</button>
       <button title="Return to near-side orbit" onClick={()=>runtime.current?.animateTo({latitude_deg:12,longitude_deg:0},3.4)}>Reset globe</button>
+      {props.controls}
     </div>
   </div>;
 }

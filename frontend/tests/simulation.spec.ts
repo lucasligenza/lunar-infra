@@ -1,4 +1,4 @@
-import {missionInspector,missionTools,openActivity} from './workspace';
+import {openAsset,openMissions,openSetup,openActivity} from './workspace';
 import { test, expect } from "@playwright/test";
 import type { SimulationRun } from "../types/simulation";
 
@@ -14,16 +14,15 @@ test("simulation inputs playback charts telemetry stale state and saved result r
   const errors: string[] = []; page.on("pageerror", error => errors.push(error.message));
   try {
     await page.goto("/?mode=simulation");
-    await missionTools(page);
+    await openMissions(page);
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
-    await missionTools(page);
+    await openSetup(page);
     await expect(page.getByText("Real-data playback unavailable.", { exact: false })).toBeVisible();
-    await missionTools(page);
     await page.getByRole("button", { name: "Run simulation", exact: true }).click();
     await expect(page.getByRole("alert").filter({ hasText: "explicit synthetic profile" })).toBeVisible();
     await page.getByRole("button", { name: "Apply synthetic stress profile", exact: true }).click();
     const response = page.waitForResponse(value => value.url().endsWith("/simulations") && value.request().method() === "POST");
-    await missionTools(page);
+    await openSetup(page);
     await page.getByRole("button", { name: "Run simulation", exact: true }).click();
     const run: SimulationRun = await (await response).json();
     await expect(page.getByRole("region", { name: "Mission timeline" })).toBeVisible();
@@ -45,12 +44,12 @@ test("simulation inputs playback charts telemetry stale state and saved result r
     await expect(page.getByTestId("telemetry-soc")).toHaveText(`${(run.result.intervals[selected].soc_end! * 100).toFixed(2)}%`);
     await expect(page.getByTestId('timeline-power-status')).toHaveText('Power shortage');
     await expect(page.getByRole('heading',{name:'Mission summary (kWh)',exact:true})).toBeVisible();
-    await page.getByLabel("Chart window", { exact: true }).selectOption("12");
+    await page.getByRole("radiogroup", { name: "Chart window" }).getByRole("radio", { name: "12 intervals" }).check();
     await expect(page.getByRole("button", { name: /Electrical generation chart/ })).toBeVisible();
     await slider.focus(); await slider.press("Home"); await slider.press("ArrowRight");
     await expect(slider).toHaveValue("1");
     await expect(page.getByTestId("telemetry-generation")).toHaveText(run.result.intervals[1].generation_kw.toFixed(2));
-    await page.getByLabel("Playback speed", { exact: true }).selectOption("4");
+    await page.getByRole("radiogroup", { name: "Playback speed" }).getByRole("radio", { name: "4×" }).check();
     await page.getByRole("button", { name: "Play mission", exact: true }).click();
     await expect.poll(() => slider.inputValue()).not.toBe("1");
     await page.getByRole("button", { name: "Pause playback", exact: true }).click();
@@ -65,22 +64,20 @@ test("simulation inputs playback charts telemetry stale state and saved result r
     await expect(slider).toHaveValue(paused);
     await page.screenshot({path:'../artifacts/targeted-playback-expanded.png'});
     await openActivity(page, 'Build');
-    await missionTools(page);
-    await page.getByRole("button", { name: "Select asset: Research habitat", exact: true }).click();
+    await openAsset(page, "Research habitat");
     await page.getByLabel("Continuous demand (kW)", { exact: true }).fill("10");
-    await missionInspector(page);
     await page.getByRole("button", { name: "Save asset", exact: true }).click();
     await expect(page.getByRole("region", { name: "Mission timeline" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Simulated telemetry" })).toHaveCount(0);
     await expect(page.getByText("Saved results are from an older revision.", { exact: false })).toBeVisible();
     await openActivity(page, 'Simulate');
     const rerun = page.waitForResponse(value => value.url().endsWith("/simulations") && value.request().method() === "POST");
-    await missionTools(page);
+    await openSetup(page);
     await page.getByRole("button", { name: "Run simulation", exact: true }).click();
     const updated: SimulationRun = await (await rerun).json();
     await expect(page.getByTestId("telemetry-demand")).toHaveText(updated.result.intervals[0].demand_kw.toFixed(2));
     await page.reload();
-    await missionTools(page);
+    await openMissions(page);
     await page.getByRole("button", { name: `Open scenario: ${name}`, exact: true }).click();
     await expect(page.getByRole("region", { name: "Mission timeline" })).toBeVisible();
     await expect(page.getByTestId("telemetry-demand")).toHaveText(updated.result.intervals[0].demand_kw.toFixed(2));

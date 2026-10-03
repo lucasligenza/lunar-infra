@@ -7,7 +7,6 @@ async function openGeology(page:Page) {
   await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
   await openDestinations(page);
   await page.getByRole('button',{name:/^Mare Tranquillitatis/}).click();
-  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   await chooseOverlay(page,'geology');
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('ready / rendered');
 }
@@ -34,9 +33,7 @@ async function matchesSource(page:Page,point:AtlasPoint) {
 
 test('clicking geology identifies its source color and unit with the overlay panel open or closed',async({page})=>{
   await openGeology(page);
-  // Reproduce the original failure: the clicked unit was below the layer picker
-  // and the ordinary location drawer did not display geology at all.
-  await page.locator('.atlas-content').evaluate(element=>{element.scrollTop=element.scrollHeight;});
+  // The clicked unit is explained in the location drawer while Overlays stays open.
   const first=await pickSurface(page);
   const reading=await matchesSource(page,first);
   await reading.getByText('Source details',{exact:true}).click();
@@ -45,20 +42,22 @@ test('clicking geology identifies its source color and unit with the overlay pan
   await page.screenshot({path:'../artifacts/geology-selection-atlas.png'});
   await page.getByText('49 geological units / categorical legend',{exact:true}).click();
   await expect(page.locator('.geology-legend li[aria-current="true"]')).toContainText(first.geology!.category!.code);
-  await page.getByRole('button',{name:'Close atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Close overlays',exact:true}).click();
   await page.getByRole('button',{name:'Close region details',exact:true}).click();
   const next=await pickSurface(page,.42,.6);
   await matchesSource(page,next);
   await page.screenshot({path:'../artifacts/geology-selection-region.png'});
   await openActivity(page,'Analyze');
   await expect(page.getByRole('region',{name:'Regional atlas analysis',exact:true})).toBeVisible();
-  await matchesSource(page,await pickSurface(page,.48,.52));
+  const analyzed=await pickSurface(page,.48,.52);
+  await page.getByRole('button',{name:'Back to location',exact:true}).click();
+  await matchesSource(page,analyzed);
   await page.screenshot({path:'../artifacts/geology-selection-analysis.png'});
 });
 
 test('geology selection clears stale color while loading, on failure and when source data is missing',async({page})=>{
   await openGeology(page);
-  await page.getByRole('button',{name:'Close atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Close overlays',exact:true}).click();
   const reading=page.getByRole('region',{name:'Geology at this location',exact:true});
   await expect(reading.getByTestId('selected-geology-unit')).toBeVisible();
   let state:'pending'|'ready'|'failure'|'unprepared'|'nodata'='pending';
@@ -100,8 +99,9 @@ test('geology selection clears stale color while loading, on failure and when so
 test('phone surface selection opens a readable geological explanation without overflow',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await openGeology(page);
-  await page.getByRole('button',{name:'Close atlas',exact:true}).click();
-  await page.getByRole('button',{name:'Close region details',exact:true}).click();
+  await page.getByRole('button',{name:'Close overlays',exact:true}).click();
+  // Phones show one sheet: opening Overlays already replaced the location sheet.
+  await expect(page.getByRole('button',{name:'Close region details',exact:true})).toHaveCount(0);
   await matchesSource(page,await pickSurface(page));
   await expect(page.getByRole('button',{name:'Close region details',exact:true})).toBeInViewport();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
@@ -114,10 +114,9 @@ test('mission surface inspection shows the same geological unit in global and po
     await page.goto('/');await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
     await openDestinations(page);await page.getByRole('button',{name:destination}).click();
     await page.getByRole('navigation',{name:'Primary navigation'}).getByRole('button',{name:'Build',exact:true}).click();
-    await page.getByRole('button',{name:'Overlays',exact:true}).click();
-    await chooseOverlay(page,'geology',true);await missionSurface(page);
+    await chooseOverlay(page,'geology');await missionSurface(page);
     await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
-    await expect(page.locator('.mission-layer-status')).toContainText('ready / rendered');
+    await expect(page.locator('.legend-chip')).toHaveAttribute('data-status',/ready \/ rendered/);
     const point=await pickSurface(page,.5,.5);
     await matchesSource(page,point);
     await page.screenshot({path:`../artifacts/geology-selection-mission-${point.latitude_deg<0?'polar':'global'}.png`});

@@ -1,4 +1,4 @@
-import {missionTools,missionInspector,openActivity,openDestinations,closeDestinations} from './workspace';
+import {openActivity,openCoordinates,openDestinations,closeDestinations,overlaySourceDetails} from './workspace';
 import {test,expect} from '@playwright/test';
 
 test('orbital drag, pan, keyboard selection, zoom bounds and idle rendering work',async({page})=>{
@@ -10,7 +10,7 @@ test('orbital drag, pan, keyboard selection, zoom bounds and idle rendering work
   await page.mouse.move(box.x+box.width*.67,box.y+box.height*.63,{steps:10});await page.mouse.up();
   await expect(host).not.toHaveAttribute('data-camera',before!);
   await canvas.focus();await canvas.press('Enter');
-  await expect(page.getByTestId('global-elevation')).not.toHaveText('Unavailable');
+  await expect(page.getByTestId('atlas-elevation')).not.toHaveText('Unavailable');
   await page.getByRole('button',{name:'Close region details',exact:true}).click();
   await page.mouse.move(box.x+box.width*.5,box.y+box.height*.6);await page.mouse.down({button:'right'});
   await page.mouse.move(box.x+box.width*.52,box.y+box.height*.61,{steps:5});await page.mouse.up({button:'right'});
@@ -37,14 +37,13 @@ test('loading, missing global data and failed terrain are explicit and recoverab
   await page.screenshot({path:'../artifacts/phase3-missing-global.png'});
   await openActivity(page, 'Analyze');
   await expect(page.getByTestId('layer-status')).toHaveText('Layer ready');
-  await missionInspector(page);
+  await openCoordinates(page);
   const width=(await page.getByTestId('terrain-map').boundingBox())!.width;
-  await page.getByRole('button',{name:'Close inspector',exact:true}).click();
-  await expect(page.locator('#context-inspector')).toBeHidden();
+  await page.getByRole('button',{name:'Close location',exact:true}).click();
+  await expect(page.getByRole('complementary',{name:'Location'})).toBeHidden();
   expect((await page.getByTestId('terrain-map').boundingBox())!.width).toBe(width);
   await page.screenshot({path:'../artifacts/phase3-regional-panels-closed.png'});
-  await missionTools(page);
-  await missionInspector(page);
+  await openCoordinates(page);
   await openActivity(page, 'Explore');
   await page.unroute('**/api/globe');
   await page.route('**/api/globe/elevation.bin',route=>route.fulfill({status:503,body:'Unavailable'}));
@@ -72,7 +71,8 @@ test('global panels stay usable on laptop and mobile viewports',async({page})=>{
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
   await page.screenshot({path:'../artifacts/phase3-mobile-selected.png'});
   await page.getByRole('button',{name:'Close region details',exact:true}).click();
-  await page.getByRole('navigation',{name:'Global view tools'}).getByRole('button',{name:'Advanced',exact:true}).click();
+  await overlaySourceDetails(page);
+  await page.getByRole('checkbox',{name:'Lunar graticule',exact:true}).scrollIntoViewIfNeeded();
   await expect(page.getByRole('checkbox',{name:'Lunar graticule',exact:true})).toBeInViewport();
   console.log(await page.getByTestId('globe-ready-time').textContent());
   await page.screenshot({path:'../artifacts/phase3-mobile-layers.png'});

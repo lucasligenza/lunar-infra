@@ -1,4 +1,4 @@
-import {missionSurface,openActivity,openDestinations,missionTools} from './workspace';
+import {missionSurface,openActivity,openAsset,openCoordinates,openDestinations,openMissions} from './workspace';
 import { test, expect } from '@playwright/test';
 
 test('context panels preserve the canvas and mobile task navigation keeps controls reachable', async ({ page }) => {
@@ -23,16 +23,16 @@ test('context panels preserve the canvas and mobile task navigation keeps contro
   await page.getByRole('button', { name: 'Close region details', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Reset globe', exact: true })).toBeInViewport();
   await openActivity(page, 'Analyze');
-  await missionTools(page);
+  await openCoordinates(page);
   await page.getByRole('button', { name: 'Inspect location', exact: true }).click();
-  await expect(page.getByTestId('elevation-value')).toBeVisible();
+  await expect(page.getByTestId('atlas-elevation')).toBeVisible();
   await missionSurface(page);
   const toolbar = (await page.locator('.workspace-toolbar').boundingBox())!;
   const map = (await page.locator('.terrain-viewport').boundingBox())!;
   expect(toolbar.y).toBeGreaterThan(map.y);
   expect(toolbar.y + toolbar.height).toBeLessThan(map.y + map.height);
   expect(toolbar.width).toBeLessThanOrEqual(map.width);
-  await expect(page.locator('.mission-actions > summary')).toBeInViewport();
+  await expect(page.locator('.surface-toolbar').getByRole('button', { name: 'Overlays', exact: true })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: '../artifacts/phase5-layout-mobile-map.png' });
 });
@@ -51,25 +51,24 @@ test('mission workspace gives closed panels back to the map and selects one cont
       expect(overlap,'The physical map scale must not sit underneath mission controls').toBe(false);
       if(width>900)expect(box.width).toBeGreaterThan(width*.9);
       await page.screenshot({path:`../artifacts/targeted-map-first-${width}.png`});
-      await missionTools(page);
-      const close=page.getByRole('button',{name:'Collapse tools',exact:true});
-      const closeBox=(await close.boundingBox())!,toolsBox=(await page.getByRole('complementary',{name:'Exploration tools'}).boundingBox())!;
+      await openMissions(page);
+      const close=page.getByRole('button',{name:'Close missions',exact:true});
+      const closeBox=(await close.boundingBox())!,toolsBox=(await page.getByRole('complementary',{name:'Missions'}).boundingBox())!;
       expect(closeBox.x+closeBox.width).toBeLessThanOrEqual(toolsBox.x+toolsBox.width+1);
       expect(await close.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
       await page.getByRole('button',{name:`Open scenario: ${scenario.name}`,exact:true}).click();
-      await missionTools(page);
-      await page.getByRole('button',{name:'Select asset: Layout habitat',exact:true}).click();
+      await openAsset(page,'Layout habitat');
       await expect(page.getByRole('complementary',{name:'Asset configuration'})).toBeVisible();
-      await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
+      await expect(page.getByRole('complementary',{name:'Missions'})).not.toBeVisible();
       if(width>900) {
-        const terrain=(await map.boundingBox())!,inspector=(await page.locator('.context-rail').boundingBox())!;
+        const terrain=(await map.boundingBox())!,inspector=(await page.getByRole('complementary',{name:'Asset',exact:true}).boundingBox())!;
         expect(terrain.width).toBe(box.width);
         expect(inspector.x).toBeGreaterThan(terrain.x+terrain.width*.65);
         const controls=(await page.locator('.map-navigation').boundingBox())!;
         expect(inspector.y+inspector.height).toBeLessThan(controls.y);
       }
       await page.screenshot({path:`../artifacts/targeted-inspector-${width}.png`});
-      await page.getByRole('button',{name:'Close inspector',exact:true}).click();
+      await page.getByRole('button',{name:'Close asset',exact:true}).click();
       if(width>900)expect((await map.boundingBox())!.width).toBeGreaterThan(width*.9);
       expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     }

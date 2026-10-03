@@ -91,13 +91,15 @@ export class ScientificOverlay {
   private tiles=new Map<string,Tile>();private wanted=new Set<string>();private queue:{key:string;z:number;x:number;y:number}[]=[];
   private pending=new Map<string,number>();
   private failed=new Set<string>();
+  // One automatic retry absorbs a transient dropped connection; persistent failures still surface.
+  private attempts=new Map<string,number>();
   private controller=new AbortController();private active=0;private view:AtlasView|null=null;private cameraKey='';private disposed=false;private revision=0;private presented=false;
   constructor(private base:THREE.SphereGeometry,private invalidate:()=>void,private status:(value:string)=>void) {}
   configure(view:AtlasView) {
     if(view.tileUrl&&!view.tileUrl.includes(`/${view.layer}/`))view={...view,tileUrl:undefined};
     if(this.view?.dataset!==view.dataset||this.view?.layer!==view.layer||this.view?.reload!==view.reload||this.view?.tileUrl!==view.tileUrl||this.view?.preparation!==view.preparation) {
       this.controller.abort();this.controller=new AbortController();this.revision++;this.pending.clear();this.queue=[];this.wanted.clear();this.cameraKey='';
-      this.failed.clear();this.presented=false;
+      this.failed.clear();this.attempts.clear();this.presented=false;
       for(const tile of this.tiles.values())this.disposeTile(tile);this.tiles.clear();
     }
     this.view=view;this.group.visible=view.layer!=='none'&&view.preparation!=='not_prepared';
@@ -157,7 +159,10 @@ export class ScientificOverlay {
         this.tiles.set(tile.key,{...tile,mesh,bitmap,hasData});this.presented=false;this.failed.delete(tile.key);this.visibility();
         const limit=['temperature','illumination'].includes(view.layer)?96:32;
         if(this.tiles.size>limit)for(const item of this.tiles.values())if(!this.wanted.has(item.key)){this.disposeTile(item);this.tiles.delete(item.key);if(this.tiles.size<=limit)break;}
-      }).catch(()=>{if(!signal.aborted&&!this.disposed&&revision===this.revision&&this.wanted.has(tile.key)){this.failed.add(tile.key);this.visibility();}})
+      }).catch(()=>{if(!signal.aborted&&!this.disposed&&revision===this.revision&&this.wanted.has(tile.key)){
+          const attempt=(this.attempts.get(tile.key)??0)+1;this.attempts.set(tile.key,attempt);
+          if(attempt<2){this.queue.push(tile);return;}
+          this.failed.add(tile.key);this.visibility();}})
         .finally(()=>{this.active--;if(this.pending.get(tile.key)===revision)this.pending.delete(tile.key);this.pump();this.invalidate();});
     }
   }

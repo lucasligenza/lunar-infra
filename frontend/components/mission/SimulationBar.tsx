@@ -2,6 +2,7 @@
 import type {Interval} from '../../types/simulation';
 import type {Asset} from '../../types/mission';
 import Icon from '../ui/Icon';
+import Segmented from '../ui/Segmented';
 
 export default function SimulationBar({current,index,count,playing,expanded,speed,inputKind,asset,onToggle,onPlay,onSpeed,onSelect}:{
   current:Interval;index:number;count:number;playing:boolean;expanded:boolean;speed:number;inputKind:string;
@@ -18,7 +19,7 @@ export default function SimulationBar({current,index,count,playing,expanded,spee
       <button className="play-button" aria-label={playing?'Pause playback':'Play mission'} onClick={onPlay}><Icon name={playing?'pause':'play'}/>{playing?'Pause':'Play'}</button>
       <time className="timeline-time" data-testid="timeline-time" dateTime={current.start}>{current.start.replace('T',' ').replace('Z',' UTC')}</time>
       <div className="timeline-scrub"><input type="range" aria-label="Mission interval" aria-valuetext={`${current.start}, interval ${index+1} of ${count}`} min={0} max={count-1} step={1} value={index} onChange={event=>onSelect(Number(event.target.value))}/><span>{index+1} / {count}</span></div>
-      <select aria-label="Playback speed" title="Simulation intervals per real second" value={speed} onChange={event=>onSpeed(Number(event.target.value))}><option value={1}>1×</option><option value={4}>4×</option><option value={16}>16×</option></select>
+      <Segmented className="speed" label="Playback speed" value={speed} onChange={onSpeed} options={[1,4,16].map(value=>({value,label:`${value}×`,title:`${value} simulation interval${value>1?'s':''} per real second`}))}/>
       <button className="timeline-toggle" onClick={onToggle} aria-expanded={expanded} aria-controls="mission-timeline-details" aria-label={expanded?'Collapse timeline':'Expand timeline'}>{expanded?'Close details':'View details'}<Icon name={expanded?'close':'simulate'}/></button>
     </div>
     <div className="simulation-current" aria-label="Current simulation interval">

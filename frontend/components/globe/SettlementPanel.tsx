@@ -2,6 +2,7 @@
 import type {SettlementState} from '../../lib/useSettlement';
 import type {GlobeLocation} from '../../types/globe';
 import type {Candidate} from '../../types/suitability';
+import Segmented from '../ui/Segmented';
 
 export default function SettlementPanel({state,location,onSelect,onMission}:{state:SettlementState;location:GlobeLocation|null;onSelect:(point:Candidate)=>void;onMission:()=>void}) {
   const {report,settings,setSettings,loading,error}=state;
@@ -14,7 +15,7 @@ export default function SettlementPanel({state,location,onSelect,onMission}:{sta
         <label>Search radius (km)<input required type="number" min={1} max={600} value={settings.radius} onChange={event=>setSettings({...settings,radius:event.target.value})}/></label>
         <label>Neighborhood radius (km)<input required type="number" min={1} max={50} value={settings.neighborhood} onChange={event=>setSettings({...settings,neighborhood:event.target.value})}/></label>
         <label>Low-slope threshold (degrees)<input required type="number" min={0} max={30} step="any" value={settings.slope} onChange={event=>setSettings({...settings,slope:event.target.value})}/></label>
-        <label>Screening terrain<select value={settings.dataset} onChange={event=>setSettings({...settings,dataset:event.target.value})}><option value="auto">Best supporting terrain</option><option value="gld100">Global GLD100</option><option value="lola-global">Coarser LOLA overview</option></select></label>
+        <Segmented label="Screening terrain" value={settings.dataset} onChange={dataset=>setSettings({...settings,dataset})} options={[{value:'auto',label:'Best',title:'Best supporting terrain'},{value:'gld100',label:'GLD100',title:'Global GLD100'},{value:'lola-global',label:'LOLA',title:'Coarser LOLA overview'}]}/>
         <p>The slope threshold is editable screening guidance, not a construction limit.</p>
       </details>
       <button className="primary-button" type="submit" disabled={!location||loading}>{loading?'Finding candidates…':'Find settlement sites'}</button>

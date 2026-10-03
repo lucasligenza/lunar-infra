@@ -1,4 +1,4 @@
-import {missionInspector,missionTools,openActivity,openDestinations,regionAdvanced,simulationAdvanced} from './workspace';
+import {openActivity,openAsset,openDestinations,openMissions,openSetup,simulationAdvanced} from './workspace';
 import {test,expect} from '@playwright/test';
 import { lunarCoordinate } from '../lib/globe';
 
@@ -16,17 +16,15 @@ test('global selection connects to local science and preserves mission drafts, a
   await openDestinations(page);
     await page.getByRole('button',{name:/^Shackleton crater/}).click();
     await expect(page.getByTestId('local-coverage')).toHaveText('240 m south-pole grid');
-  await regionAdvanced(page);
     await page.getByRole('button',{name:'Analyze this region',exact:true}).click();
     const local=await (await request.get('/api/sites/inspect?latitude=-89.67&longitude=129.78')).json();
     await expect(page.getByTestId('selected-coordinate')).toContainText('89.67000');
-    await expect(page.getByTestId('elevation-value')).toHaveText(local.elevation.value.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1}));
+    await expect(page.getByTestId('atlas-elevation')).toHaveText(`${local.elevation.value.toLocaleString('en-US')} m`);
     await page.screenshot({path:'../artifacts/phase3-regional-connected.png'});
     await openActivity(page, 'Build');
-    await missionTools(page);
+    await openMissions(page);
     await page.getByRole('button',{name:`Open scenario: ${name}`,exact:true}).click();
-    await missionTools(page);
-    await page.getByRole('button',{name:'Select asset: Research habitat',exact:true}).click();
+    await openAsset(page,'Research habitat');
     await page.getByLabel('Continuous demand (kW)',{exact:true}).fill('9');
     await openActivity(page, 'Simulate');
     await simulationAdvanced(page);
@@ -53,11 +51,11 @@ test('global selection connects to local science and preserves mission drafts, a
     await simulationAdvanced(page);
     await page.getByLabel('Time step (seconds)',{exact:true}).fill('3600');
     await openActivity(page, 'Build');
-    await missionInspector(page);
+    await openAsset(page,'Research habitat');
     await page.getByRole('button',{name:'Save asset',exact:true}).click();
     await expect(page.getByRole('button',{name:'Save asset',exact:true})).toBeDisabled();
     await openActivity(page, 'Simulate');
-    await missionTools(page);
+    await openSetup(page);
     await page.getByRole('button',{name:'Run simulation',exact:true}).click();
     await expect(page.getByTestId('telemetry-generation')).toHaveText('20.00');
     await page.getByRole('slider',{name:'Mission interval'}).press('End');
@@ -89,10 +87,10 @@ test('north-pole selection opens global atlas analysis without an unrelated pola
   await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toBeVisible();
   await expect(page.getByRole('region',{name:'Regional atlas analysis'})).toContainText('90.00000°');
   await expect(page.getByTestId('terrain-map')).toBeHidden();
-  await expect(page.getByTestId('elevation-value')).toHaveCount(0);
+  await expect(page.getByTestId('atlas-elevation')).toHaveCount(0);
   release();await page.unrouteAll({behavior:'wait'});
   await openActivity(page, 'Explore');
-  await page.getByRole('button',{name:'Close atlas',exact:true}).click();
+  await page.getByRole('button',{name:'Back to location',exact:true}).click();
   await expect(page.getByTestId('global-coordinate')).toContainText('90.00000° N');
   await expect(page.getByRole('heading',{name:'Lunar north pole',exact:true})).toBeVisible();
 });
