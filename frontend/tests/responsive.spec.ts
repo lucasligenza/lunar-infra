@@ -14,7 +14,7 @@ async function reachable(control: Locator) {
 async function header(page: Page, width: number) {
   await page.evaluate(() => window.scrollTo(0, 0));
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-  for (const label of ['Explore', 'Analyze', 'Build', 'Simulate']) {
+  for (const label of ['Explore', 'Build', 'Simulate']) {
     await reachable(page.getByRole('button', { name: label, exact: true }));
   }
 }
@@ -41,7 +41,6 @@ for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768], [1024, 76
       await page.goto('/'); await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
       await header(page, width);
       await openDestinations(page);
-  await openDestinations(page);
       await page.getByRole('button', { name: /^Shackleton crater/ }).click();
       await expect(page.getByTestId('local-coverage')).toHaveText('240 m south-pole grid');
       await page.screenshot({ path: `../artifacts/phase5-final-selection-${width}.png` });

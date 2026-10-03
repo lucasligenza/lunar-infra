@@ -68,8 +68,15 @@ test('global native terrain supports saved hypothetical missions, 3D placement a
     await expect(page.locator('.mission-layer-status')).toContainText('Scientific overlay ready');
     const overlayDisclosure=page.locator('.mission-layer-status > summary');
     await expect(overlayDisclosure).toHaveCount(1);
+    const tools=(await page.getByRole('complementary',{name:'Exploration tools'}).boundingBox())!;
+    for(const control of [overlayDisclosure,page.getByRole('button',{name:'Fly to selected site',exact:true})]) {
+      await expect(control).toBeInViewport();
+      const bounds=(await control.boundingBox())!;expect(bounds.x).toBeGreaterThan(tools.x+tools.width);
+      expect(await control.evaluate(element=>{const b=element.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return hit===element||element.contains(hit);})).toBe(true);
+    }
     await overlayDisclosure.click();
     await expect(page.locator('.mission-layer-status')).toContainText('30 deg');
+    await page.screenshot({path:'../artifacts/spatial-mission-controls.png'});
     await overlayDisclosure.click();
     await openActivity(page, 'Simulate');
     await page.getByRole('button',{name:'Apply synthetic stress profile',exact:true}).click();

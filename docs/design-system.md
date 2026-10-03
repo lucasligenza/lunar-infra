@@ -1,27 +1,31 @@
 # Lunar mission control interface
 
-Explore, Analyze, Build and Simulate share one compact header and geographic/mission
-context. The surface owns the flexible viewport. Build opens without rails;
+Explore, Build and Simulate share one compact header and geographic/mission
+context. Regional analysis remains available from the selected region, Advanced
+atlas tools and commands. The surface owns the flexible viewport. Build opens without rails;
 + Add Asset reveals a compact palette that closes when placement begins.
 Selected equipment or terrain opens a contextual inspector. Overlays is separate
 from advanced tools; metadata and engineering settings use disclosures.
-Below 900 CSS pixels, contextual docks become dismissible task sheets without a
-second navigation row. Closing a panel restores the map and retains draft state.
+Below 900 CSS pixels, contextual docks become dismissible task sheets; the three
+primary activities use a compact second header row. Closing a panel restores the
+map and retains draft state. A pending name edit exposes Save in the header even
+on a phone.
 
-`frontend/app/mission-control.css` owns the palette, spacing and stacking tokens.
-`mission-workspace.css` applies the surface-first shell, palette, inspector and
-playback refinements after the legacy styles, using those same tokens.
+`frontend/app/mission-control.css` owns shared spacing and stacking tokens.
+`spatial-workspace.css` consolidates the current palette, shell, temporary panels
+and playback presentation after the underlying component styles. It replaces
+`mission-workspace.css`; do not add another competing workspace stylesheet.
 
 | Token | Value | Purpose |
 | --- | --- | --- |
-| base | #0B0F14 | Lunar night / viewport frame |
-| panel | #131A23 | Tools and scientific panels |
-| elevated | #202C39 | Controls and hover surfaces |
-| surface-inset | #0E141C | Input and chart surfaces |
-| accent-muted | #1C3249 | Selected controls |
+| base | #0C0E11 | Graphite / viewport frame |
+| panel | #171B20 | Tools and scientific panels |
+| elevated | #262D35 | Controls and hover surfaces |
+| surface-inset | #11151A | Input and chart surfaces |
+| accent-muted | #243548 | Selected controls |
 | ink | #F0F3F6 | Primary text |
-| quiet | #A3AEBC | Secondary labels |
-| accent | #82B8EF | Actions, focus, selection |
+| quiet | #A9B1BC | Secondary labels |
+| accent | #91BDF0 | Actions, focus, selection |
 | nominal | #53B987 | Calculated nominal conditions |
 | warning | #D7A44B | Actual limitations and warnings |
 | failure | #D96B6B | Errors / constraint violations |
@@ -32,19 +36,22 @@ and controls; mono for coordinates, measurements, dataset IDs, engineering
 inputs and UTC telemetry. Scientific raster/category colors remain sourced from
 the scientific layer definitions; interface colors do not modify measurements.
 
-Primary actions use dark text on blue. Browser tests compute the rendered text
+Primary actions use dark text on blue or light text on muted blue. Browser tests compute the rendered text
 contrast (at least 4.5:1), verify actual font families and visible keyboard focus.
 Reduced-motion styles disable cosmetic animations/transitions. Existing globe
 keyboard selection and destination alternatives remain available. These checks
 are targeted improvements, not a claim of a full external WCAG conformance audit.
 
-The [visual overhaul](ui-overhaul.md) establishes shared line icons, visible
-scientific layer choices and a reserved toolbar band over the global viewport.
+The [spatial workspace](spatial-workspace.md) uses shared line icons, compact
+scientific layer rows and small edge controls over the global viewport. Places
+opens destination search; Search in the header opens commands. Selection and
+overlay panels float within deliberate edge containers without resizing the
+canvas or changing the camera. The selected coordinate stays in a bottom strip.
 Layer choices are native radios: Tab reaches the selected choice and arrows
 change it. Preparation and polar coverage remain explicit; a selected radio does
 not claim successful rendering. Original source-period labels remain visible.
 Contextual asset tools use the same glyphs as their inspectors, with grouped
-electrical inputs. Current playback figures have a compact two-level hierarchy;
+electrical inputs. Current playback figures have a compact inline hierarchy;
 the battery reserve bar directly reflects the returned aggregate end-of-interval
 SOC. Ordinary demand charts are neutral; warnings remain tied to real conditions.
 

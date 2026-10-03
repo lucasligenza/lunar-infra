@@ -20,6 +20,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   sector:AtlasSector|null;onSector:(sector:AtlasSector|null)=>void;onSelect:(location:GlobeLocation,distance?:number)=>void;analysis:AtlasAnalysisState;onAnalysis:(state:AtlasAnalysisState)=>void;analysisMode?:boolean}) {
   const [catalog,setCatalog]=useState<AtlasDataset[]>([]),[layers,setLayers]=useState<AtlasLayer[]>([]);
   const [providers,setProviders]=useState<DiscoveryProvider[]>([]),[providerError,setProviderError]=useState<string|null>(null);
+  const [catalogError,setCatalogError]=useState<string|null>(null),[metadataReload,setMetadataReload]=useState(0);
   const dataset=view.dataset;
   const [point,setPoint]=useState<AtlasPoint|null>(null),[error,setError]=useState<string|null>(null),[loading,setLoading]=useState(false);
   const [query,setQuery]=useState('');
@@ -31,11 +32,17 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   useEffect(()=>{if(request&&request.tab!=='layers'&&request.tab!=='sites')setAdvanced(true);},[request]);
   useEffect(()=>{if(analysisMode)setTab('analysis');},[analysisMode]);
   useEffect(()=>{if(request)setTab(request.tab);},[request]);
-  useEffect(()=>{const abort=new AbortController();
-    fetchScientific<AtlasDataset[]>('/atlas/datasets',abort.signal).then(setCatalog).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
-    fetchScientific<AtlasLayer[]>('/atlas/layers',abort.signal).then(setLayers).catch(error=>{if(!abort.signal.aborted)setError(error.message);});
+  useEffect(()=>{const abort=new AbortController();setCatalogError(null);setProviderError(null);
+    // A lost read-only metadata connection gets one retry. Persistent failures
+    // stay visible independently of point sampling, with an explicit retry.
+    async function metadata<T>(path:string):Promise<T> {
+      try{return await fetchScientific<T>(path,abort.signal);}
+      catch(error){if(abort.signal.aborted)throw error;return fetchScientific<T>(path,abort.signal);}
+    }
+    metadata<AtlasDataset[]>('/atlas/datasets').then(value=>{if(!abort.signal.aborted)setCatalog(value);}).catch(error=>{if(!abort.signal.aborted)setCatalogError(error.message);});
+    metadata<AtlasLayer[]>('/atlas/layers').then(value=>{if(!abort.signal.aborted)setLayers(value);}).catch(error=>{if(!abort.signal.aborted)setCatalogError(error.message);});
     fetchScientific<DiscoveryProvider[]>('/atlas/providers',abort.signal).then(setProviders).catch(()=>{if(!abort.signal.aborted)setProviderError('Discovery provider registry unavailable. Reopen the atlas to retry.');});
-    return ()=>abort.abort();},[]);
+    return ()=>abort.abort();},[metadataReload]);
   useEffect(()=>{if(!location)return;const abort=new AbortController();setLoading(true);setPoint(null);setError(null);
     fetchScientific<AtlasPoint>(`/atlas/inspect?latitude=${location.latitude_deg}&longitude=${location.longitude_deg}&dataset=${dataset==='auto'?'best':dataset}`,abort.signal)
       .then(point=>{if(!abort.signal.aborted){setPoint(point);setLoading(false);}})
@@ -47,15 +54,16 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
   useEffect(()=>{if(layer&&(view.tileUrl!==layer.url_template||view.preparation!==(layer.preparation_status??'ready')))onView({...view,tileUrl:layer.url_template,preparation:layer.preparation_status??'ready'});},[layer?.url_template,layer?.preparation_status,view.tileUrl,view.preparation]);
   const environmental=['temperature','illumination'].includes(view.layer);
   const quantity=view.layer==='temperature'?point?.temperature:point?.solar_visibility;
-  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><div><span className="eyebrow">LUNAR ATLAS</span><h2>{tab==='sites'?'Settlement suitability':'Scientific overlays'}</h2></div><button onClick={onClose} aria-label="Close atlas"><Icon name="close"/></button></header>
-    <div className="atlas-disclosure"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button>
+  return <aside className="atlas-panel" aria-label="Lunar atlas"><header><h2>{tab==='sites'?'Settlement sites':tab==='analysis'?'Regional analysis':tab==='catalog'?'Data catalog':tab==='regions'?'Regions':'Overlays'}</h2><div className="atlas-header-actions"><button aria-expanded={advanced} onClick={()=>{setAdvanced(!advanced);setTab('layers');}}>Advanced</button><button onClick={onClose} aria-label="Close atlas"><Icon name="close"/></button></div></header>
+    <div className="atlas-disclosure" hidden={!advanced}>
     {advanced&&<nav className="atlas-tabs" aria-label="Atlas tools">{[['layers','Layers'],['regions','Regions'],['analysis','Analysis'],['catalog','Catalog']].map(([value,label])=><button key={value} aria-pressed={tab===value} onClick={()=>setTab(value)}>{label}</button>)}</nav>}</div>
     <div ref={content} className="atlas-content">
+    {catalogError&&<div className="catalog-error" role="alert"><p>Scientific catalog unavailable. {catalogError}</p><button onClick={()=>setMetadataReload(value=>value+1)}>Retry catalog</button></div>}
     {showGeology&&<GeologyReading geology={point?.geology??null} loading={loading||(!point&&!error)} error={point?null:error}/>}
-    {tab==='sites'?<><button onClick={()=>setTab('layers')}>Back to overlays</button><SettlementPanel state={settlement} location={location} onSelect={candidate=>onSelect(candidate,1.08)} onMission={onMission}/></>:<><p className="atlas-description">Color the Moon with real scientific data.</p>
+    {tab==='sites'?<><button onClick={()=>setTab('layers')}>Back to overlays</button><SettlementPanel state={settlement} location={location} onSelect={candidate=>onSelect(candidate,1.08)} onMission={onMission}/></>:<>
     {tab==='regions'&&<AtlasRegions location={location} sector={sector} onSector={onSector} onSelect={onSelect}/>}
     <div hidden={tab==='regions'||tab==='catalog'||tab==='sites'}>
-    <label hidden={!advanced}>Terrain dataset<select aria-label="Atlas terrain dataset" value={dataset} onChange={e=>onView({...view,dataset:e.target.value})}>
+    <label hidden={!advanced}>Terrain dataset<select aria-label="Atlas terrain dataset" disabled={!catalog.length} value={dataset} onChange={e=>onView({...view,dataset:e.target.value})}>
       <option value="auto">Best prepared global terrain</option>{catalog.filter(value=>value.category==='terrain'&&value.pixels_per_degree&&value.numerical_queries).map(value=><option key={value.id} value={value.id}>{value.name}</option>)}
     </select></label>
     {tab==='analysis'&&<AtlasAnalysis location={location} dataset={dataset} state={analysis} onState={onAnalysis}/>}
@@ -76,7 +84,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
     {location&&<button className="primary-button" onClick={()=>setTab('sites')}>Find settlement sites</button>}
     {!location&&<p>Select the lunar surface or a destination to inspect its native data.</p>}
     {loading&&<p role="status">Loading native terrain…</p>}{error&&<p role="alert">{error}</p>}
-    {point&&<section aria-label="Atlas terrain inspection"><p className="region-coordinate">{point.latitude_deg.toFixed(5)}° latitude / {point.longitude_deg.toFixed(5)}° E</p>
+    {point&&<section aria-label="Atlas terrain inspection"><details className="atlas-point-details"><summary>Selected location details</summary><p className="region-coordinate">{point.latitude_deg.toFixed(5)}° latitude / {point.longitude_deg.toFixed(5)}° E</p>
       <p className="point-resolution">{point.dataset_id==='lola-south'?'LOLA polar terrain':point.dataset_id==='gld100'?'Global GLD100 terrain':'Global LOLA terrain'} / {point.elevation.spacing_north_m.toFixed(0)} m native spacing</p>
       {point.dataset_id!==selectedDataset&&['elevation','slope'].includes(view.layer)&&<p className="point-resolution">Point measurements use finer local terrain. The color legend identifies the global visualization source.</p>}
       <dl><dt>Elevation</dt><dd data-testid="atlas-elevation">{point.elevation.value===null?'Missing data':`${point.elevation.value.toLocaleString('en-US')} m`}</dd>
@@ -93,7 +101,7 @@ export default function AtlasPanel({location,onClose,view,onView,overlayStatus,s
             {point.geology.category?.source_note&&<p>{point.geology.category.source_note}</p>}<p>{point.geology.frame_note}</p><p>{point.geology.method}</p><p>Interpretive units do not establish an extractable resource or construction-scale contact.</p></details></>:
           <p>Geology is not prepared. The catalog provides its verified acquisition source.</p>}
       </div>
-    </section>}
+    </details></section>}
     </div></div>
     <section className="atlas-catalog" hidden={tab!=='catalog'}><h3>Dataset catalog</h3><label>Search science datasets<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Terrain, geology, thermal…" /></label>
       {providerError&&<p role="alert">{providerError}</p>}

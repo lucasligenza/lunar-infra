@@ -201,6 +201,8 @@ export default function Explorer() {
     (projectedLocation[0]<region.bounds_m[0] || projectedLocation[0]>=region.bounds_m[2] || projectedLocation[1]<=region.bounds_m[1] || projectedLocation[1]>region.bounds_m[3])));
   const atlasRegionalView=mode==='regional'&&Boolean(atlasRegional||outsideFootprint||(location&&!region&&!loading));
   const missionContext=mode==='mission'||mode==='simulation';
+  const destinationName=destinations.find(value=>value.coordinates.latitude_deg===location?.latitude_deg&&value.coordinates.longitude_deg===location?.longitude_deg)?.name;
+  const headerContext=missionContext&&scenario.active?scenario.active.name:destinationName??(location?'Selected location':mode==='global'?'Moon':'Lunar south pole');
   const globalMissionView=missionContext&&globalPlanning;
   const scenarioInView=!globalMissionView||scenario.active?.region_id==='global-atlas';
   const validLocation=globalMissionView?(atlasSite?.elevation.status==='ok'?{latitude_deg:atlasSite.latitude_deg,longitude_deg:atlasSite.longitude_deg}:null):site?.coordinates;
@@ -220,7 +222,7 @@ export default function Explorer() {
     {id:'activity',label:'Open activity console',group:'System',run:()=>setConsoleVisible(true)},
   ];
   return <main data-workspace-panel={mobilePane} className={`explorer mode-${mode}${atlasRegionalView?' atlas-workspace':''}${inspectorOpen?'':' inspector-collapsed'}`}>
-    <MissionHeader mode={mode} context={scenario.active?.name ?? (location ? `${location.latitude_deg.toFixed(3)}° / ${location.longitude_deg.toFixed(3)}° E` : 'No location selected')}
+    <MissionHeader mode={mode} context={headerContext}
       ready={scenario.active ? !working && !assetDirty && !missionDirty && scenarioName === scenario.active.name : Boolean(region)} busy={working} onMode={switchMode} onCommands={()=>setPaletteOpen(true)} onActivity={()=>setConsoleVisible(true)} onHelp={()=>openHelp()}
       status={scenario.active ? scenario.busy ? 'Saving…' : simulation.busy ? 'Running simulation…' : assetDirty ? 'Unsaved asset changes' : missionDirty ? 'Unsaved simulation inputs' : scenarioName !== scenario.active.name ? 'Unsaved name' : 'Saved' : region ? 'Polar data ready' : loading ? 'Loading polar data' : 'Polar data unavailable'}
       onSave={scenario.active?()=>void scenario.patch({name:scenarioName}):undefined} canSave={Boolean(scenario.active&&scenarioName!==scenario.active.name&&scenarioName.trim())}/>
@@ -294,6 +296,7 @@ export default function Explorer() {
         </div></details>
         {mode==='simulation'&&scenario.active&&!simulation.run&&<button className="primary-button" disabled={working} onClick={()=>openTools('simulation')}>Set up simulation</button>}
         {mode==='regional'&&<button className="atlas-local-toggle" onClick={()=>{if(!location)setLocation({latitude_deg:-89.5,longitude_deg:0});setAtlasRegional(true);}}>3D analysis</button>}
+        {mode==='mission'&&scenario.active&&scenarioInView&&<span className="workspace-summary" aria-label="Mission infrastructure count">{scenario.active.assets.length} assets</span>}
       </>}
       viewport={<>
 

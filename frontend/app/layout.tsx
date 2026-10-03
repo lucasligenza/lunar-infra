@@ -5,7 +5,7 @@ import "ol/ol.css";
 import "./globals.css";
 import "./exploration.css";
 import "./mission-control.css";
-import "./mission-workspace.css";
+import "./spatial-workspace.css";
 
 export const metadata: Metadata = {
   title: "LunarOS | Lunar exploration and mission design",

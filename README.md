@@ -1,16 +1,17 @@
 # LunarOS
 
-Use **Explore**, **Analyze**, **Build** and **Simulate** in one compact header.
+Use **Explore**, **Build** and **Simulate** in one compact header.
 The Moon stays central; tools and details open when you need them. Location,
 atlas selection, drafts and playback position stay connected while switching.
 The refreshed **Overlays** panel exposes registered scientific layers directly,
 with keyboard arrow-key selection, opacity and source legends. Temperature and
 solar visibility identify their limited polar coverage. Featured destinations
-and search navigate the same verified lunar catalog.
+and **Places** navigate the same verified lunar catalog. Regional analysis is
+available from the selection's **Advanced** section or the **Open Analyze** command.
 With **Geology** enabled, click the surface to see **This color represents**:
 the original legend swatch, mapped unit and USGS interpretation. The matching
 legend entry is highlighted; **Source details** retains the description and scale.
-Use **Commands** or **Ctrl/Cmd+K** to
+Use the header's **Search** button or **Ctrl/Cmd+K** to
 search existing actions. The collapsible **Activity** console shows actual UTC
 requests, layer readiness and simulation results, with optional request details.
 
@@ -38,7 +39,7 @@ provenance. Power is interval-average kW; battery SOC is at interval end.
 Cumulative energy is kWh. Playback reads the saved Python results; no values are
 invented. On smaller screens, contextual panels become dismissible task sheets.
 See the [mission workspace redesign](docs/mission-workspace-redesign.md).
-See the [current visual overhaul](docs/ui-overhaul.md) for the rendered audit and
+See the [spatial workspace redesign](docs/spatial-workspace.md) for the rendered audit and
 validation record.
 
 From **Overlays**, use **Find settlement sites**, select a candidate and inspect

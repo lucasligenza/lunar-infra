@@ -1,10 +1,11 @@
 # LunarOS engineering rules
 
-Implement the current visual overhaul in docs/ui-overhaul.md, preserving the
+Implement the spatial workspace redesign in docs/spatial-workspace.md, preserving the
 accepted workspace behavior in docs/mission-workspace-redesign.md:
 surface-first Build/Simulate, contextual infrastructure and inspectors, compact
 playback, and disclosed scientific metadata. Preserve existing science, missions,
-simulations and location state. Navigation is Explore / Analyze / Build / Simulate.
+simulations and location state. Primary navigation is Explore / Build / Simulate;
+regional analysis remains available contextually and through commands.
 No new datasets, numerical models, APIs, AI or habitability score.
 Use actual rendered browser review and journey tests.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap

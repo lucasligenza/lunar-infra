@@ -1,6 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import type {AtlasPoint} from '../types/atlas';
-import {chooseOverlay,missionSurface,openDestinations} from './workspace';
+import {chooseOverlay,missionSurface,openDestinations,openActivity} from './workspace';
 
 async function openGeology(page:Page) {
   await page.goto('/');
@@ -50,7 +50,7 @@ test('clicking geology identifies its source color and unit with the overlay pan
   const next=await pickSurface(page,.42,.6);
   await matchesSource(page,next);
   await page.screenshot({path:'../artifacts/geology-selection-region.png'});
-  await page.getByRole('navigation',{name:'Primary navigation'}).getByRole('button',{name:'Analyze',exact:true}).click();
+  await openActivity(page,'Analyze');
   await expect(page.getByRole('region',{name:'Regional atlas analysis',exact:true})).toBeVisible();
   await matchesSource(page,await pickSurface(page,.48,.52));
   await page.screenshot({path:'../artifacts/geology-selection-analysis.png'});

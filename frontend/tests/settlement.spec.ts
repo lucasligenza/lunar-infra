@@ -114,7 +114,14 @@ for(const [width,height] of [[1920,1080],[1440,900],[1366,768],[1024,768],[390,8
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     const toolbar=(await page.locator('.globe-toolbar').boundingBox())!,panel=(await page.getByRole('complementary',{name:'Lunar atlas'}).boundingBox())!;
     expect(panel.y).toBeGreaterThanOrEqual(toolbar.y+toolbar.height-1);
-    if(width>900){const viewport=(await page.locator('.globe-viewport').boundingBox())!;expect(viewport.x+viewport.width).toBeLessThanOrEqual(panel.x+1);}
+    if(width>900){
+      const viewport=(await page.locator('.globe-viewport').boundingBox())!;
+      expect(viewport.width).toBe(width);
+      expect(panel.width*panel.height/(viewport.width*viewport.height)).toBeLessThan(.25);
+      const camera=(await page.locator('.camera-controls').boundingBox())!;
+      expect(panel.y+panel.height).toBeLessThan(camera.y);
+      await expect(page.getByRole('button',{name:'Reset globe',exact:true})).toBeInViewport();
+    }
     await page.screenshot({path:`../artifacts/simple-settlement-${width}.png`});
   });
 }

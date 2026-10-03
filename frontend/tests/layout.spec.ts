@@ -1,15 +1,21 @@
 import {missionSurface,openActivity,openDestinations,missionTools} from './workspace';
 import { test, expect } from '@playwright/test';
 
-test('context docks own space and mobile task navigation keeps controls reachable', async ({ page }) => {
+test('context panels preserve the canvas and mobile task navigation keeps controls reachable', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('globe-status')).toContainText('terrain ready');
+  const before=(await page.locator('.globe-viewport').boundingBox())!;
   await openDestinations(page);
   await page.getByRole('button', { name: /^Shackleton crater/ }).click();
   const viewport = page.locator('.globe-viewport');
   const drawer = page.getByRole('complementary', { name: 'Selected lunar region' });
   const surface = (await viewport.boundingBox())!, dock = (await drawer.boundingBox())!;
-  expect(surface.x + surface.width).toBeLessThanOrEqual(dock.x + 1);
+  expect(surface).toEqual(before);
+  expect(dock.width).toBeLessThan(surface.width*.3);
+  expect(dock.x).toBeGreaterThan(surface.x+surface.width*.65);
+  expect(dock.height).toBeLessThan(surface.height*.8);
+  const camera=(await page.locator('.camera-controls').boundingBox())!;
+  expect(dock.y+dock.height).toBeLessThan(camera.y);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('button', { name: 'Open destinations', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Close region details', exact: true })).toBeInViewport();
@@ -57,7 +63,10 @@ test('mission workspace gives closed panels back to the map and selects one cont
       await expect(page.getByRole('complementary',{name:'Exploration tools'})).not.toBeVisible();
       if(width>900) {
         const terrain=(await map.boundingBox())!,inspector=(await page.locator('.context-rail').boundingBox())!;
-        expect(terrain.x+terrain.width).toBeLessThanOrEqual(inspector.x+1);expect(terrain.width).toBeGreaterThan(width*.65);
+        expect(terrain.width).toBe(box.width);
+        expect(inspector.x).toBeGreaterThan(terrain.x+terrain.width*.65);
+        const controls=(await page.locator('.map-navigation').boundingBox())!;
+        expect(inspector.y+inspector.height).toBeLessThan(controls.y);
       }
       await page.screenshot({path:`../artifacts/targeted-inspector-${width}.png`});
       await page.getByRole('button',{name:'Close inspector',exact:true}).click();

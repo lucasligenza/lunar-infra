@@ -1,5 +1,39 @@
 # LunarOS progress
 
+## Spatial workspace — locally verified, GitHub validation pending
+
+The new accepted plan is [The Moon is the application](docs/spatial-workspace.md).
+Baseline main matched origin after fetch. Before screenshots were captured and
+inspected at 1920x1080, 1440x900, 1366x768 and 1024x768.
+
+Implemented three primary activities, direct command search, on-demand Places,
+stable full-width canvases, bounded floating context/tools, simple layer rows,
+concise selection and disclosed metadata. Existing regional analysis, missions,
+placement, uncertainty and Python playback behavior are preserved. The previous
+workspace stylesheet is replaced, rather than loaded beneath more overrides.
+Rendered review corrected a stretched close button, status/panel collision,
+phone Reset overlap, low-contrast map scale and a mission legend hidden behind
+floating tools. The latter now moves to the free edge, with direct hit tests.
+Phone name edits keep Save reachable. Catalog failures have independent error
+state and retry; successful point queries cannot conceal a missing catalog.
+
+Validation: 106 Python tests passed (77.17s; nine existing dependency warnings).
+Final typecheck and production build pass. All 64 browser journeys were exercised:
+the full pass exposed five obsolete reserved-rail assertions, the mission legend
+overlap and an interaction timeout. Updated geometry assertions preserve canvas,
+coverage and scientific checks. The other 13 affected checks pass (the controls
+timeout did not recur); after the legend fix, both complete global-mission
+journeys pass (39.1s). Earlier focused spatial/mobile/catalog checks: 17 passed.
+No known failing journey remains; a fresh full GitHub run is the next check.
+
+Before/after screenshots were inspected at all four requested desktop sizes,
+plus 390x844: Explore, selected terrain, overlays, palette, asset inspector,
+compact/expanded playback, settlement screening and limited polar coverage.
+No backend, source data, API, model, renderer or dependency changes.
+Latest successful push: `a0ecd7d` (geological color explanation).
+Its GitHub run 37068089576 failed one metadata request (60/61 journeys passed);
+this milestone includes the persistent catalog failure/retry regression.
+
 ## Map color inspection — verified
 
 User requested an explanation of the color at a clicked map location. The

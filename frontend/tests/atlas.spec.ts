@@ -72,6 +72,7 @@ test('atlas queries original GLD100 across regions and switches verified dataset
   await page.getByRole('combobox',{name:'Atlas terrain dataset'}).selectOption('lola-global');
   const lola=await (await request.get('/api/atlas/inspect?latitude=0.67&longitude=23.47&dataset=lola-global')).json();
   await expect(page.getByTestId('atlas-elevation')).toHaveText(`${lola.elevation.value.toLocaleString('en-US')} m`);
+  await page.getByText('Selected location details',{exact:true}).click();
   await page.getByText('Measurement metadata',{exact:true}).click();
   await expect(page.getByRole('region',{name:'Atlas terrain inspection'}).getByText('MEAN EARTH/POLAR AXIS OF DE421',{exact:true})).toBeVisible();
   await page.screenshot({path:'../artifacts/phase4-elevation-slice.png'});
@@ -112,7 +113,8 @@ test('scientific layers follow the 3D surface with legends opacity and synchroni
   await page.getByRole('button',{name:'Close atlas',exact:true}).click();
   const canvas=page.getByLabel('Interactive 3D Moon',{exact:true}),box=(await canvas.boundingBox())!;
   await page.mouse.move(box.x+box.width*.5,box.y+box.height*.6);await page.mouse.down();await page.mouse.move(box.x+box.width*.64,box.y+box.height*.6,{steps:12});await page.mouse.up();
-  await page.getByRole('button',{name:'Slope',exact:true}).click();
+  await expect(page.locator('.active-overlay-name')).toHaveText('Slope');
+  await page.getByRole('button',{name:'Overlays',exact:true}).click();
   await expect(page.getByTestId('atlas-overlay-status')).toContainText('Scientific overlay ready');
   await page.screenshot({path:'../artifacts/phase4-slope-overlay.png'});
   const layers=await (await request.get('/api/atlas/layers')).json();expect(layers.some((value:any)=>value.id==='slope'&&value.dataset_id==='gld100')).toBe(true);
@@ -145,7 +147,6 @@ test('sectors favorites arbitrary regions profiles and mode state use actual num
   await page.getByRole('combobox',{name:'Sector depth',exact:true}).selectOption('1');
   await expect(page.locator('.sector-overview button')).toHaveCount(24);
   await page.getByRole('combobox',{name:'Hemisphere',exact:true}).selectOption('far');
-  await openDestinations(page);
   await page.getByRole('button',{name:/^Far sector 1.1.1/}).click();
   await expect.poll(()=>page.getByTestId('moon-canvas').getAttribute('data-sector-boundaries')).not.toBe('0');
   await page.getByRole('textbox',{name:'Favorite name',exact:true}).fill('Far-side study');

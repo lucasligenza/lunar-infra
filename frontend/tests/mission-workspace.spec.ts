@@ -87,6 +87,8 @@ for(const width of [1440,1366])test(`mission surface review at ${width}`,async({
     expect((await timeline.boundingBox())!.height).toBeLessThanOrEqual(page.viewportSize()!.height*.34+1);
     expect((await terrain.boundingBox())!.height).toBeGreaterThan(page.viewportSize()!.height*.55);
     await page.screenshot({path:`../artifacts/mission-after-details-${width}.png`});
+    expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBeLessThanOrEqual(page.viewportSize()!.height);
+    await expect(page.getByRole('navigation',{name:'Primary navigation'})).toBeInViewport();
     await page.keyboard.press('Escape');await expect(slider).toHaveValue('47');
     await expect(page.getByRole('button',{name:'Expand timeline',exact:true})).toHaveAttribute('aria-expanded','false');
     await expect(page.getByRole('button',{name:'Expand timeline',exact:true})).toBeFocused();

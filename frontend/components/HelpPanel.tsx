@@ -20,7 +20,7 @@ export default function HelpPanel({ open, initial, onClose, motion, onMotion, co
     <header><h2>{tab === 'tour' ? 'From orbit to a mission' : tab === 'settings' ? 'Interface settings' : 'LunarOS help'}</h2><button onClick={onClose}>Close help</button></header>
     <nav aria-label="Help sections"><button aria-pressed={tab === 'help'} onClick={() => setTab('help')}>Help</button><button aria-pressed={tab === 'tour'} onClick={() => { setTab('tour'); setStep(0); }}>Walkthrough</button><button aria-pressed={tab === 'settings'} onClick={() => setTab('settings')}>Settings</button></nav>
     <div className="help-content">
-      {tab === 'help' && <><p>Explore the Moon, Analyze scientific layers, Build infrastructure and Simulate power. These activities preserve your selected location and saved mission.</p>
+      {tab === 'help' && <><p>Explore the Moon, Build infrastructure and Simulate power. Open Overlays for science and Advanced for regional analysis. Your selected location and saved mission stay with you.</p>
         <dl><dt>Ctrl / Cmd K</dt><dd>Search application commands</dd><dt>Escape</dt><dd>Close a dialog and return focus</dd><dt>Globe keyboard</dt><dd>Focus the Moon: arrows pan and Enter selects the screen center. Use the labeled camera buttons to zoom.</dd></dl>
         <p>“Derived” means computed from supporting terrain. “Modeled” visibility is a long-term average. “Hypothetical” simulation input is an explicit engineering assumption, not a NASA observation.</p>
         <button className="primary-button" onClick={() => { setTab('tour'); setStep(0); }}>Start walkthrough</button>

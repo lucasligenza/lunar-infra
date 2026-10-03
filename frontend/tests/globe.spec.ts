@@ -55,6 +55,7 @@ test('global NASA globe supports destinations, surface picking, layers and camer
   await page.getByRole('button',{name:'Reset globe',exact:true}).click();
   await page.getByRole('button',{name:'Close region details',exact:true}).click();
   await expect(page.getByRole('complementary',{name:'Selected lunar region'})).toHaveCount(0);
+  await openDestinations(page);
   await page.getByLabel('Find a lunar destination').fill('Tycho');
   await expect(page.getByRole('button',{name:/^Tycho crater/})).toBeVisible();
   await expect(page.getByRole('button',{name:/^Copernicus crater/})).toHaveCount(0);

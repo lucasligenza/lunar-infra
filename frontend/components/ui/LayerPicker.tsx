@@ -21,7 +21,7 @@ export default function LayerPicker({layers,value,onChange,label='Scientific ove
       const unavailable=layer.preparation_status==='not_prepared';
       return <label className="layer-option" key={layer.id} data-unavailable={unavailable} title={layer.name}>
         <input type="radio" name={name} value={layer.id} checked={value===layer.id} aria-label={item.label} onChange={()=>onChange(layer.id)}/>
-        <Icon name={item.icon}/><span><strong>{item.label}</strong><small>{unavailable?'Not prepared locally':item.note}</small></span>
+        <Icon name={item.icon}/><span><strong>{item.label}</strong>{(unavailable||['temperature','illumination'].includes(layer.id))&&<small title={item.note}>{unavailable?'Not prepared locally':'Polar only'}</small>}</span>
       </label>;
     })}
   </fieldset>;
