@@ -108,10 +108,15 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   production build pass.
 - **Limits kept.** Illumination inputs remain hypothetical; average solar
   visibility and Diviner stay polar-only and descriptive; rover motion does not
-  change power; the score is a relative screening aid. CSS rules for removed
-  components remain in older stylesheets (inert); prune separately. Local test
+  change power; the score is a relative screening aid. Local test
   runs may leave a default-named scenario in the ignored SQLite database when a
   journey is aborted.
+
+- **CSS prune.** Removed 313 selectors for components that no longer exist
+  (atlas panel, tool/context rails, dropdown menus, legacy inspectors and
+  timeline toolbar): stylesheets 129 KB → 106 KB. Computed styles of every DOM
+  element in 20 UI states (1440×900 and 390×844) were identical before and
+  after; layout/design journeys 11/11 and production build pass.
 
 ## Spatial workspace — verified and pushed
 
