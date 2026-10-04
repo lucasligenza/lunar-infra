@@ -28,15 +28,16 @@ def test_lunar_search_centers_are_distinct_at_poles_and_wrap_longitude():
             assert float(angular_distance(lon,lat,359.9,latitude))*RADIUS_M/1000==pytest.approx(10,abs=1e-6)
 
 
-def test_tradeoff_fronts_do_not_reward_missing_evidence_or_temperature():
+def test_fronts_rank_terrain_only_within_a_terrain_source():
     def candidate(name,terrain,sun,group):
         return Candidate(id=name,latitude_deg=0,longitude_deg=0,radius_km=5,dataset_id='fixture',source_id='synthetic',version='test',spacing_m=1000,
             valid_terrain_fraction=1,low_slope_fraction=terrain,low_slope_area_km2=1,mean_slope_deg=1,solar_visibility=sun,solar_valid_fraction=1 if sun is not None else 0,
             temperature_at_center=None,evidence_group=group,tradeoff_front=0,reasons=[],unknowns=[])
-    data=[candidate('flat',.9,.2,'terrain-and-sunlight'),candidate('sunny',.5,.8,'terrain-and-sunlight'),
-          candidate('inferior',.4,.1,'terrain-and-sunlight'),candidate('missing',1,None,'terrain-only')]
+    # Solar visibility covers only polar regions, so it never ranks candidates.
+    data=[candidate('flat',.9,.2,'lola-south'),candidate('sunny',.5,.8,'lola-south'),
+          candidate('inferior',.4,.1,'lola-south'),candidate('global',1,None,'gld100')]
     result={item.id:item.tradeoff_front for item in fronts(data)}
-    assert result=={'flat':1,'sunny':1,'missing':1,'inferior':2}
+    assert result=={'flat':1,'sunny':2,'inferior':3,'global':1}
 
 
 def test_flat_synthetic_surface_and_nodata_are_explicit_mathematical_tests():
@@ -46,7 +47,8 @@ def test_flat_synthetic_surface_and_nodata_are_explicit_mathematical_tests():
     request=SuitabilityRequest(area=CircleArea(latitude_deg=0,longitude_deg=359.9,radius_km=25))
     report=screen(atlas,request)
     assert report.candidates and all(item.low_slope_fraction==1 for item in report.candidates)
-    assert all(item.solar_visibility is None and 'terrain-only' in item.evidence_group for item in report.candidates)
+    assert all(item.solar_visibility is None and item.evidence_group=='gld100' for item in report.candidates)
+    assert all(item.screening_score==100 and item.data_completeness==pytest.approx(1) for item in report.candidates)
     assert all(item.radius_km>=1.5*grid.step_m/1000 for item in report.candidates)
     values[:]=-32768
     assert not screen(atlas,request).candidates
@@ -69,7 +71,7 @@ def test_real_candidates_are_reproducible_separated_and_keep_sources():
     atlas.close()
 
 
-def test_zero_sunlight_is_valid_and_partial_coverage_cannot_rank_as_sunny():
+def test_sunlight_is_descriptive_and_never_changes_scores():
     sources=definitions();values=np.zeros((720,1440),dtype=np.int16)
     grid=NumericGrid(values,sources['gld100'])
     illumination=SimpleNamespace(source=sources['solar-visibility'],at=lambda lon,lat:np.zeros(lon.shape))
@@ -77,7 +79,10 @@ def test_zero_sunlight_is_valid_and_partial_coverage_cannot_rank_as_sunny():
     request=SuitabilityRequest(area=CircleArea(latitude_deg=0,longitude_deg=359.9,radius_km=25))
     zero=screen(atlas,request)
     assert zero.candidates and all(item.solar_visibility==0 for item in zero.candidates)
-    assert all(item.evidence_group.endswith('/terrain-and-sunlight') for item in zero.candidates)
+    # Valid zero sunlight is kept as evidence but does not lower or raise the score.
+    assert all(item.screening_score==100*item.low_slope_fraction and item.evidence_group=='gld100' for item in zero.candidates)
+    without=screen(SimpleNamespace(grids={'gld100':grid},polar=None,environment={},definitions=sources,grid=lambda dataset:grid),request)
+    assert [item.screening_score for item in without.candidates]==[item.screening_score for item in zero.candidates]
     def sliver(lon,lat):
         result=np.full(lon.shape,np.nan);result.flat[0]=1
         return result
@@ -85,7 +90,7 @@ def test_zero_sunlight_is_valid_and_partial_coverage_cannot_rank_as_sunny():
     partial=screen(atlas,request)
     assert partial.candidates and all(item.solar_visibility is None for item in partial.candidates)
     assert all(item.solar_valid_fraction<.9 for item in partial.candidates)
-    assert all(item.evidence_group.endswith('/terrain-only') for item in partial.candidates)
+    assert all(item.evidence_group=='gld100' for item in partial.candidates)
 
 
 def test_search_work_is_bounded(monkeypatch):
@@ -106,49 +111,40 @@ def test_suitability_api_validates_inputs_and_returns_no_composite_score(tmp_pat
         # Preliminary screening score: bounded, explained and never a habitability claim.
         assert 'habitab' not in response.text.lower().replace('not habitability','')
         for item in report.candidates:
-            assert 0<=item.screening_score<=100 and item.data_completeness==.5 and item.screening_score<=50
-            assert [component.criterion for component in item.score_components]==['low_slope_terrain','solar_visibility']
+            assert item.screening_score==pytest.approx(100*item.low_slope_fraction) and item.data_completeness>=.9
+            assert [component.criterion for component in item.score_components]==['low_slope_terrain']
         body['max_slope_deg']=-1;assert client.post('/atlas/suitability',json=body).status_code==422
         body['max_slope_deg']=5;body['area']['latitude_deg']=91
         assert client.post('/atlas/suitability',json=body).status_code==422
 
 
-def test_screening_score_formula_bands_and_missing_evidence():
+def test_screening_score_is_terrain_only_with_bands():
     from backend.app.services.screening_score import screening_score,band,WEIGHTS
-    assert WEIGHTS=={'low_slope_terrain':.5,'solar_visibility':.5}
-    score,completeness,name,components=screening_score(.8,.6,5)
-    assert score==pytest.approx(70) and completeness==1 and name=='promising'
-    assert [c.contribution for c in components]==pytest.approx([40,30])
-    assert all(c.evaluated for c in components)
-    # Missing solar evidence contributes zero and halves completeness; it can never raise a score.
-    for terrain in [0,.25,.5,.9,1]:
-        missing,missing_completeness,_,parts=screening_score(terrain,None,5)
-        assert missing==pytest.approx(50*terrain) and missing_completeness==.5
-        assert parts[1].evaluated is False and parts[1].value is None and parts[1].contribution==0
-        for sun in [0,.3,1]:
-            assert missing<=screening_score(terrain,sun,5)[0]+1e-12
-    assert screening_score(1,1,5)[0]==100 and screening_score(0,0,5)[0]==0
+    # Only criteria prepared for the entire Moon are scored.
+    assert WEIGHTS=={'low_slope_terrain':1.0}
+    score,name,components=screening_score(.73,5)
+    assert score==pytest.approx(73) and name=='promising'
+    assert [(c.criterion,c.weight,c.evaluated) for c in components]==[('low_slope_terrain',1.0,True)]
+    assert screening_score(1,5)[0]==100 and screening_score(0,5)[0]==0
     assert [band(value) for value in [100,80,79.99,60,59.99,40,39.99,0]]==['strong','strong','promising','promising','mixed','mixed','constrained','constrained']
-    with pytest.raises(ValueError):screening_score(1.2,None,5)
-    with pytest.raises(ValueError):screening_score(.5,-.1,5)
+    for invalid in [1.2,-.1]:
+        with pytest.raises(ValueError):screening_score(invalid,5)
 
 
-def test_real_scores_match_evaluated_criteria_and_rank_within_groups():
+def test_real_scores_are_terrain_only_and_rank_within_terrain_sources():
     atlas=AtlasStore(polar=TerrainStore())
-    report=screen(atlas,SuitabilityRequest(area=CircleArea(latitude_deg=-89.67,longitude_deg=129.78,radius_km=25)))
-    assert report.model_version=='settlement-screening-v2' and report.score_method=='preliminary-screening-score-v1'
-    assert report==screen(atlas,SuitabilityRequest(area=CircleArea(latitude_deg=-89.67,longitude_deg=129.78,radius_km=25)))
-    for item in report.candidates:
-        expected=100*(.5*item.low_slope_fraction+.5*(item.solar_visibility if item.solar_visibility is not None else 0))
-        assert item.screening_score==pytest.approx(expected,abs=1e-9)
-        assert item.data_completeness==(1 if item.solar_visibility is not None else .5)
-        assert sum(c.contribution for c in item.score_components)==pytest.approx(item.screening_score)
-    for group in {item.evidence_group for item in report.candidates}:
-        members=[item for item in report.candidates if item.evidence_group==group]
-        assert [item.rank_in_group for item in members]==list(range(1,len(members)+1))
-        assert [item.screening_score for item in members]==sorted((item.screening_score for item in members),reverse=True)
-    completeness=[item.data_completeness for item in report.candidates]
-    assert completeness==sorted(completeness,reverse=True)
+    for area in [CircleArea(latitude_deg=-89.67,longitude_deg=129.78,radius_km=25),CircleArea(latitude_deg=.67,longitude_deg=23.47,radius_km=25)]:
+        report=screen(atlas,SuitabilityRequest(area=area))
+        assert report.model_version=='settlement-screening-v3' and report.score_method=='preliminary-screening-score-v2'
+        assert report==screen(atlas,SuitabilityRequest(area=area))
+        for item in report.candidates:
+            assert item.screening_score==pytest.approx(100*item.low_slope_fraction,abs=1e-9)
+            assert item.data_completeness==item.valid_terrain_fraction>=.9
+            assert item.evidence_group==item.dataset_id
+        for group in {item.evidence_group for item in report.candidates}:
+            members=[item for item in report.candidates if item.evidence_group==group]
+            assert [item.rank_in_group for item in members]==list(range(1,len(members)+1))
+            assert [item.screening_score for item in members]==sorted((item.screening_score for item in members),reverse=True)
     atlas.close()
 
 

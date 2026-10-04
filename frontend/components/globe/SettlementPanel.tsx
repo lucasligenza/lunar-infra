@@ -8,7 +8,9 @@ import Segmented from '../ui/Segmented';
 import Icon from '../ui/Icon';
 
 export const BAND_LABEL:Record<ScoreBand,string>={strong:'Strong screening fit',promising:'Promising',mixed:'Mixed',constrained:'Constrained'};
-const GROUP_LABEL=(group:string)=>group.includes('terrain-only')?'Terrain-only candidates':'Terrain and sunlight candidates';
+// Candidates are ranked only within one terrain grid; different resolutions are never ranked together.
+const GRID_NAME:Record<string,string>={'lola-south':'LOLA polar 240 m','gld100':'GLD100 global','lola-global':'LOLA global 0.25°'};
+const gridName=(group:string)=>GRID_NAME[group]??group;
 const letter=(index:number)=>String.fromCharCode(65+index);
 
 function Bar({value}:{value:number|null}) {
@@ -17,18 +19,18 @@ function Bar({value}:{value:number|null}) {
 
 /** One candidate card: preliminary screening score first, evidence on demand. */
 function CandidateCard({candidate,label,selected,distance,onSelect,children}:{candidate:Candidate;label:string;selected:boolean;distance:number|null;onSelect:()=>void;children?:ReactNode}) {
-  const [terrain,solar]=candidate.score_components;
+  const [terrain]=candidate.score_components;
   return <article className="candidate-result candidate-card" data-band={candidate.score_band} data-selected={selected}>
     <button className="candidate-summary" onClick={onSelect} aria-pressed={selected} aria-label={`Inspect ${candidate.id}`}>
       <span className="candidate-title"><span className="candidate-rank">#{candidate.rank_in_group}</span><strong>{label}</strong>
         <span className="candidate-score" data-testid={`score-${candidate.id}`}>{candidate.screening_score.toFixed(0)}%</span></span>
-      <span className="candidate-band"><i aria-hidden="true"/>{BAND_LABEL[candidate.score_band]}{candidate.data_completeness<1&&<em>Incomplete evidence</em>}</span>
+      <span className="candidate-band"><i aria-hidden="true"/>{BAND_LABEL[candidate.score_band]}</span>
       <span className="candidate-metrics">
         <span>{terrain.label}</span><span className="metric-bar"><Bar value={terrain.value}/><b>{terrain.value===null?'—':(terrain.value*100).toFixed(0)}</b></span>
-        <span>{solar.label}</span><span className="metric-bar">{solar.evaluated?<><Bar value={solar.value}/><b>{(solar.value!*100).toFixed(0)}</b></>:<small>Not evaluated</small>}</span>
-        <span>Data completeness</span><span className="metric-bar"><b>{(candidate.data_completeness*100).toFixed(0)}%</b></span>
+        <span>Valid terrain data</span><span className="metric-bar"><b>{(candidate.data_completeness*100).toFixed(0)}%</b></span>
+        <span>Avg. solar visibility</span><span className="metric-bar descriptive">{candidate.solar_visibility!==null?<b title="Descriptive only; not scored">{(candidate.solar_visibility*100).toFixed(0)}%</b>:<small>Not covered</small>}</span>
       </span>
-      <span className="candidate-meta">{(candidate.low_slope_fraction*100).toFixed(0)}% low-slope terrain{candidate.solar_visibility!==null?` · ${(candidate.solar_visibility*100).toFixed(0)}% average solar visibility`:''}{distance!==null&&` · ${distance<1?`${(distance*1000).toFixed(0)} m`:`${distance.toFixed(1)} km`} from search center`}</span>
+      <span className="candidate-meta">{(candidate.low_slope_fraction*100).toFixed(0)}% low-slope terrain{distance!==null&&` · ${distance<1?`${(distance*1000).toFixed(0)} m`:`${distance.toFixed(1)} km`} from search center`}{candidate.solar_visibility!==null&&' · solar visibility is descriptive, not scored'}</span>
     </button>
     {selected&&children}
   </article>;
@@ -59,8 +61,8 @@ export default function SettlementPanel({state,location,selected,onSelect,onMiss
     {report&&center&&<p className="screening-context" data-testid="candidate-search-context">Within {report.request.area.radius_km} km of {center.latitude_deg.toFixed(3)}° / {center.longitude_deg.toFixed(3)}° E · {report.candidates.length} candidates</p>}
     {report?.warnings.map(warning=><p className="warning" key={warning}>{warning}</p>)}
     {report&&!report.candidates.length&&<p>No supported candidate neighborhoods. Try a larger area or a different terrain dataset.</p>}
-    {groups.map(group=>{const terrainOnly=group.includes('terrain-only');return <section key={group} className="candidate-group" aria-label={GROUP_LABEL(group)}>
-      <header><h3>{terrainOnly?'Terrain only':'Terrain + sunlight'}</h3><small>{terrainOnly?'Sunlight not evaluated here · max 50%':'Complete evidence · ranks within this group'}</small></header>
+    {groups.map(group=><section key={group} className="candidate-group" aria-label={`${gridName(group)} candidates`}>
+      <header><h3>{gridName(group)}</h3><small>Ranked within this terrain grid</small></header>
       {report!.candidates.filter(candidate=>candidate.evidence_group===group).map(candidate=><CandidateCard key={candidate.id} candidate={candidate} label={labels.get(candidate.id)!}
         selected={selected?.id===candidate.id} distance={center?surfaceDistanceKm(center,candidate):null} onSelect={()=>onSelect(candidate)}>
         <div className="candidate-detail">
@@ -69,7 +71,7 @@ export default function SettlementPanel({state,location,selected,onSelect,onMiss
           <details><summary>Why this score?</summary>
             <ul className="score-breakdown">{candidate.score_components.map(component=><li key={component.criterion}><span>{component.label} × {component.weight}</span>
               <b>{component.evaluated?`+${component.contribution.toFixed(1)}`:'+0 (not evaluated)'}</b><small>{component.basis}</small></li>)}</ul>
-            <p>Preliminary screening score = 100 × (0.5 × low-slope area fraction + 0.5 × mean modeled solar visibility). Missing evidence contributes zero and never raises the score.</p>
+            <p>Preliminary screening score = 100 × low-slope area fraction. Only native terrain covers the entire Moon, so it is the only scored criterion. Average solar visibility (polar crop only), temperature and geology are shown as evidence but never scored.</p>
           </details>
           <details><summary>Why this candidate?</summary>{candidate.reasons.map(reason=><p key={reason}>{reason}</p>)}
             {candidate.temperature_at_center?.status==='ok'&&<p>Descriptive, not scored: {candidate.temperature_at_center.value!.toFixed(1)} K center brightness temperature (one summer local-time bin).</p>}
@@ -77,7 +79,7 @@ export default function SettlementPanel({state,location,selected,onSelect,onMiss
             {candidate.unknowns.map(note=><p key={note}>{note}</p>)}</details>
         </div>
       </CandidateCard>)}
-    </section>;})}
+    </section>)}
     {form}
     {report&&<details className="screening-method"><summary>Method and sources</summary>{report.assumptions.map(note=><p key={note}>{note}</p>)}<p>{report.model_version} / {report.score_method}; {report.evaluated_centers} sampled centers.</p>{report.sources.map(source=><p key={source.id}><a href={source.source_url} target="_blank" rel="noreferrer">{source.name}</a> / {source.version}</p>)}</details>}
     <p className="screening-disclaimer">Preliminary screening score: a relative engineering-screening aid. Not habitability, construction safety or mission-success probability. Power playback still requires hypothetical temporal input.</p>

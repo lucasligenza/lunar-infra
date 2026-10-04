@@ -11,15 +11,15 @@ User-authorized additions for this phase only: the preliminary screening score,
 a typed candidate-neighborhood endpoint, and deterministic rover kinematics.
 Use actual rendered browser review and journey tests.
 
-Preliminary screening score (settlement-screening-v2, docs/settlement-screening.md):
-- A 0–100% relative engineering-screening aid computed in Python from criteria
-  the screening actually evaluates. Never call it habitability, safety,
-  construction suitability or mission-success probability.
-- Deterministic, with per-criterion contributions shown. Unevaluated criteria
-  contribute zero; missing data must never raise a score. Show data
-  completeness separately and keep evidence groups explicit.
-- Temperature and geology stay descriptive, outside the score. Keep the
-  detailed evidence view.
+Preliminary screening score (settlement-screening-v3, docs/settlement-screening.md):
+- A 0–100% relative engineering-screening aid computed in Python. Never call it
+  habitability, safety, construction suitability or mission-success probability.
+- Score only criteria prepared for the entire Moon (currently native terrain
+  slope: score = 100 × low-slope area fraction). Polar-only evidence (average
+  solar visibility, Diviner temperature) and geology stay descriptive and never
+  enter scores or rankings. Missing data must never raise a score.
+- Deterministic, with contributions shown; data completeness shown separately;
+  rank only within one terrain grid. Keep the detailed evidence view.
 Keep numerical code independent of HTTP, UI, and AI. Follow the accepted roadmap
 and the user-authorized incremental commit/push workflow in PROGRESS.md.
 

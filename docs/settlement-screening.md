@@ -8,7 +8,7 @@ Existing mission simulations remain explicitly hypothetical where time-dependent
 illumination is unavailable.
 
 `POST /atlas/suitability` runs independent Python numerical code. Inputs and the
-`settlement-screening-v2` model version are returned with source identifiers,
+`settlement-screening-v3` model version are returned with source identifiers,
 versions, native pixel spacing and per-candidate evidence. Results repeat for
 identical inputs and registered data; no stochastic or AI decision is involved.
 
@@ -25,42 +25,41 @@ The editable 5-degree threshold describes an engineering screening assumption,
 not a validated construction or human-safety limit. Low-slope area fractions use
 spherical cell areas or stereographic scale-corrected cell areas. Circular
 boundaries use cell-center inclusion. At least 90% valid neighborhood area is
-required for each ranked criterion. Valid zero sunlight is preserved. Incomplete
-solar coverage remains unknown rather than being renormalized into a favorable
-value. Search work is capped at two million examined native cells.
+for terrain scoring and for reporting descriptive solar visibility. Valid
+zero sunlight is preserved; incomplete solar coverage is shown as not covered
+rather than renormalized into a favorable value. Search work is capped at two million examined native cells.
 
-Non-dominated tradeoff fronts compare low-slope terrain fraction and modeled
-average solar visibility only within matching terrain-source/evidence groups.
-Terrain-only results are presented separately from terrain-plus-sunlight results.
-Results are spatially separated by at least the smaller neighborhood radius;
-groups are interleaved to retain different kinds of supporting evidence.
+Candidates are ordered by low-slope terrain fraction within the same terrain
+source. Results are spatially separated by at least the smaller neighborhood
+radius; terrain sources are interleaved so one grid cannot displace another.
 
-## Preliminary screening score (user-authorized, `preliminary-screening-score-v1`)
+## Preliminary screening score (user-authorized, `preliminary-screening-score-v2`)
 
 A 0–100% **relative engineering-screening aid**. It is not habitability, human
 safety, construction suitability or mission-success probability. Python computes
 it deterministically (`backend/app/services/screening_score.py`):
 
 ```text
-score = 100 × (0.5 × T + 0.5 × S)
+score = 100 × T
 T = area fraction of valid neighborhood terrain at or below the slope threshold
-S = area-weighted mean modeled average solar visibility, only when ≥90% of the
-    neighborhood area has valid solar coverage; otherwise S is not evaluated
-data completeness = sum of weights of evaluated criteria (1.0 or 0.5)
+data completeness = area fraction of the neighborhood with valid terrain (≥ 90%)
 ```
 
-- Only criteria the screening evaluates are included. Equal weights are used
-  because no validated relative importance exists; neither is preferred.
-- An unevaluated criterion contributes **0** and lowers data completeness. A
-  terrain-only candidate therefore scores at most 50% and is labeled
-  *Incomplete evidence*; missing data can never raise a score.
-- Bands: 80–100 strong, 60–79 promising, 40–59 mixed, 0–39 constrained. The
+- Only criteria prepared for the **entire Moon** are scored. Native terrain slope
+  is the only such criterion, so every candidate anywhere is scored the same way.
+- **Average solar visibility is excluded** (since `settlement-screening-v3`):
+  validated LOLA average-visibility products cover only polar regions (PGDA
+  product 69 / LOLA GDRVIS: complete poleward of 65°, prepared here for the
+  ~96 km south-pole crop), not the whole Moon. It is still reported per
+  candidate as descriptive evidence where covered.
+- **Temperature is excluded**: the prepared Diviner bin is polar-only. A global
+  Diviner Global Cumulative Product exists (2 ppd, local-time bins, 2009–2015;
+  Williams et al. 2017) but is not integrated; temperature stays descriptive.
+- Bands: 80–100 strong, 60–79 promising, 40–59 mixed, 0–39 constrained; the
   interface always shows the number and label, never color alone.
-- Candidates are ranked only within their evidence group (terrain source plus
-  evidence kind). Groups are shown separately; scores across groups are not
-  equivalent evidence.
-- Temperature and geology remain descriptive and are excluded from the score.
-- Each response lists per-criterion values, weights, contributions and basis.
+- Candidates are ranked only within one terrain grid (polar 240 m LOLA, GLD100
+  or LOLA 0.25°); grids of different resolution are shown separately.
+- Geology remains descriptive and excluded from the score.
 
 ## Analysis neighborhood cells
 

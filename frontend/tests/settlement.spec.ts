@@ -22,7 +22,7 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     await page.getByRole('button',{name:'Find settlement sites',exact:true}).click();
     const report:SuitabilityReport=await(await response).json();expect(report.candidates.length).toBeGreaterThan(0);
     const candidate=report.candidates.find(item=>item.solar_visibility!==null)!;expect(candidate).toBeTruthy();
-    await expect(page.getByRole('region',{name:'Terrain and sunlight candidates'})).toBeVisible();
+    await expect(page.getByRole('region',{name:'LOLA polar 240 m candidates'})).toBeVisible();
     const button=page.getByRole('button',{name:`Inspect ${candidate.id}`,exact:true});
     await button.click();await expect(button).toHaveAttribute('aria-pressed','true');
     const result=button.locator('..');await expect(result).toContainText(`${(candidate.low_slope_fraction*100).toFixed(0)}% low-slope terrain`);
@@ -30,7 +30,10 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     await expect(result).toContainText(candidate.source_id);await expect(result).toContainText('No location-accurate time-resolved sunlight');
     // Preliminary screening score: the card shows the stored Python score, band and completeness.
     await expect(page.getByTestId(`score-${candidate.id}`)).toHaveText(`${candidate.screening_score.toFixed(0)}%`);
-    expect(candidate.screening_score).toBeCloseTo(100*(.5*candidate.low_slope_fraction+.5*candidate.solar_visibility!),9);
+    // Terrain is the only globally covered criterion; polar solar visibility is shown but never scored.
+    expect(candidate.screening_score).toBeCloseTo(100*candidate.low_slope_fraction,9);
+    expect(candidate.score_components.map(component=>component.criterion)).toEqual(['low_slope_terrain']);
+    await expect(page.getByRole('button',{name:`Inspect ${candidate.id}`,exact:true})).toContainText(`${(candidate.solar_visibility!*100).toFixed(0)}%`);
     const group=report.candidates.filter(item=>item.evidence_group===candidate.evidence_group);
     expect(group.map(item=>item.rank_in_group)).toEqual(group.map((_,index)=>index+1));
     expect(group.map(item=>item.screening_score)).toEqual([...group.map(item=>item.screening_score)].sort((a,b)=>b-a));
@@ -50,7 +53,7 @@ test('actual candidate evidence connects selected coordinates to a saved mission
     await page.getByRole('checkbox',{name:'Show analysis grid on the Moon'}).check();
     await expect(host).toHaveAttribute('data-grid-cells',String(cells.cells.length));
     await result.getByText('Why this score?',{exact:true}).click();
-    await expect(result.locator('.score-breakdown')).toContainText(`+${(50*candidate.low_slope_fraction).toFixed(1)}`);
+    await expect(result.locator('.score-breakdown')).toContainText(`+${(100*candidate.low_slope_fraction).toFixed(1)}`);
     await page.screenshot({path:'../artifacts/simple-settlement-evidence.png'});
     await page.getByRole('button',{name:'Create mission at selected location',exact:true}).click();
     // Leaving the candidate browser removes its rings and grid from the Moon.
@@ -120,13 +123,13 @@ test('global screening exposes missing evidence, editable assumptions, loading, 
   const report=await(await response).json();expect(report.request.max_slope_deg).toBe(2);expect(report.request.area.radius_km).toBe(10);
   expect(report.candidates.every((item:any)=>item.solar_visibility===null)).toBe(true);
   await expect(page.getByTestId('candidate-search-context')).toContainText('Within 10 km');
-  await expect(page.getByRole('region',{name:'Terrain-only candidates'})).toBeVisible();
-  await expect(page.getByRole('region',{name:'Terrain and sunlight candidates'})).toHaveCount(0);
+  await expect(page.getByRole('region',{name:'GLD100 global candidates'})).toBeVisible();
+  await expect(page.getByRole('region',{name:'LOLA polar 240 m candidates'})).toHaveCount(0);
   // Missing sunlight never raises a score: terrain-only candidates top out at 50% and say why.
-  for(const item of report.candidates){expect(item.data_completeness).toBe(.5);expect(item.screening_score).toBeLessThanOrEqual(50);
-    expect(item.score_components[1]).toMatchObject({evaluated:false,contribution:0});}
-  await expect(page.locator('.candidate-card').first()).toContainText('Incomplete evidence');
-  await expect(page.locator('.candidate-card').first()).toContainText('Not evaluated');
+  // Outside polar coverage candidates are scored by the same terrain-only method, not capped.
+  for(const item of report.candidates){expect(item.data_completeness).toBeGreaterThanOrEqual(.9);
+    expect(item.screening_score).toBeCloseTo(100*item.low_slope_fraction,9);expect(item.score_components).toHaveLength(1);}
+  await expect(page.locator('.candidate-card').first()).toContainText('Not covered');
   await page.getByText('Why this candidate?',{exact:true}).first().click();
   await expect(page.getByRole('region',{name:'Settlement suitability'})).toContainText('Comparable average sunlight coverage is unavailable');
 });

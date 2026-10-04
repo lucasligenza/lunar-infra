@@ -164,6 +164,8 @@ physical temperature minima. Thermal evidence is descriptive in settlement scree
 
 The [screening method](settlement-screening.md) documents area weighting, valid
 coverage, source-specific tradeoff groups and the bounded sampled search.
-The editable slope threshold is an assumption; absent sunlight remains unknown.
+The editable slope threshold is an assumption. The preliminary screening score
+uses terrain only, because average solar visibility and temperature are prepared
+for the polar crop and not the entire Moon; they remain descriptive evidence.
 Temperature is descriptive and does not rank thermal habitability. No universal
 human habitability score or construction-safety determination is provided.

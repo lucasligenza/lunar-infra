@@ -23,9 +23,10 @@ share the header; everything else is contextual and closes back to the Moon.
   profiles, sectors, dataset catalog) open from Location or the command palette
   (**Ctrl/Cmd K**). On phones each surface is a bottom sheet over the Moon.
 
-**Preliminary screening score** = 100 × (0.5 × low-slope area fraction + 0.5 ×
-mean modeled solar visibility). Missing evidence contributes zero and lowers data
-completeness, so terrain-only candidates top out at 50%. It is a relative
+**Preliminary screening score** = 100 × low-slope area fraction, using native
+terrain, the only screening criterion prepared for the entire Moon. Average solar
+visibility and temperature exist only for the prepared south-pole crop, so they
+are shown as descriptive evidence and never scored. It is a relative
 engineering-screening aid, never habitability, safety or mission success.
 
 **Simulation.** Simulate shows the compact playback bar, a power-flow card that

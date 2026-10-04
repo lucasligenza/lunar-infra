@@ -62,8 +62,9 @@ conventional commit, ordinary push.
   `/atlas/inspect?dataset=best` sample, grouped Terrain / Environment / Geology /
   Data coverage / Mission context, then Technical details and Sources &
   provenance. Footer actions: Find settlement sites, Create mission, Analyze.
-- **Settlement sites** — candidate cards with the preliminary screening score,
-  band, criterion bars, completeness and distance; selection flies to the
+- **Settlement sites** — candidate cards with the terrain-only preliminary
+  screening score, band, slope bar, valid-terrain completeness, descriptive
+  solar visibility where covered, and distance; selection flies to the
   candidate and draws its native analysis cells (toggle, legend, hover).
 - **Analysis tools** — regional statistics, profiles, sectors and the dataset
   catalog; opened from Location or commands, never by default.

@@ -74,8 +74,10 @@ and processed data, caches and `.env` never go into Git.
 
 The preliminary screening score (see `docs/settlement-screening.md`) is a
 relative engineering-screening aid, never habitability, safety or mission
-success. Missing criteria contribute zero and lower data completeness; they
-must never raise a score. Temperature and geology stay descriptive.
+success. Score only criteria prepared for the entire Moon: today that is native
+terrain slope (score = 100 × low-slope area fraction), ranked within one terrain
+grid. Average solar visibility and temperature are polar-only and, with
+geology, stay descriptive. Missing data must never raise a score.
 
 ## Key files
 

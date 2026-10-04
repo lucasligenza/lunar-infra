@@ -118,6 +118,18 @@ Plan and rendered baseline: [interaction redesign](docs/interaction-redesign.md)
   element in 20 UI states (1440×900 and 390×844) were identical before and
   after; layout/design journeys 11/11 and production build pass.
 
+- **Global-coverage screening (user request).** Searched for whole-Moon solar
+  visibility and temperature. No validated whole-Moon average-visibility product
+  exists (LOLA/PGDA maps are polar, complete poleward of 65°); a global Diviner
+  Global Cumulative Product exists (2 ppd, local-time bins) but temperature was
+  never scored. Solar visibility was therefore removed from the calculations:
+  `settlement-screening-v3` / `preliminary-screening-score-v2` scores
+  100 × low-slope area fraction everywhere, ranks by terrain only within each
+  terrain grid, and reports data completeness as valid-terrain area fraction.
+  Solar visibility and temperature remain descriptive evidence. Shackleton
+  candidates now score 66–88% (previously capped by low polar visibility); the
+  equatorial cap at 50% is gone.
+
 ## Spatial workspace — verified and pushed
 
 The new accepted plan is [The Moon is the application](docs/spatial-workspace.md).

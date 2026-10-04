@@ -8,7 +8,7 @@ from backend.app.geospatial.global_terrain import slope_rows
 from backend.app.services.regional_analysis import angular_distance, selection
 from backend.app.services.screening_score import SCORE_METHOD, screening_score
 
-MODEL = 'settlement-screening-v2'
+MODEL = 'settlement-screening-v3'
 MAX_CELLS = 2_000_000
 MIN_COVERAGE = .9
 UNKNOWN = ['Radiation protection, communications, subsurface bearing strength and accessible resources are not evaluated.',
@@ -68,13 +68,13 @@ def terrain_window(grid,lon,lat,radius):
 
 
 def dominated(first,second):
-    """Compare only compatible terrain/source/evidence groups."""
+    """Compare low-slope terrain only within the same terrain source.
+
+    Solar visibility exists only in the polar crop, so it never ranks candidates.
+    """
     if first.evidence_group != second.evidence_group:
         return False
-    a=[first.low_slope_fraction];b=[second.low_slope_fraction]
-    if first.solar_visibility is not None:
-        a.append(first.solar_visibility);b.append(second.solar_visibility)
-    return all(x<=y for x,y in zip(a,b)) and any(x<y for x,y in zip(a,b))
+    return first.low_slope_fraction<second.low_slope_fraction
 
 
 def fronts(candidates):
@@ -130,22 +130,23 @@ def screen(atlas,request):
                  f'{radius:g} km neighborhood; terrain pixel spacing about {native:g} m.']
         unknowns=list(UNKNOWN)
         if solar is None:unknowns.append('Comparable average sunlight coverage is unavailable for this neighborhood.')
-        else:reasons.append(f'{solar*100:.1f}% modeled average solar visibility; no eclipse timing inferred.')
+        else:reasons.append(f'{solar*100:.1f}% modeled average solar visibility (descriptive, not scored: polar coverage only); no eclipse timing inferred.')
         if thermal is None or thermal.status!='ok':unknowns.append('Selected local-time thermal bin has no supported center measurement.')
         else:reasons.append(f'{thermal.value:.1f} K center brightness temperature in one summer/local-time bin; descriptive only.')
         if radius>request.candidate_radius_km:reasons.append('Neighborhood enlarged to span at least three native terrain pixels across its diameter.')
         low_fraction=float(np.clip(low/support,0,1))
-        score,completeness,score_band,components=screening_score(low_fraction,solar,request.max_slope_deg)
-        candidates.append(Candidate(screening_score=min(100.0,score),score_band=score_band,data_completeness=completeness,score_components=components,id=f'candidate-{index+1}',longitude_deg=lon,latitude_deg=lat,radius_km=radius,
+        score,score_band,components=screening_score(low_fraction,request.max_slope_deg)
+        # Data completeness: share of the neighborhood area with valid terrain (at least 90%).
+        candidates.append(Candidate(screening_score=min(100.0,score),score_band=score_band,data_completeness=float(np.clip(support/total,0,1)),score_components=components,id=f'candidate-{index+1}',longitude_deg=lon,latitude_deg=lat,radius_km=radius,
             dataset_id=source.id,source_id=source.product_id,version=source.version,spacing_m=native,
             valid_terrain_fraction=float(np.clip(support/total,0,1)),low_slope_fraction=low_fraction,low_slope_area_km2=low/1e6,
             mean_slope_deg=float(np.sum(slopes[valid]*weights[valid])/support),solar_visibility=solar,
             solar_valid_fraction=solar_fraction,temperature_at_center=thermal,
-            evidence_group=source.id+('/terrain-and-sunlight' if solar is not None else '/terrain-only'),
+            evidence_group=source.id,
             tradeoff_front=0,reasons=reasons,unknowns=unknowns))
     ordered=sorted(fronts(candidates),key=lambda value:(value.tradeoff_front,value.evidence_group,value.latitude_deg,value.longitude_deg))
     selected=[]
-    # Round robin over evidence groups: a terrain-only group cannot displace every richer-evidence result.
+    # Round robin over terrain sources: one grid cannot displace every result from another.
     groups={name:[item for item in ordered if item.evidence_group==name] for name in sorted({item.evidence_group for item in ordered})}
     while any(groups.values()) and len(selected)<request.limit:
         for group in groups.values():
@@ -154,9 +155,8 @@ def screen(atlas,request):
             if all(float(angular_distance(item.longitude_deg,item.latitude_deg,prior.longitude_deg,prior.latitude_deg))*RADIUS_M/1000>=min(item.radius_km,prior.radius_km) for prior in selected):
                 selected.append(item)
     if not selected:warnings.append('No neighborhoods have at least 90% valid terrain support at the selected resolution.')
-    # Present the most complete evidence first, then score within each evidence group.
-    # Ranks never compare groups with different supporting evidence.
-    selected.sort(key=lambda item:(-item.data_completeness,item.evidence_group,-item.screening_score,item.id))
+    # Rank by score within each terrain source; grids of different resolution are not ranked together.
+    selected.sort(key=lambda item:(item.evidence_group,-item.screening_score,item.id))
     for group in {item.evidence_group for item in selected}:
         for rank,item in enumerate((item for item in selected if item.evidence_group==group),start=1):item.rank_in_group=rank
     return SuitabilityReport(model_version=MODEL,score_method=SCORE_METHOD,request=request,candidates=selected,evaluated_centers=len(points),
@@ -164,10 +164,10 @@ def screen(atlas,request):
         assumptions=['Protected human outpost screening, not a human safety or construction certification.',
             'Equal-distance ring search, at most eight rings; not exhaustive site optimization.',
             'At least 90% valid area required per ranked criterion; missing evidence never increases suitability.',
-            'Tradeoff fronts compare low-slope area fraction and sunlight only within the same terrain source/evidence group.',
+            'Candidates are ranked by low-slope area fraction only within the same terrain source.',
             'Spherical surface distances; center-inclusion boundaries; stereographic cell areas corrected by local scale squared.',
-            'Temperature and geology are descriptive; no universal thermal preference or resource inference.',
-            'Preliminary screening score = 100 x (0.5 x low-slope area fraction + 0.5 x mean modeled solar visibility). An unevaluated criterion contributes 0 and lowers data completeness; it never raises the score.',
+            'Average solar visibility, temperature and geology are descriptive; none enters the score or ranking.',
+            'Preliminary screening score = 100 x low-slope area fraction. Solar visibility is excluded because validated average-visibility maps cover only polar regions, not the entire Moon.',
             'The score is a relative engineering-screening aid within one evidence group, not habitability, construction safety or mission-success probability.'],warnings=warnings)
 
 
