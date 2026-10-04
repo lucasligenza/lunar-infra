@@ -4,6 +4,11 @@ Explore the Moon, screen candidate sites, build hypothetical infrastructure and
 simulate its power system on one 3D lunar canvas. **Explore / Build / Simulate**
 share the header; everything else is contextual and closes back to the Moon.
 
+[![Watch the 2-minute LunarOS walkthrough](docs/media/lunaros-demo-thumbnail.jpg)](https://lucas-ligenza-portfolio.vercel.app/media/lunaros-demo.mp4)
+
+*2-minute walkthrough recorded against the running app: globe and overlays,
+point inspection, settlement screening, mission building and simulation playback.*
+
 **Surfaces.** One canvas, one menu at top-left and one drawer at right:
 
 - **Overlays ▾** chooses what is drawn: Imagery, Elevation, Slope, Solar
